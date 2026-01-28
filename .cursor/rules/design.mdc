@@ -1,0 +1,14 @@
+---
+alwaysApply: true
+---
+- When generating any UI/design (Blade, Vue, Inertia pages/components, Tailwind/Bootstrap markup), ALWAYS follow a modern minimalist design system:
+  - Layout: use a 12-col grid, generous whitespace (padding/margins), max-width containers, clear section spacing.
+  - Typography: 1–2 font families max, consistent hierarchy (H1/H2/H3/body), avoid excessive bolding; prefer readable sizes (base 14–16px+).
+  - Colors: neutral base (white/gray/black) + ONE accent color only; avoid loud gradients and neon colors.
+  - Components: clean cards, subtle borders, soft shadows (light), rounded corners (8–16px), consistent button/input sizing.
+  - Forms: clear labels, helpful placeholders, inline validation messages, consistent spacing; avoid clutter.
+  - Tables: zebra or subtle row separators, sticky header if needed, compact but readable.
+  - Icons: simple outline icons only, used sparingly.
+  - States: include hover/focus/active/disabled states; accessibility-friendly focus rings.
+  - Responsiveness: mobile-first; ensure usable layouts on small screens; avoid fixed widths.
+  - Consistency: reuse shared components (buttons, inputs, modals, alerts) instead of redesigning per page.

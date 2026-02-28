@@ -36,7 +36,7 @@ class SportsController extends Controller
 
         $borrowings = $borrowingsQuery
             ->orderBy('created_at', 'desc')
-            ->paginate(10)
+            ->paginate($request->input('perPage', 20))
             ->withQueryString();
 
         // Transform borrowings data
@@ -73,7 +73,7 @@ class SportsController extends Controller
     {
         $user = Auth::user();
         $data = $request->validated();
-        
+
         // Get student_number from user, or try to find student by email
         $studentNumber = $user->student_number;
         if (!$studentNumber) {
@@ -85,16 +85,16 @@ class SportsController extends Controller
                 $user->update(['student_number' => $studentNumber]);
             }
         }
-        
+
         // Validate that we have a student_number
         if (!$studentNumber) {
             return redirect()->back()
                 ->withErrors(['error' => 'Unable to identify your student account. Please contact the administrator to link your account to a student record.']);
         }
-        
+
         $data['student_number'] = $studentNumber;
         $data['status'] = 'pending';
-        
+
         // Set borrow_date to today if not provided
         if (!isset($data['borrow_date'])) {
             $data['borrow_date'] = now()->toDateString();
@@ -112,7 +112,7 @@ class SportsController extends Controller
     public function show(SportsBorrowing $borrowing): Response
     {
         $user = Auth::user();
-        
+
         // Ensure the borrowing belongs to the authenticated student
         if ($borrowing->student_number !== $user->student_number) {
             abort(403, 'Unauthorized access.');

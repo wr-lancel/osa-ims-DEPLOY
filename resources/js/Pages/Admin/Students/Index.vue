@@ -7,11 +7,9 @@ import DashboardCards from '@/Components/Admin/DashboardCards.vue';
 import StudentFormModal from '@/Components/Admin/StudentFormModal.vue';
 import ImportStudentsModal from '@/Components/Admin/ImportStudentsModal.vue';
 import CreateStudentAccountModal from '@/Components/Admin/CreateStudentAccountModal.vue';
-import CourseFormModal from '@/Components/Admin/CourseFormModal.vue';
-import SectionFormModal from '@/Components/Admin/SectionFormModal.vue';
-import AcademicCalendarFormModal from '@/Components/Admin/AcademicCalendarFormModal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
+import Pagination from '@/Components/Pagination.vue';
 
 const props = defineProps({
     students: {
@@ -45,22 +43,15 @@ const page = usePage();
 const showStudentModal = ref(false);
 const showImportModal = ref(false);
 const showAccountModal = ref(false);
-const showCourseModal = ref(false);
-const showSectionModal = ref(false);
-const showAcademicCalendarModal = ref(false);
-const showManageDropdown = ref(false);
 const selectedStudent = ref(null);
 const selectedStudentForAccount = ref(null);
-const selectedCourse = ref(null);
-const selectedSection = ref(null);
-const selectedAcademicCalendar = ref(null);
 const selectedStudentsForBulk = ref([]);
 
 // Filters
 const search = ref(props.filters.search || '');
 const yearLevel = ref(props.filters.year_level || '');
 const courseId = ref(props.filters.course_id || '');
-const status = ref(props.filters.status || '');
+const status = ref(props.filters.status || 'enrolled');
 
 // Debounce timer
 let debounceTimer = null;
@@ -69,8 +60,6 @@ const DEBOUNCE_DELAY = 400; // ms
 const yearLevels = ['1', '2', '3', '4', '5'];
 const statusOptions = [
     { value: 'enrolled', label: 'Enrolled' },
-    { value: 'active', label: 'Active' },
-    { value: 'inactive', label: 'Inactive' },
     { value: 'graduated', label: 'Graduated' },
     { value: 'dropped', label: 'Dropped' },
 ];
@@ -111,16 +100,7 @@ watch(yearLevel, applyFiltersImmediate);
 watch(courseId, applyFiltersImmediate);
 watch(status, applyFiltersImmediate);
 
-const resetFilters = () => {
-    search.value = '';
-    yearLevel.value = '';
-    courseId.value = '';
-    status.value = '';
-    router.get(route('admin.students.index'), {}, {
-        preserveState: true,
-        preserveScroll: true,
-    });
-};
+
 
 const openAddModal = () => {
     selectedStudent.value = null;
@@ -156,76 +136,64 @@ const closeImportModal = () => {
     showImportModal.value = false;
 };
 
-const openCourseModal = () => {
-    selectedCourse.value = null;
-    showCourseModal.value = true;
-};
-
-const closeCourseModal = () => {
-    showCourseModal.value = false;
-    selectedCourse.value = null;
-    // Refresh courses list
-    router.reload({ only: ['courses'] });
-};
-
-const openSectionModal = () => {
-    selectedSection.value = null;
-    showSectionModal.value = true;
-};
-
-const closeSectionModal = () => {
-    showSectionModal.value = false;
-    selectedSection.value = null;
-};
-
-const openAcademicCalendarModal = () => {
-    selectedAcademicCalendar.value = null;
-    showAcademicCalendarModal.value = true;
-};
-
-const closeAcademicCalendarModal = () => {
-    showAcademicCalendarModal.value = false;
-    selectedAcademicCalendar.value = null;
-    // Refresh academic calendars list
-    router.reload({ only: ['academicCalendars'] });
-};
-
-// Close dropdown when clicking outside
-const handleClickOutside = (event) => {
-    if (showManageDropdown.value && !event.target.closest('.relative')) {
-        showManageDropdown.value = false;
-    }
-};
-
 onMounted(() => {
-    document.addEventListener('click', handleClickOutside);
 });
 
 onUnmounted(() => {
-    document.removeEventListener('click', handleClickOutside);
     if (debounceTimer) {
         clearTimeout(debounceTimer);
     }
 });
 
-const exportStudents = () => {
+
+
+const exportPdf = () => {
     const params = new URLSearchParams();
     if (search.value) params.append('search', search.value);
     if (yearLevel.value) params.append('year_level', yearLevel.value);
     if (courseId.value) params.append('course_id', courseId.value);
     if (status.value) params.append('status', status.value);
 
-    window.location.href = route('admin.students.export') + (params.toString() ? '?' + params.toString() : '');
+    window.location.href = route('admin.students.export.pdf') + (params.toString() ? '?' + params.toString() : '');
 };
 
-const updateStatus = (enrollmentId, currentStatus) => {
-    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-    router.patch(route('admin.students.enrollments.updateStatus', enrollmentId), {
+const updateStudentStatus = (studentNumber, newStatus) => {
+    router.patch(route('admin.students.updateStatus', studentNumber), {
         status: newStatus,
     }, {
         preserveScroll: true,
         preserveState: true,
     });
+};
+
+const bulkUpdateStudentStatus = async (newStatus) => {
+    if (selectedStudentsForBulk.value.length === 0) {
+        alert('Please select at least one student.');
+        return;
+    }
+
+    const label = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
+    if (!confirm(`Mark ${selectedStudentsForBulk.value.length} selected student(s) as ${label}?`)) {
+        return;
+    }
+
+    try {
+        const response = await axios.post(route('admin.students.bulk-status'), {
+            student_numbers: selectedStudentsForBulk.value,
+            status: newStatus,
+        });
+
+        if (response.data.success) {
+            alert(response.data.message);
+            selectedStudentsForBulk.value = [];
+            router.reload({ only: ['students', 'dashboardStats'] });
+        } else {
+            alert(response.data.message || 'Failed to update statuses.');
+        }
+    } catch (error) {
+        console.error('Bulk status update failed:', error);
+        alert(error.response?.data?.message || 'Failed to update statuses. Please try again.');
+    }
 };
 
 // Navigate to student profile
@@ -309,7 +277,7 @@ const selectAllCheckboxRef = ref(null);
 
 const toggleSelectAllNoAccount = () => {
     const noAccountIds = studentsWithoutAccounts.value.map(s => s.student_number);
-    
+
     if (allNoAccountSelected.value) {
         // Deselect all no-account students
         selectedStudentsForBulk.value = selectedStudentsForBulk.value.filter(
@@ -339,6 +307,7 @@ const importResult = computed(() => page.props.import_result || null);
 </script>
 
 <template>
+
     <Head title="Student Records" />
 
     <AdminLayout>
@@ -348,56 +317,26 @@ const importResult = computed(() => page.props.import_result || null);
                     Student Records
                 </h2>
                 <div class="flex flex-wrap gap-2">
-                    <div class="relative">
-                        <button
-                            type="button"
-                            class="inline-flex items-center px-4 py-2 bg-gray-100 border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition"
-                            @click.stop="showManageDropdown = !showManageDropdown"
-                        >
-                            Manage
-                            <svg class="ml-2 -mr-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                            </svg>
-                        </button>
-                        <div
-                            v-show="showManageDropdown"
-                            class="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10"
-                            @click.stop
-                        >
-                            <div class="py-1">
-                                <button
-                                    @click="openCourseModal(); showManageDropdown = false"
-                                    class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                >
-                                    Add Course
-                                </button>
-                                <button
-                                    @click="openSectionModal(); showManageDropdown = false"
-                                    class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                >
-                                    Add Section
-                                </button>
-                                <button
-                                    @click="openAcademicCalendarModal(); showManageDropdown = false"
-                                    class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                >
-                                    Add Academic Calendar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <SecondaryButton
-                        v-if="selectedStudentsForBulk.length > 0"
-                        @click="bulkCreateAccounts"
-                        class="bg-green-600 hover:bg-green-700 text-white"
-                    >
+                    <button v-if="selectedStudentsForBulk.length > 0" type="button" @click="bulkCreateAccounts"
+                        class="inline-flex items-center rounded-md px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white bg-green-600 hover:bg-green-700 shadow-sm transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
                         Create Accounts ({{ selectedStudentsForBulk.length }})
-                    </SecondaryButton>
+                    </button>
+                    <button v-if="selectedStudentsForBulk.length > 0" type="button"
+                        @click="bulkUpdateStudentStatus('graduated')"
+                        class="inline-flex items-center rounded-md px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        Graduate ({{ selectedStudentsForBulk.length }})
+                    </button>
+                    <button v-if="selectedStudentsForBulk.length > 0" type="button"
+                        @click="bulkUpdateStudentStatus('dropped')"
+                        class="inline-flex items-center rounded-md px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white bg-red-600 hover:bg-red-700 shadow-sm transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                        Drop ({{ selectedStudentsForBulk.length }})
+                    </button>
                     <SecondaryButton @click="openImportModal">
                         Import File
                     </SecondaryButton>
-                    <SecondaryButton @click="exportStudents">
-                        Export
+
+                    <SecondaryButton @click="exportPdf">
+                        Export PDF
                     </SecondaryButton>
                     <PrimaryButton @click="openAddModal">
                         Add Student
@@ -420,12 +359,12 @@ const importResult = computed(() => page.props.import_result || null);
                         <span v-if="activeTerm" class="text-lg font-semibold text-gray-900">
                             {{ activeTerm.display_label }}
                         </span>
-                        <span
-                            v-if="activeTerm"
-                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
-                        >
+                        <span v-if="activeTerm"
+                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                             <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd" />
                             </svg>
                             Active
                         </span>
@@ -433,10 +372,7 @@ const importResult = computed(() => page.props.import_result || null);
                             No active term set
                         </span>
                     </div>
-                    <Link
-                        :href="route('admin.settings')"
-                        class="text-sm text-indigo-600 hover:text-indigo-900"
-                    >
+                    <Link :href="route('admin.settings')" class="text-sm text-indigo-600 hover:text-indigo-900">
                         Change in Settings →
                     </Link>
                 </div>
@@ -483,13 +419,8 @@ const importResult = computed(() => page.props.import_result || null);
                         <label for="search" class="block text-sm font-medium text-gray-700 mb-1">
                             Search
                         </label>
-                        <input
-                            id="search"
-                            v-model="search"
-                            type="text"
-                            placeholder="Student number or name..."
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        />
+                        <input id="search" v-model="search" type="text" placeholder="Student number or name..."
+                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
                     </div>
 
                     <!-- Year Level -->
@@ -497,11 +428,8 @@ const importResult = computed(() => page.props.import_result || null);
                         <label for="year_level" class="block text-sm font-medium text-gray-700 mb-1">
                             Year Level
                         </label>
-                        <select
-                            id="year_level"
-                            v-model="yearLevel"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        >
+                        <select id="year_level" v-model="yearLevel"
+                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                             <option value="">All</option>
                             <option v-for="level in yearLevels" :key="level" :value="level">
                                 Year {{ level }}
@@ -514,11 +442,8 @@ const importResult = computed(() => page.props.import_result || null);
                         <label for="course_id" class="block text-sm font-medium text-gray-700 mb-1">
                             Course
                         </label>
-                        <select
-                            id="course_id"
-                            v-model="courseId"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        >
+                        <select id="course_id" v-model="courseId"
+                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                             <option value="">All</option>
                             <option v-for="course in courses" :key="course.course_id" :value="course.course_id">
                                 {{ course.course_code }}
@@ -531,12 +456,9 @@ const importResult = computed(() => page.props.import_result || null);
                         <label for="status" class="block text-sm font-medium text-gray-700 mb-1">
                             Status
                         </label>
-                        <select
-                            id="status"
-                            v-model="status"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        >
-                            <option value="">All</option>
+                        <select id="status" v-model="status"
+                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="all">All</option>
                             <option v-for="option in statusOptions" :key="option.value" :value="option.value">
                                 {{ option.label }}
                             </option>
@@ -544,11 +466,7 @@ const importResult = computed(() => page.props.import_result || null);
                     </div>
                 </div>
 
-                <div class="mt-4 flex justify-end">
-                    <SecondaryButton @click="resetFilters">
-                        Reset Filters
-                    </SecondaryButton>
-                </div>
+
             </div>
 
             <!-- Students Table -->
@@ -557,41 +475,45 @@ const importResult = computed(() => page.props.import_result || null);
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Student ID
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Name
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Year Level
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Section
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Course
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Status
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     <div class="flex items-center gap-2">
                                         <span>Account</span>
                                         <div class="flex items-center gap-1 ml-2" @click.stop>
-                                            <input
-                                                ref="selectAllCheckboxRef"
-                                                type="checkbox"
-                                                :checked="allNoAccountSelected"
-                                                @change="toggleSelectAllNoAccount"
+                                            <input ref="selectAllCheckboxRef" type="checkbox"
+                                                :checked="allNoAccountSelected" @change="toggleSelectAllNoAccount"
                                                 class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                                title="Select all students without accounts"
-                                            />
+                                                title="Select all students without accounts" />
                                             <span class="text-xs font-normal text-gray-500">(No Account)</span>
                                         </div>
                                     </div>
                                 </th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th
+                                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Actions
                                 </th>
                             </tr>
@@ -602,12 +524,9 @@ const importResult = computed(() => page.props.import_result || null);
                                     No students found for this term.
                                 </td>
                             </tr>
-                            <tr
-                                v-for="student in students.data"
-                                :key="student.enrollment_id"
+                            <tr v-for="student in students.data" :key="student.enrollment_id"
                                 class="hover:bg-gray-50 cursor-pointer transition-colors"
-                                @click="goToStudentProfile(student.student_number)"
-                            >
+                                @click="goToStudentProfile(student.student_number)">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                     {{ student.student_number }}
                                 </td>
@@ -624,77 +543,62 @@ const importResult = computed(() => page.props.import_result || null);
                                     {{ student.course_name }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span
-                                        class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                                        :class="{
-                                            'bg-green-100 text-green-800': student.status === 'active',
-                                            'bg-yellow-100 text-yellow-800': student.status === 'enrolled',
-                                            'bg-gray-100 text-gray-800': student.status === 'inactive',
-                                            'bg-blue-100 text-blue-800': student.status === 'graduated',
-                                            'bg-red-100 text-red-800': student.status === 'dropped',
-                                        }"
-                                    >
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full" :class="{
+                                        'bg-green-100 text-green-800': student.status === 'enrolled',
+                                        'bg-blue-100 text-blue-800': student.status === 'graduated',
+                                        'bg-red-100 text-red-800': student.status === 'dropped',
+                                    }">
                                         {{ student.status }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap" @click.stop>
                                     <div class="flex items-center gap-2">
-                                        <span
-                                            v-if="student.has_account"
-                                            class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800"
-                                        >
+                                        <span v-if="student.has_account"
+                                            class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
                                             <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                                <path fill-rule="evenodd"
+                                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                    clip-rule="evenodd" />
                                             </svg>
                                             Account
                                         </span>
-                                        <span
-                                            v-else
-                                            class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800"
-                                        >
+                                        <span v-else
+                                            class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
                                             <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                                <path fill-rule="evenodd"
+                                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                                    clip-rule="evenodd" />
                                             </svg>
                                             No Account
                                         </span>
-                                        <input
-                                            type="checkbox"
+                                        <input type="checkbox"
                                             :checked="selectedStudentsForBulk.includes(student.student_number)"
                                             @click.stop="toggleStudentSelection(student.student_number)"
-                                            class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                        />
+                                            class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium" @click.stop>
                                     <div class="flex justify-end space-x-2">
-                                        <button
-                                            v-if="!student.has_account"
+                                        <button v-if="!student.has_account"
                                             @click.stop="openCreateAccountModal(student)"
-                                            class="text-green-600 hover:text-green-900"
-                                            title="Create Account"
-                                        >
+                                            class="text-green-600 hover:text-green-900" title="Create Account">
                                             Create Account
                                         </button>
-                                        <button
-                                            v-else
-                                            @click.stop="openCreateAccountModal(student)"
-                                            class="text-blue-600 hover:text-blue-900"
-                                            title="View/Reset Account"
-                                        >
+                                        <button v-else @click.stop="openCreateAccountModal(student)"
+                                            class="text-blue-600 hover:text-blue-900" title="View/Reset Account">
                                             Account
                                         </button>
-                                        <button
-                                            @click.stop="openEditModal(student)"
-                                            class="text-indigo-600 hover:text-indigo-900"
-                                        >
+                                        <button @click.stop="openEditModal(student)"
+                                            class="text-indigo-600 hover:text-indigo-900">
                                             Edit
                                         </button>
-                                        <button
-                                            @click.stop="updateStatus(student.enrollment_id, student.status)"
-                                            class="text-gray-600 hover:text-gray-900"
-                                        >
-                                            {{ student.status === 'active' ? 'Deactivate' : 'Activate' }}
-                                        </button>
+                                        <select @click.stop :value="student.status"
+                                            @change="updateStudentStatus(student.student_number, $event.target.value)"
+                                            class="text-xs rounded border-gray-300 py-1 px-2 focus:border-indigo-500 focus:ring-indigo-500">
+                                            <option value="enrolled">Enrolled</option>
+                                            <option value="graduated">Graduated</option>
+                                            <option value="dropped">Dropped</option>
+                                        </select>
                                     </div>
                                 </td>
                             </tr>
@@ -703,104 +607,24 @@ const importResult = computed(() => page.props.import_result || null);
                 </div>
 
                 <!-- Pagination -->
-                <div v-if="students.links && students.links.length > 3" class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
-                    <div class="flex items-center justify-between">
-                        <div class="flex-1 flex justify-between sm:hidden">
-                            <Link
-                                v-if="students.links[0].url"
-                                :href="students.links[0].url"
-                                class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                            >
-                                Previous
-                            </Link>
-                            <Link
-                                v-if="students.links[students.links.length - 1].url"
-                                :href="students.links[students.links.length - 1].url"
-                                class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                            >
-                                Next
-                            </Link>
-                        </div>
-                        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                            <div>
-                                <p class="text-sm text-gray-700">
-                                    Showing
-                                    <span class="font-medium">{{ students.meta?.from || 0 }}</span>
-                                    to
-                                    <span class="font-medium">{{ students.meta?.to || 0 }}</span>
-                                    of
-                                    <span class="font-medium">{{ students.meta?.total || 0 }}</span>
-                                    results
-                                </p>
-                            </div>
-                            <div>
-                                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                                    <Link
-                                        v-for="(link, index) in students.links"
-                                        :key="index"
-                                        :href="link.url || '#'"
-                                        :class="[
-                                            'relative inline-flex items-center px-4 py-2 border text-sm font-medium',
-                                            link.active
-                                                ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600'
-                                                : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50',
-                                            index === 0 ? 'rounded-l-md' : '',
-                                            index === students.links.length - 1 ? 'rounded-r-md' : '',
-                                            !link.url ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-                                        ]"
-                                        v-html="link.label"
-                                    />
-                                </nav>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <Pagination :data="students" routeName="admin.students.index" :filters="{
+                    search: search || undefined,
+                    year_level: yearLevel || undefined,
+                    course_id: courseId || undefined,
+                    status: status || undefined,
+                    acad_id: props.activeAcademicCalendar?.calendar_id || undefined,
+                }" />
             </div>
         </div>
 
         <!-- Modals -->
-        <StudentFormModal
-            :show="showStudentModal"
-            :student="selectedStudent"
-            :courses="courses"
-            :active-term="activeTerm"
-            @close="closeStudentModal"
-        />
+        <StudentFormModal :show="showStudentModal" :student="selectedStudent" :courses="courses"
+            :active-term="activeTerm" @close="closeStudentModal" />
 
-        <CreateStudentAccountModal
-            :show="showAccountModal"
-            :student="selectedStudentForAccount"
-            @close="closeAccountModal"
-            @created="handleAccountCreated"
-        />
+        <CreateStudentAccountModal :show="showAccountModal" :student="selectedStudentForAccount"
+            @close="closeAccountModal" @created="handleAccountCreated" />
 
-        <ImportStudentsModal
-            :show="showImportModal"
-            :import-result="importResult"
-            :active-term="activeTerm"
-            @close="closeImportModal"
-        />
-
-        <CourseFormModal
-            :show="showCourseModal"
-            :course="selectedCourse"
-            @close="closeCourseModal"
-            @saved="closeCourseModal"
-        />
-
-        <SectionFormModal
-            :show="showSectionModal"
-            :section="selectedSection"
-            :courses="courses"
-            @close="closeSectionModal"
-            @saved="closeSectionModal"
-        />
-
-        <AcademicCalendarFormModal
-            :show="showAcademicCalendarModal"
-            :calendar="selectedAcademicCalendar"
-            @close="closeAcademicCalendarModal"
-            @saved="closeAcademicCalendarModal"
-        />
+        <ImportStudentsModal :show="showImportModal" :import-result="importResult" :active-term="activeTerm"
+            @close="closeImportModal" />
     </AdminLayout>
 </template>

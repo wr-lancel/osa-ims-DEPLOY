@@ -7,6 +7,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import TextInput from '@/Components/TextInput.vue';
 import Textarea from '@/Components/Textarea.vue';
 import InputError from '@/Components/InputError.vue';
+import Pagination from '@/Components/Pagination.vue';
 
 const props = defineProps({
     borrowings: {
@@ -56,6 +57,10 @@ const getStatusBadgeClass = (status, statusColor) => {
         'gray': 'bg-gray-100 text-gray-800',
     };
     return colorMap[statusColor] || 'bg-gray-100 text-gray-800';
+};
+
+const goToDetail = (borrowing) => {
+    router.visit(route('student.sports.borrowings.show', borrowing.borrowing_id));
 };
 </script>
 
@@ -155,7 +160,7 @@ const getStatusBadgeClass = (status, statusColor) => {
             <!-- Borrowing History -->
             <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
                 <div class="p-6">
-                    <div class="flex items-center justify-between mb-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                         <h3 class="text-lg font-semibold text-gray-900">My Borrowing History</h3>
                         
                         <!-- Status Filter -->
@@ -178,83 +183,97 @@ const getStatusBadgeClass = (status, statusColor) => {
                         </div>
                     </div>
 
-                    <!-- Borrowings Table -->
-                    <div v-if="borrowings.data && borrowings.data.length > 0" class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Item Name
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Borrow Date
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Expected Return
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Status
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Actions
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <tr v-for="borrowing in borrowings.data" :key="borrowing.borrowing_id" class="hover:bg-gray-50">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900">{{ borrowing.item_name }}</div>
-                                        <div v-if="borrowing.description" class="text-sm text-gray-500 truncate max-w-xs">
-                                            {{ borrowing.description }}
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ borrowing.borrow_date }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ borrowing.expected_return_date }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span
-                                            class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                                            :class="getStatusBadgeClass(borrowing.status, borrowing.status_color)"
-                                        >
-                                            {{ borrowing.status }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <Link
-                                            :href="route('student.sports.borrowings.show', borrowing.borrowing_id)"
-                                            class="text-indigo-600 hover:text-indigo-900"
-                                        >
-                                            View Details
-                                        </Link>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <!-- Pagination -->
-                        <div v-if="borrowings.links && borrowings.links.length > 3" class="mt-4 flex items-center justify-between">
-                            <div class="text-sm text-gray-700">
-                                Showing {{ borrowings.meta?.from }} to {{ borrowings.meta?.to }} of {{ borrowings.meta?.total }} results
-                            </div>
-                            <div class="flex gap-2">
-                                <Link
-                                    v-for="link in borrowings.links"
-                                    :key="link.label"
-                                    :href="link.url"
-                                    :class="[
-                                        'px-3 py-2 text-sm rounded-md',
-                                        link.active
-                                            ? 'bg-indigo-600 text-white'
-                                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50',
-                                        !link.url ? 'opacity-50 cursor-not-allowed' : ''
-                                    ]"
-                                    v-html="link.label"
-                                />
+                    <!-- Borrowings Content -->
+                    <div v-if="borrowings.data && borrowings.data.length > 0">
+                        <!-- Mobile Card Layout -->
+                        <div class="md:hidden space-y-3">
+                            <div
+                                v-for="borrowing in borrowings.data"
+                                :key="'m-' + borrowing.borrowing_id"
+                                class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 active:bg-gray-100 transition cursor-pointer"
+                                @click="goToDetail(borrowing)"
+                            >
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm font-semibold text-gray-900">{{ borrowing.item_name }}</span>
+                                    <span
+                                        class="inline-flex px-2 py-0.5 text-xs font-semibold rounded-full"
+                                        :class="getStatusBadgeClass(borrowing.status, borrowing.status_color)"
+                                    >
+                                        {{ borrowing.status }}
+                                    </span>
+                                </div>
+                                <p v-if="borrowing.description" class="text-sm text-gray-500 mb-2 line-clamp-1">{{ borrowing.description }}</p>
+                                <div class="flex items-center gap-3 text-xs text-gray-500">
+                                    <span>Borrow: {{ borrowing.borrow_date }}</span>
+                                    <span>Return: {{ borrowing.expected_return_date }}</span>
+                                </div>
                             </div>
                         </div>
+
+                        <!-- Desktop Table Layout -->
+                        <div class="hidden md:block overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Item Name
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Borrow Date
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Expected Return
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Status
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Actions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr
+                                        v-for="borrowing in borrowings.data"
+                                        :key="borrowing.borrowing_id"
+                                        class="hover:bg-gray-50 cursor-pointer"
+                                        @click="goToDetail(borrowing)"
+                                    >
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-gray-900">{{ borrowing.item_name }}</div>
+                                            <div v-if="borrowing.description" class="text-sm text-gray-500 truncate max-w-xs">
+                                                {{ borrowing.description }}
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {{ borrowing.borrow_date }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {{ borrowing.expected_return_date }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap" @click.stop>
+                                            <span
+                                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                                                :class="getStatusBadgeClass(borrowing.status, borrowing.status_color)"
+                                            >
+                                                {{ borrowing.status }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" @click.stop>
+                                            <Link
+                                                :href="route('student.sports.borrowings.show', borrowing.borrowing_id)"
+                                                class="text-indigo-600 hover:text-indigo-900"
+                                            >
+                                                View Details
+                                            </Link>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <Pagination :data="borrowings" />
                     </div>
 
                     <!-- Empty State -->

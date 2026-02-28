@@ -7,11 +7,14 @@ use App\Http\Requests\Admin\StoreOrganizationRequest;
 use App\Http\Requests\Admin\UpdateOrganizationRequest;
 use App\Models\AcademicCalendar;
 use App\Models\EnrolledStudent;
+use App\Models\Notification;
+use App\Models\OrgMeeting;
 use App\Models\OrgOfficer;
 use App\Models\StudentOrganization;
 use App\Models\Event;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -26,7 +29,7 @@ class OrganizationController extends Controller
         $totalOrganizations = StudentOrganization::count();
         $activeOrganizations = StudentOrganization::where('status', 'active')->count();
         $totalMembers = \App\Models\OrgMember::where('status', 'active')->count();
-        
+
         // Events this month
         $eventsThisMonth = Event::whereMonth('event_date', now()->month)
             ->whereYear('event_date', now()->year)
@@ -60,7 +63,7 @@ class OrganizationController extends Controller
 
         // Paginate results
         $organizations = $query->orderBy('org_name', 'asc')
-            ->paginate(15)
+            ->paginate($request->input('perPage', 20))
             ->withQueryString();
 
         // Transform data for frontend
@@ -127,12 +130,13 @@ class OrganizationController extends Controller
             'members.student',
             'advisers.employee',
             'events.creator',
+            'meetings.caller',
         ]);
 
         // Get enrolled students for officer assignment dropdown (from active academic calendar)
         $activeCalendar = AcademicCalendar::active()->first();
         $enrolledStudents = EnrolledStudent::with(['student', 'course'])
-            ->where('enrollment_status', 'active')
+            ->where('enrollment_status', 'enrolled')
             ->when($activeCalendar, fn($q) => $q->where('acad_id', $activeCalendar->calendar_id))
             ->get()
             ->map(function ($enrollment) {
@@ -155,6 +159,22 @@ class OrganizationController extends Controller
                 'type' => $organization->type,
                 'status' => $organization->status,
                 'adviser_name' => $organization->adviser_name,
+                'mission' => $organization->mission,
+                'mission_file' => $organization->mission_file,
+                'mission_file_url' => $organization->mission_file ? Storage::url($organization->mission_file) : null,
+                'mission_file_name' => $organization->mission_file ? basename($organization->mission_file) : null,
+                'vision' => $organization->vision,
+                'vision_file' => $organization->vision_file,
+                'vision_file_url' => $organization->vision_file ? Storage::url($organization->vision_file) : null,
+                'vision_file_name' => $organization->vision_file ? basename($organization->vision_file) : null,
+                'goals' => $organization->goals,
+                'goals_file' => $organization->goals_file,
+                'goals_file_url' => $organization->goals_file ? Storage::url($organization->goals_file) : null,
+                'goals_file_name' => $organization->goals_file ? basename($organization->goals_file) : null,
+                'constitution_bylaws' => $organization->constitution_bylaws,
+                'constitution_bylaws_file' => $organization->constitution_bylaws_file,
+                'constitution_bylaws_file_url' => $organization->constitution_bylaws_file ? Storage::url($organization->constitution_bylaws_file) : null,
+                'constitution_bylaws_file_name' => $organization->constitution_bylaws_file ? basename($organization->constitution_bylaws_file) : null,
                 'officers' => $organization->officers->map(function ($officer) {
                     return [
                         'officer_id' => $officer->officer_id,
@@ -186,6 +206,21 @@ class OrganizationController extends Controller
                         'created_by_name' => $event->creator->display_name ?? null,
                     ];
                 }),
+                'meetings' => $organization->meetings->sortByDesc('meeting_date')->values()->map(function ($meeting) {
+                    return [
+                        'meeting_id' => $meeting->meeting_id,
+                        'title' => $meeting->title,
+                        'description' => $meeting->description,
+                        'meeting_date' => $meeting->meeting_date->format('Y-m-d'),
+                        'start_time' => $meeting->start_time,
+                        'end_time' => $meeting->end_time,
+                        'venue' => $meeting->venue,
+                        'target_audience' => $meeting->target_audience,
+                        'status' => $meeting->status,
+                        'called_by_name' => $meeting->caller->display_name ?? 'Unknown',
+                        'created_at' => $meeting->created_at->format('Y-m-d H:i'),
+                    ];
+                }),
             ],
             'enrolledStudents' => $enrolledStudents,
         ]);
@@ -196,7 +231,34 @@ class OrganizationController extends Controller
      */
     public function update(UpdateOrganizationRequest $request, StudentOrganization $organization): RedirectResponse
     {
-        $organization->update($request->validated());
+        $data = $request->validated();
+
+        // Handle file uploads for each document type
+        $fileFields = [
+            'mission_file' => 'organizations/documents',
+            'vision_file' => 'organizations/documents',
+            'goals_file' => 'organizations/documents',
+            'constitution_bylaws_file' => 'organizations/documents',
+        ];
+
+        foreach ($fileFields as $field => $storagePath) {
+            $removeFlag = 'remove_' . $field;
+            if ($request->hasFile($field)) {
+                // Delete old file if exists
+                if ($organization->$field) {
+                    Storage::disk('public')->delete($organization->$field);
+                }
+                $data[$field] = $request->file($field)->store($storagePath, 'public');
+            } elseif ($request->boolean($removeFlag) && $organization->$field) {
+                Storage::disk('public')->delete($organization->$field);
+                $data[$field] = null;
+            } else {
+                unset($data[$field]);
+            }
+            unset($data[$removeFlag]);
+        }
+
+        $organization->update($data);
 
         return redirect()->route('admin.organizations.show', $organization)
             ->with('success', 'Organization updated successfully.');
@@ -271,5 +333,143 @@ class OrganizationController extends Controller
 
         return redirect()->route('admin.organizations.show', $organization)
             ->with('success', 'Adviser updated successfully.');
+    }
+
+    /**
+     * Store a new meeting for the organization.
+     */
+    public function storeMeeting(Request $request, StudentOrganization $organization): RedirectResponse
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
+            'meeting_date' => 'required|date',
+            'start_time' => 'required',
+            'end_time' => 'nullable',
+            'venue' => 'nullable|string|max:255',
+            'target_audience' => 'required|in:officers,members,all',
+        ]);
+
+        $meeting = OrgMeeting::create([
+            'org_id' => $organization->org_id,
+            'title' => $validated['title'],
+            'description' => $validated['description'] ?? null,
+            'meeting_date' => $validated['meeting_date'],
+            'start_time' => $validated['start_time'],
+            'end_time' => $validated['end_time'] ?? null,
+            'venue' => $validated['venue'] ?? null,
+            'target_audience' => $validated['target_audience'],
+            'called_by' => auth()->user()->user_id,
+            'status' => 'scheduled',
+        ]);
+
+        // Send notifications to targeted audience
+        $this->sendMeetingNotifications($organization, $meeting);
+
+        return redirect()->route('admin.organizations.show', $organization)
+            ->with('success', 'Meeting scheduled and notifications sent successfully.');
+    }
+
+    /**
+     * Update the status of a meeting.
+     */
+    public function updateMeetingStatus(Request $request, StudentOrganization $organization, OrgMeeting $meeting): RedirectResponse
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:scheduled,completed,cancelled',
+        ]);
+
+        $meeting->update(['status' => $validated['status']]);
+
+        return redirect()->route('admin.organizations.show', $organization)
+            ->with('success', 'Meeting status updated successfully.');
+    }
+
+    /**
+     * Send notifications to the targeted audience for a meeting.
+     */
+    private function sendMeetingNotifications(StudentOrganization $organization, OrgMeeting $meeting): void
+    {
+        $studentNumbers = collect();
+
+        if (in_array($meeting->target_audience, ['officers', 'all'])) {
+            $officerNumbers = $organization->officers()->pluck('student_number');
+            $studentNumbers = $studentNumbers->merge($officerNumbers);
+        }
+
+        if (in_array($meeting->target_audience, ['members', 'all'])) {
+            $memberNumbers = $organization->members()->pluck('student_number');
+            $studentNumbers = $studentNumbers->merge($memberNumbers);
+        }
+
+        $studentNumbers = $studentNumbers->unique();
+
+        // Find user accounts for these students
+        $users = \App\Models\User::whereIn('student_number', $studentNumbers)->get();
+
+        $timeStr = $meeting->start_time;
+        if ($meeting->end_time) {
+            $timeStr .= ' - ' . $meeting->end_time;
+        }
+
+        foreach ($users as $user) {
+            Notification::create([
+                'user_id' => $user->user_id,
+                'type' => 'org_meeting',
+                'title' => "Meeting Called: {$meeting->title}",
+                'message' => "{$organization->org_name} has scheduled a meeting on {$meeting->meeting_date->format('M d, Y')} at {$timeStr}." . ($meeting->venue ? " Venue: {$meeting->venue}." : '') . ($meeting->description ? " Agenda: {$meeting->description}" : ''),
+            ]);
+        }
+    }
+
+    /**
+     * Export organizations to PDF.
+     */
+    public function exportPdf(Request $request)
+    {
+        $query = StudentOrganization::with(['president.student', 'currentAdviser.employee']);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('org_name', 'like', "%{$search}%")
+                    ->orWhere('org_code', 'like', "%{$search}%")
+                    ->orWhereHas('president.student', function ($studentQuery) use ($search) {
+                        $studentQuery->where('first_name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $organizations = $query->orderBy('org_name', 'asc')->get();
+
+        $headers = ['Name', 'Code', 'Type', 'Status', 'President', 'Adviser', 'Members'];
+        $rows = $organizations->map(fn($org) => [
+            $org->org_name,
+            $org->org_code,
+            $org->type,
+            $org->status,
+            $org->president_name,
+            $org->adviser_display_name,
+            $org->members_count,
+        ])->toArray();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.pdf-table', [
+            'title' => 'Organizations Report',
+            'date' => now()->format('F j, Y g:i A'),
+            'headers' => $headers,
+            'rows' => $rows,
+            'filters' => $request->only(['search', 'type', 'status']),
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->download('organizations_export_' . date('Y-m-d_His') . '.pdf');
     }
 }

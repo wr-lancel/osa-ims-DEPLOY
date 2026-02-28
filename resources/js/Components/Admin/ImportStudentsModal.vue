@@ -64,7 +64,7 @@ const submit = () => {
         preserveScroll: true,
         forceFormData: true,
         onSuccess: () => {
-            // Form will be reset by parent component after showing results
+            close();
         },
     });
 };
@@ -212,31 +212,22 @@ const downloadErrorReport = () => {
 
                     <!-- Template Info -->
                     <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <h4 class="font-medium text-sm text-gray-900 mb-2">Required Columns:</h4>
+                        <h4 class="font-medium text-sm text-gray-900 mb-2">Supported Columns (auto-detected):</h4>
                         <p class="text-xs text-gray-600 mb-2">
-                            Your Excel file should have the following columns in order:
+                            Upload your enrolled list directly — the system will auto-detect columns by header name.
                         </p>
-                        <ol class="text-xs text-gray-600 list-decimal list-inside space-y-1">
-                            <li><strong>student_number</strong> - Required, unique student ID</li>
-                            <li><strong>first_name</strong> - Required</li>
-                            <li><strong>last_name</strong> - Required</li>
-                            <li><strong>middle_name</strong> - Optional</li>
-                            <li><strong>email</strong> - Optional</li>
-                            <li><strong>phone</strong> - Optional</li>
-                            <li><strong>course_code</strong> - Required (must match existing course code)</li>
-                            <li><strong>course_name</strong> - Optional fallback if course_code not found</li>
-                            <li><strong>section_name</strong> - Optional</li>
-                            <li><strong>year_level</strong> - Required (1, 2, 3, 4, or 5)</li>
-                        </ol>
-                        <div class="mt-3">
-                            <button
-                                type="button"
-                                @click="downloadTemplate"
-                                class="text-sm text-indigo-600 hover:text-indigo-800 underline font-medium"
-                            >
-                                Download CSV Template
-                            </button>
-                        </div>
+                        <ul class="text-xs text-gray-600 list-disc list-inside space-y-1">
+                            <li><strong>Student Number</strong> — headers like: Student, Student No, ID <span class="text-red-500">(required)</span></li>
+                            <li><strong>Last Name</strong> — headers like: Last Name, Surname</li>
+                            <li><strong>First Name</strong> — headers like: First Name, Given Name</li>
+                            <li><strong>Middle Name</strong> — headers like: Middle Name, MI</li>
+                            <li><strong>Year Level</strong> — headers like: Yr, Year Level <span class="text-red-500">(required)</span></li>
+                            <li><strong>Course</strong> — headers like: Course, Program <span class="text-red-500">(required, must match existing)</span></li>
+                            <li><strong>Section</strong> — headers like: Section, Sec (auto-extracts letter from e.g. "BSHM-B" → "B")</li>
+                        </ul>
+                        <p class="text-xs text-gray-500 mt-2">
+                            Other columns (Sex, Address, Contact, etc.) will be ignored — students can fill those in their profile.
+                        </p>
                     </div>
                 </div>
 

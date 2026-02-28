@@ -5,9 +5,9 @@ import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import InputError from '@/Components/InputError.vue';
+import SearchableSelect from '@/Components/SearchableSelect.vue';
 import { useForm, router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
-import axios from 'axios';
+import { ref, computed, watch } from 'vue';
 
 const props = defineProps({
     show: {
@@ -18,7 +18,15 @@ const props = defineProps({
         type: Object,
         default: null,
     },
-    students: {
+    enrollments: {
+        type: Array,
+        default: () => [],
+    },
+    statusOptions: {
+        type: Array,
+        default: () => [],
+    },
+    violationTypes: {
         type: Array,
         default: () => [],
     },
@@ -30,13 +38,24 @@ const isProcessing = ref(false);
 const formErrors = ref({});
 
 const form = useForm({
-    student_number: '',
+    enrollment_id: '',
     violation_date: new Date().toISOString().split('T')[0],
     violation_type: '',
     description: '',
     severity: '',
     status: 'Pending',
+    sanction: '',
+    remarks: '',
+    date_resolved: '',
     reported_by: null,
+});
+
+// Build options for SearchableSelect
+const enrollmentOptions = computed(() => {
+    return props.enrollments.map(e => ({
+        value: e.enrollment_id,
+        label: e.display_label,
+    }));
 });
 
 const severityOptions = [
@@ -46,27 +65,56 @@ const severityOptions = [
     { value: 'Major', label: 'Major' },
 ];
 
-const statusOptions = [
-    { value: 'Pending', label: 'Pending' },
-    { value: 'Under Investigation', label: 'Under Investigation' },
-    { value: 'Resolved', label: 'Resolved' },
-];
+// Default status = first workflow step
+const defaultStatus = computed(() => props.statusOptions[0]?.value || 'Violation Reported');
+
+// Violation types filtered by selected severity
+const filteredViolationTypes = computed(() => {
+    if (!form.severity) return [];
+    return props.violationTypes.filter(t => t.severity === form.severity);
+});
+
+// When severity changes, reset violation type (only if current type doesn't belong to new severity)
+watch(() => form.severity, (newSev) => {
+    if (newSev && form.violation_type) {
+        const valid = props.violationTypes.some(t => t.severity === newSev && t.name === form.violation_type);
+        if (!valid) {
+            form.violation_type = '';
+        }
+    }
+});
+
+// When violation type changes, auto-fill sanction with default_sanction
+watch(() => form.violation_type, (newType) => {
+    if (newType) {
+        const match = props.violationTypes.find(t => t.name === newType && t.severity === form.severity);
+        if (match && match.default_sanction) {
+            form.sanction = match.default_sanction;
+        }
+    }
+});
 
 watch(() => props.show, (isShowing) => {
     if (isShowing) {
         formErrors.value = {};
         if (props.violation) {
-            form.student_number = props.violation.student_number?.toString() || '';
             form.violation_date = props.violation.violation_date || new Date().toISOString().split('T')[0];
             form.violation_type = props.violation.violation_type || '';
             form.description = props.violation.description || '';
             form.severity = props.violation.severity || '';
-            form.status = props.violation.status || 'Pending';
+            form.status = props.violation.status || defaultStatus.value;
+            form.sanction = props.violation.sanction || '';
+            form.remarks = props.violation.remarks || '';
+            form.date_resolved = props.violation.date_resolved || '';
             form.reported_by = props.violation.reported_by || null;
         } else {
             form.reset();
             form.violation_date = new Date().toISOString().split('T')[0];
-            form.status = 'Pending';
+            form.status = defaultStatus.value;
+            form.enrollment_id = '';
+            form.sanction = '';
+            form.remarks = '';
+            form.date_resolved = '';
         }
     }
 });
@@ -75,26 +123,57 @@ const submit = () => {
     isProcessing.value = true;
     formErrors.value = {};
 
-    const url = props.violation
-        ? route('admin.discipline.update', props.violation.discipline_id)
-        : route('admin.discipline.store');
-
-    const method = props.violation ? 'put' : 'post';
-
-    router[method](url, form, {
-        preserveScroll: true,
-        onSuccess: () => {
-            emit('saved');
-            close();
-        },
-        onError: (errors) => {
-            formErrors.value = errors;
-            isProcessing.value = false;
-        },
-        onFinish: () => {
-            isProcessing.value = false;
-        },
-    });
+    if (props.violation) {
+        // Edit — use PUT
+        router.put(route('admin.discipline.update', props.violation.discipline_id), {
+            violation_date: form.violation_date,
+            violation_type: form.violation_type,
+            description: form.description,
+            severity: form.severity || '',
+            status: form.status,
+            sanction: form.sanction || '',
+            remarks: form.remarks || '',
+            date_resolved: form.date_resolved || '',
+        }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                emit('saved');
+                close();
+            },
+            onError: (errors) => {
+                formErrors.value = errors;
+                isProcessing.value = false;
+            },
+            onFinish: () => {
+                isProcessing.value = false;
+            },
+        });
+    } else {
+        // Create — use POST
+        router.post(route('admin.discipline.store'), {
+            enrollment_id: form.enrollment_id,
+            violation_date: form.violation_date,
+            violation_type: form.violation_type,
+            description: form.description,
+            severity: form.severity || '',
+            status: form.status,
+            sanction: form.sanction || '',
+            remarks: form.remarks || '',
+        }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                emit('saved');
+                close();
+            },
+            onError: (errors) => {
+                formErrors.value = errors;
+                isProcessing.value = false;
+            },
+            onFinish: () => {
+                isProcessing.value = false;
+            },
+        });
+    }
 };
 
 const close = () => {
@@ -105,36 +184,24 @@ const close = () => {
 </script>
 
 <template>
-    <Modal :show="show" @close="close">
+    <Modal :show="show" @close="close" max-width="2xl">
         <div class="p-6">
             <h2 class="text-2xl font-semibold text-gray-900 mb-6">
                 {{ violation ? 'Edit Violation' : 'Add Violation' }}
             </h2>
 
             <form @submit.prevent="submit">
-                <!-- Student Selection -->
-                <div class="mb-4">
-                    <InputLabel for="student_number" value="Student" />
-                    <select
-                        id="student_number"
-                        v-model="form.student_number"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        :class="{ 'border-red-300': formErrors.student_number }"
-                        required
-                    >
-                        <option value="">Select Student</option>
-                        <option
-                            v-for="student in students"
-                            :key="student.student_number"
-                            :value="student.student_number"
-                        >
-                            {{ student.student_number }} - {{ student.full_name }}
-                        </option>
-                    </select>
-                    <InputError :message="formErrors.student_number" />
+                <!-- Student (Term) - create only, using SearchableSelect -->
+                <div v-if="!violation" class="mb-4">
+                    <InputLabel for="enrollment_id" value="Student (Term)" />
+                    <SearchableSelect
+                        v-model="form.enrollment_id"
+                        :options="enrollmentOptions"
+                        placeholder="Search by name or student number..."
+                        :error="formErrors.enrollment_id"
+                    />
                 </div>
 
-                <!-- Violation Date -->
                 <div class="mb-4">
                     <InputLabel for="violation_date" value="Violation Date" />
                     <TextInput
@@ -148,22 +215,47 @@ const close = () => {
                     <InputError :message="formErrors.violation_date" />
                 </div>
 
-                <!-- Violation Type -->
                 <div class="mb-4">
-                    <InputLabel for="violation_type" value="Violation Type" />
-                    <TextInput
+                    <InputLabel for="severity" value="Severity" />
+                    <select
+                        id="severity"
+                        v-model="form.severity"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        required
+                    >
+                        <option
+                            v-for="option in severityOptions"
+                            :key="option.value"
+                            :value="option.value"
+                        >
+                            {{ option.label }}
+                        </option>
+                    </select>
+                    <InputError :message="formErrors.severity" />
+                </div>
+
+                <div class="mb-4">
+                    <InputLabel for="violation_type" value="Offense / Violation Type" />
+                    <select
                         id="violation_type"
                         v-model="form.violation_type"
-                        type="text"
-                        class="mt-1 block w-full"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         :class="{ 'border-red-300': formErrors.violation_type }"
-                        placeholder="e.g., Tardiness, Absenteeism, etc."
+                        :disabled="!form.severity"
                         required
-                    />
+                    >
+                        <option value="">{{ form.severity ? 'Select Violation Type' : 'Select severity first' }}</option>
+                        <option
+                            v-for="type in filteredViolationTypes"
+                            :key="type.id"
+                            :value="type.name"
+                        >
+                            {{ type.name }}
+                        </option>
+                    </select>
                     <InputError :message="formErrors.violation_type" />
                 </div>
 
-                <!-- Description -->
                 <div class="mb-4">
                     <InputLabel for="description" value="Description" />
                     <textarea
@@ -178,34 +270,12 @@ const close = () => {
                     <InputError :message="formErrors.description" />
                 </div>
 
-                <!-- Severity -->
                 <div class="mb-4">
-                    <InputLabel for="severity" value="Severity" />
-                    <select
-                        id="severity"
-                        v-model="form.severity"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        :class="{ 'border-red-300': formErrors.severity }"
-                    >
-                        <option
-                            v-for="option in severityOptions"
-                            :key="option.value"
-                            :value="option.value"
-                        >
-                            {{ option.label }}
-                        </option>
-                    </select>
-                    <InputError :message="formErrors.severity" />
-                </div>
-
-                <!-- Status -->
-                <div class="mb-6">
                     <InputLabel for="status" value="Status" />
                     <select
                         id="status"
                         v-model="form.status"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        :class="{ 'border-red-300': formErrors.status }"
                         required
                     >
                         <option
@@ -219,11 +289,45 @@ const close = () => {
                     <InputError :message="formErrors.status" />
                 </div>
 
-                <!-- Actions -->
+                <div class="mb-4">
+                    <InputLabel for="sanction" value="Sanction (optional)" />
+                    <textarea
+                        id="sanction"
+                        v-model="form.sanction"
+                        rows="2"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        placeholder="Sanction applied..."
+                    />
+                    <InputError :message="formErrors.sanction" />
+                </div>
+
+                <div class="mb-4">
+                    <InputLabel for="remarks" value="Remarks (optional)" />
+                    <textarea
+                        id="remarks"
+                        v-model="form.remarks"
+                        rows="2"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        placeholder="Additional remarks..."
+                    />
+                    <InputError :message="formErrors.remarks" />
+                </div>
+
+                <div v-if="violation" class="mb-6">
+                    <InputLabel for="date_resolved" value="Date Resolved (optional)" />
+                    <TextInput
+                        id="date_resolved"
+                        v-model="form.date_resolved"
+                        type="date"
+                        class="mt-1 block w-full"
+                    />
+                    <InputError :message="formErrors.date_resolved" />
+                </div>
+
+                <div v-else class="mb-6" />
+
                 <div class="flex justify-end space-x-3">
-                    <SecondaryButton type="button" @click="close">
-                        Cancel
-                    </SecondaryButton>
+                    <SecondaryButton type="button" @click="close">Cancel</SecondaryButton>
                     <PrimaryButton type="submit" :disabled="isProcessing">
                         {{ isProcessing ? 'Saving...' : (violation ? 'Update' : 'Create') }}
                     </PrimaryButton>
@@ -232,4 +336,3 @@ const close = () => {
         </div>
     </Modal>
 </template>
-

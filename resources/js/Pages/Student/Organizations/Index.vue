@@ -49,9 +49,25 @@ const filteredOrganizations = computed(() => {
 
     <StudentLayout>
         <template #header>
-            <h2 class="text-2xl font-semibold text-gray-900">
-                Student Organizations
-            </h2>
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <h2 class="text-2xl font-semibold text-gray-900">
+                    Student Organizations
+                </h2>
+                <div class="flex items-center gap-3 text-sm">
+                    <Link
+                        :href="route('student.organizations.candidacies.index')"
+                        class="text-indigo-600 hover:text-indigo-900 font-medium"
+                    >
+                        My Candidacies
+                    </Link>
+                    <Link
+                        :href="route('student.organizations.candidacy.create')"
+                        class="text-indigo-600 hover:text-indigo-900 font-medium"
+                    >
+                        Run for Position
+                    </Link>
+                </div>
+            </div>
         </template>
 
         <div class="space-y-6">

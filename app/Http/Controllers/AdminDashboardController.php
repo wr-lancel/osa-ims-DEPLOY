@@ -3,8 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\AcademicCalendar;
+use App\Models\Complaint;
+use App\Models\Discipline;
 use App\Models\Event;
 use App\Models\EnrolledStudent;
+use App\Models\GuidanceAppointment;
+use App\Models\SportsBorrowing;
 use App\Models\StudentOrganization;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -42,8 +46,8 @@ class AdminDashboardController extends Controller
 
         // Get dashboard statistics (from active academic calendar)
         $activeCalendar = AcademicCalendar::active()->first();
-        $totalStudents = $activeCalendar 
-            ? EnrolledStudent::where('enrollment_status', 'active')
+        $totalStudents = $activeCalendar
+            ? EnrolledStudent::where('enrollment_status', 'enrolled')
                 ->where('acad_id', $activeCalendar->calendar_id)
                 ->count()
             : 0;
@@ -57,6 +61,10 @@ class AdminDashboardController extends Controller
             'events_this_month' => Event::whereMonth('event_date', now()->month)
                 ->whereYear('event_date', now()->year)
                 ->count(),
+            'active_discipline_cases' => Discipline::whereIn('status', ['Pending', 'Under Investigation'])->count(),
+            'pending_appointments' => GuidanceAppointment::where('status', 'Pending')->count(),
+            'pending_borrowings' => SportsBorrowing::where('status', 'Pending')->count(),
+            'pending_complaints' => Complaint::where('status', 'Pending')->count(),
         ];
 
         return Inertia::render('Admin/Dashboard', [

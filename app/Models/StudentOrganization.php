@@ -19,7 +19,20 @@ class StudentOrganization extends Model
         'description',
         'type',
         'status',
+        'candidacy_open',
         'adviser_name',
+        'mission',
+        'mission_file',
+        'vision',
+        'vision_file',
+        'goals',
+        'goals_file',
+        'constitution_bylaws',
+        'constitution_bylaws_file',
+    ];
+
+    protected $casts = [
+        'candidacy_open' => 'boolean',
     ];
 
     /**
@@ -55,6 +68,30 @@ class StudentOrganization extends Model
     public function events()
     {
         return $this->hasMany(Event::class, 'org_id', 'org_id');
+    }
+
+    /**
+     * Get the meetings for this organization.
+     */
+    public function meetings()
+    {
+        return $this->hasMany(OrgMeeting::class, 'org_id', 'org_id');
+    }
+
+    /**
+     * Get the positions for this organization.
+     */
+    public function positions()
+    {
+        return $this->hasMany(OrgPosition::class, 'org_id', 'org_id');
+    }
+
+    /**
+     * Get the candidacy applications for this organization.
+     */
+    public function candidacyApplications()
+    {
+        return $this->hasMany(CandidacyApplication::class, 'org_id', 'org_id');
     }
 
     /**
@@ -106,7 +143,7 @@ class StudentOrganization extends Model
         if (!empty($this->attributes['adviser_name'])) {
             return $this->attributes['adviser_name'];
         }
-        
+
         // Fall back to employee-based adviser
         $adviser = $this->currentAdviser;
         if ($adviser && $adviser->employee) {

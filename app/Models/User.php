@@ -100,6 +100,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the notifications for this user.
+     */
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class, 'user_id', 'user_id');
+    }
+
+    /**
      * Scope a query to only include student users.
      */
     public function scopeStudents($query)

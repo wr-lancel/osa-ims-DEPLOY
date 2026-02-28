@@ -6,52 +6,77 @@ import DropdownLink from '@/Components/DropdownLink.vue';
 import StudentSidebar from '@/Components/StudentSidebar.vue';
 import { Link } from '@inertiajs/vue3';
 
-const showingNavigationDropdown = ref(false);
+const mobileMenuOpen = ref(false);
 </script>
 
 <template>
     <div class="min-h-screen bg-gray-100">
         <div class="flex">
             <!-- Sidebar -->
-            <StudentSidebar />
+            <StudentSidebar :mobile-open="mobileMenuOpen" @close="mobileMenuOpen = false" />
 
             <!-- Main Content -->
-            <div class="w-full flex flex-col">
+            <div class="w-full flex flex-col min-w-0">
                 <!-- Top Navigation -->
                 <nav class="bg-white border-b border-gray-200">
                     <div class="px-4 sm:px-6 lg:px-8">
                         <div class="flex justify-between h-16">
-                            <div class="flex items-center">
+                            <div class="flex items-center gap-3">
+                                <!-- Hamburger (mobile only) -->
+                                <button @click="mobileMenuOpen = true"
+                                    class="md:hidden inline-flex items-center justify-center p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition"
+                                    aria-label="Open navigation menu">
+                                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M4 6h16M4 12h16M4 18h16" />
+                                    </svg>
+                                </button>
+
                                 <Link :href="route('student.dashboard')" class="flex items-center">
-                                    <ApplicationLogo
-                                        class="block h-9 w-auto fill-current text-gray-800"
-                                    />
+                                    <ApplicationLogo class="block h-9 w-auto fill-current text-gray-800" />
                                 </Link>
                             </div>
 
                             <!-- Settings Dropdown -->
-                            <div class="flex items-center">
+                            <div class="flex items-center gap-3">
+                                <!-- Notification Bell -->
+                                <Link :href="route('student.notifications.index')"
+                                    class="relative p-2 text-gray-500 hover:text-gray-700 transition">
+                                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                                    </svg>
+                                    <span v-if="$page.props.unread_notifications_count > 0"
+                                        class="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+                                        {{ $page.props.unread_notifications_count > 99 ? '99+' :
+                                            $page.props.unread_notifications_count }}
+                                    </span>
+                                </Link>
+
                                 <div class="relative">
                                     <Dropdown align="right" width="48">
                                         <template #trigger>
                                             <span class="inline-flex rounded-md">
-                                                <button
-                                                    type="button"
-                                                    class="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
-                                                >
-                                                    {{ $page.props.auth.user?.display_name || $page.props.auth.user?.email }}
+                                                <button type="button"
+                                                    class="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none">
+                                                    <span class="hidden sm:inline max-w-[120px] truncate">
+                                                        {{ $page.props.auth.user?.display_name ||
+                                                            $page.props.auth.user?.email }}
+                                                    </span>
+                                                    <span class="sm:hidden">
+                                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                                            stroke="currentColor" stroke-width="2">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                        </svg>
+                                                    </span>
 
-                                                    <svg
-                                                        class="-me-0.5 ms-2 h-4 w-4"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 20 20"
-                                                        fill="currentColor"
-                                                    >
-                                                        <path
-                                                            fill-rule="evenodd"
+                                                    <svg class="-me-0.5 ms-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg"
+                                                        viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fill-rule="evenodd"
                                                             d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                            clip-rule="evenodd"
-                                                        />
+                                                            clip-rule="evenodd" />
                                                     </svg>
                                                 </button>
                                             </span>
@@ -61,11 +86,7 @@ const showingNavigationDropdown = ref(false);
                                             <DropdownLink :href="route('profile.edit')">
                                                 Profile
                                             </DropdownLink>
-                                            <DropdownLink
-                                                :href="route('logout')"
-                                                method="post"
-                                                as="button"
-                                            >
+                                            <DropdownLink :href="route('logout')" method="post" as="button">
                                                 Log Out
                                             </DropdownLink>
                                         </template>
@@ -77,10 +98,7 @@ const showingNavigationDropdown = ref(false);
                 </nav>
 
                 <!-- Page Heading -->
-                <header
-                    class="bg-white shadow"
-                    v-if="$slots.header"
-                >
+                <header class="bg-white shadow" v-if="$slots.header">
                     <div class="px-4 py-6 sm:px-6 lg:px-8">
                         <slot name="header" />
                     </div>
@@ -98,4 +116,3 @@ const showingNavigationDropdown = ref(false);
         </div>
     </div>
 </template>
-

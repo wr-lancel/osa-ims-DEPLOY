@@ -55,6 +55,14 @@ class AcademicCalendar extends Model
     }
 
     /**
+     * Get the candidacy applications for this term.
+     */
+    public function candidacyApplications()
+    {
+        return $this->hasMany(CandidacyApplication::class, 'acad_id', 'calendar_id');
+    }
+
+    /**
      * Get the route key for the model.
      */
     public function getRouteKeyName(): string

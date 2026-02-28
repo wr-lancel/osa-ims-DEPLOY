@@ -12,11 +12,13 @@ use App\Models\GuidanceCase;
 use App\Models\GuidanceCaseAction;
 use App\Models\GuidanceAppointment;
 use App\Models\EnrolledStudent;
+use App\Models\AcademicCalendar;
 use App\Models\Employee;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -33,7 +35,7 @@ class GuidanceController extends Controller
         $completedSessions = GuidanceCase::whereIn('status', ['resolved', 'closed'])->count();
         // Count employees assigned to guidance cases as active counselors
         $activeCounselors = Employee::whereHas('guidanceCases')->distinct()->count();
-        
+
         // Get dashboard statistics for appointments
         $totalAppointments = GuidanceAppointment::count();
         $pendingAppointmentRequests = GuidanceAppointment::where('status', 'pending')->count();
@@ -52,12 +54,12 @@ class GuidanceController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('case_no', 'like', "%{$search}%")
-                  ->orWhere('concern', 'like', "%{$search}%")
-                  ->orWhereHas('enrollment.student', function ($q) use ($search) {
-                      $q->where('first_name', 'like', "%{$search}%")
-                        ->orWhere('last_name', 'like', "%{$search}%")
-                        ->orWhere('student_number', 'like', "%{$search}%");
-                  });
+                    ->orWhere('concern', 'like', "%{$search}%")
+                    ->orWhereHas('enrollment.student', function ($q) use ($search) {
+                        $q->where('first_name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%")
+                            ->orWhere('student_number', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -77,7 +79,7 @@ class GuidanceController extends Controller
         }
 
         $cases = $query->orderBy('created_at', 'desc')
-            ->paginate(15)
+            ->paginate($request->input('perPage', 20))
             ->through(function ($case) {
                 return [
                     'guidance_case_id' => $case->guidance_case_id,
@@ -127,7 +129,7 @@ class GuidanceController extends Controller
             ->map(function ($appointment) {
                 $studentName = '';
                 $studentId = '';
-                
+
                 if ($appointment->student) {
                     $studentName = $appointment->student->full_name;
                     $studentId = $appointment->student->student_number;
@@ -225,14 +227,14 @@ class GuidanceController extends Controller
         $appointments = $appointmentsQuery
             ->orderBy('appointment_date', 'desc')
             ->orderBy('appointment_time', 'desc')
-            ->paginate(15, ['*'], 'appointments_page')
+            ->paginate($request->input('perPage', 20), ['*'], 'appointments_page')
             ->withQueryString();
 
         // Transform appointments data
         $appointments->getCollection()->transform(function ($appointment) {
             $studentName = '';
             $studentId = '';
-            
+
             if ($appointment->student) {
                 $studentName = $appointment->student->full_name;
                 $studentId = $appointment->student->student_number;
@@ -550,14 +552,18 @@ class GuidanceController extends Controller
      */
     public function getEnrollments(Request $request)
     {
-        $query = EnrolledStudent::with(['student', 'section.course']);
+        $activeCalendar = AcademicCalendar::active()->first();
+
+        $query = EnrolledStudent::with(['student', 'section.course'])
+            ->where('enrollment_status', 'enrolled')
+            ->when($activeCalendar, fn($q) => $q->where('acad_id', $activeCalendar->calendar_id));
 
         if ($request->filled('search')) {
             $search = $request->search;
             $query->whereHas('student', function ($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('student_number', 'like', "%{$search}%");
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('student_number', 'like', "%{$search}%");
             });
         }
 
@@ -607,7 +613,7 @@ class GuidanceController extends Controller
             ->map(function ($appointment) {
                 $studentName = '';
                 $studentId = '';
-                
+
                 if ($appointment->student) {
                     $studentName = $appointment->student->full_name;
                     $studentId = $appointment->student->student_number;
@@ -710,14 +716,14 @@ class GuidanceController extends Controller
         $appointments = $appointmentsQuery
             ->orderBy('appointment_date', 'desc')
             ->orderBy('appointment_time', 'desc')
-            ->paginate(15, ['*'], 'appointments_page')
+            ->paginate($request->input('perPage', 20), ['*'], 'appointments_page')
             ->withQueryString();
 
         // Transform appointments data
         $appointments->getCollection()->transform(function ($appointment) {
             $studentName = '';
             $studentId = '';
-            
+
             if ($appointment->student) {
                 $studentName = $appointment->student->full_name;
                 $studentId = $appointment->student->student_number;
@@ -790,7 +796,7 @@ class GuidanceController extends Controller
         });
 
         return Inertia::render('Admin/Guidance/Index', [
-            'cases' => GuidanceCase::with(['enrollment.student', 'assignedStaff'])->paginate(15),
+            'cases' => GuidanceCase::with(['enrollment.student', 'assignedStaff'])->paginate($request->input('perPage', 20)),
             'appointments' => $appointments,
             'pendingAppointments' => $pendingAppointments,
             'filters' => $request->only(['appointment_search', 'appointment_status', 'appointment_type']),
@@ -882,13 +888,13 @@ class GuidanceController extends Controller
     /**
      * Display the specified appointment.
      */
-    public function showAppointment(GuidanceAppointment $appointment)
+    public function showAppointment(GuidanceAppointment $appointment): Response
     {
         $appointment->load(['student', 'employee', 'approver', 'rejector']);
 
         $studentName = '';
         $studentId = '';
-        
+
         if ($appointment->student) {
             $studentName = $appointment->student->full_name;
             $studentId = $appointment->student->student_number;
@@ -936,8 +942,7 @@ class GuidanceController extends Controller
             }
         }
 
-        return response()->json([
-            'success' => true,
+        return Inertia::render('Admin/Guidance/ShowAppointment', [
             'appointment' => [
                 'appointment_id' => $appointment->appointment_id,
                 'student_name' => $studentName,
@@ -954,6 +959,13 @@ class GuidanceController extends Controller
                 'rejected_at' => $appointment->rejected_at ? $appointment->rejected_at->format('Y-m-d H:i') : null,
                 'approver_name' => $approverName,
                 'rejector_name' => $rejectorName,
+                'narrative_report' => $appointment->narrative_report,
+                'narrative_report_file_url' => $appointment->narrative_report_file
+                    ? Storage::url($appointment->narrative_report_file)
+                    : null,
+                'narrative_report_file_name' => $appointment->narrative_report_file
+                    ? basename($appointment->narrative_report_file)
+                    : null,
                 'created_at' => $appointment->created_at->format('Y-m-d H:i'),
                 'updated_at' => $appointment->updated_at->format('Y-m-d H:i'),
             ],
@@ -972,11 +984,13 @@ class GuidanceController extends Controller
             'appointment_type' => ['sometimes', 'required', 'string', 'in:counseling,consultation,referral,other'],
             'status' => ['sometimes', 'required', 'string', 'in:pending,approved,rejected,completed,cancelled'],
             'notes' => ['nullable', 'string'],
+            'narrative_report' => ['nullable', 'string'],
+            'narrative_report_file' => ['nullable', 'file', 'max:10240', 'mimes:pdf,doc,docx,jpg,jpeg,png'],
             'admin_remarks' => ['nullable', 'string', 'max:500'],
         ]);
 
         try {
-            $appointment->update($request->only([
+            $data = $request->only([
                 'appointment_date',
                 'appointment_time',
                 'concern',
@@ -984,7 +998,28 @@ class GuidanceController extends Controller
                 'status',
                 'notes',
                 'admin_remarks',
-            ]));
+                'narrative_report',
+            ]);
+
+            // Handle narrative report file upload
+            if ($request->hasFile('narrative_report_file')) {
+                // Delete old file if exists
+                if ($appointment->narrative_report_file) {
+                    Storage::delete($appointment->narrative_report_file);
+                }
+                $data['narrative_report_file'] = $request->file('narrative_report_file')
+                    ->store('guidance-narratives', 'public');
+            }
+
+            // Handle narrative file removal
+            if ($request->input('remove_narrative_file')) {
+                if ($appointment->narrative_report_file) {
+                    Storage::delete($appointment->narrative_report_file);
+                }
+                $data['narrative_report_file'] = null;
+            }
+
+            $appointment->update($data);
 
             Log::info("Appointment updated: {$appointment->appointment_id} by user " . Auth::id());
 
@@ -995,6 +1030,105 @@ class GuidanceController extends Controller
 
             return redirect()->back()
                 ->withErrors(['error' => 'Failed to update appointment. Please try again.']);
+        }
+    }
+
+    /**
+     * Export guidance cases to PDF.
+     */
+    public function exportPdf(Request $request)
+    {
+        $query = GuidanceCase::with(['enrollment.student', 'assignedStaff']);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('case_no', 'like', "%{$search}%")
+                    ->orWhere('concern', 'like', "%{$search}%")
+                    ->orWhereHas('enrollment.student', function ($q) use ($search) {
+                        $q->where('first_name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%")
+                            ->orWhere('student_number', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('case_type')) {
+            $query->where('case_type', $request->case_type);
+        }
+
+        if ($request->filled('assigned_staff_id')) {
+            $query->where('assigned_staff_id', $request->assigned_staff_id);
+        }
+
+        $cases = $query->orderBy('created_at', 'desc')->get();
+
+        $headers = ['Case No', 'Student', 'Case Type', 'Concern', 'Status', 'Assigned Staff', 'Created At'];
+        $rows = $cases->map(fn($c) => [
+            $c->case_no,
+            $c->enrollment?->student
+            ? $c->enrollment->student->first_name . ' ' . $c->enrollment->student->last_name
+            : '—',
+            $c->case_type,
+            \Illuminate\Support\Str::limit($c->concern, 50),
+            $c->status,
+            $c->assignedStaff?->full_name ?? '—',
+            $c->created_at->format('Y-m-d'),
+        ])->toArray();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.pdf-table', [
+            'title' => 'Guidance Cases Report',
+            'date' => now()->format('F j, Y g:i A'),
+            'headers' => $headers,
+            'rows' => $rows,
+            'filters' => $request->only(['search', 'status', 'case_type', 'assigned_staff_id']),
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->download('guidance_cases_export_' . date('Y-m-d_His') . '.pdf');
+    }
+
+    /**
+     * Update only the status of a guidance appointment (from progress bar).
+     */
+    public function updateAppointmentStatus(Request $request, GuidanceAppointment $appointment)
+    {
+        $request->validate([
+            'status' => 'required|string|in:Pending,Approved,Completed,Rejected,Cancelled',
+        ]);
+
+        $newStatus = $request->input('status');
+
+        if ($appointment->status === $newStatus) {
+            return redirect()->back();
+        }
+
+        try {
+            $updateData = ['status' => $newStatus];
+
+            if ($newStatus === 'Approved' && !$appointment->approved_at) {
+                $updateData['approved_at'] = now();
+                $updateData['approved_by'] = Auth::id();
+            }
+            if ($newStatus === 'Rejected' && !$appointment->rejected_at) {
+                $updateData['rejected_at'] = now();
+                $updateData['rejected_by'] = Auth::id();
+            }
+
+            $appointment->update($updateData);
+
+            Log::info("Appointment {$appointment->appointment_id} status changed to {$newStatus} by user " . Auth::id());
+
+            return redirect()->back()
+                ->with('success', "Appointment status updated to {$newStatus}.");
+        } catch (\Exception $e) {
+            Log::error("Failed to update appointment status: " . $e->getMessage());
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Failed to update appointment status.']);
         }
     }
 }

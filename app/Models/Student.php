@@ -112,11 +112,10 @@ class Student extends Model
      */
     public function getFullNameAttribute(): string
     {
-        $name = "{$this->first_name}";
+        $name = "{$this->last_name}, {$this->first_name}";
         if ($this->middle_name) {
             $name .= " {$this->middle_name}";
         }
-        $name .= " {$this->last_name}";
         return $name;
     }
 }

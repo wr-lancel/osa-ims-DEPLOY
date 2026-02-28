@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Notification;
 use App\Services\ModuleAuthorizationService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -31,16 +32,33 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
-        
+
         if ($user) {
             $user->load('roles');
         }
 
         // Resolve ModuleAuthorizationService from container
         $moduleAuth = app(ModuleAuthorizationService::class);
-        $accessibleModules = $user 
+        $accessibleModules = $user
             ? $moduleAuth->getAccessibleModules($user)
             : [];
+
+        $disciplineNotificationsUnread = 0;
+        $complaintNotificationsUnread = 0;
+        $totalUnreadNotifications = 0;
+        if ($user && $user->hasRole('student')) {
+            $disciplineNotificationsUnread = Notification::where('user_id', $user->user_id)
+                ->where('type', 'discipline')
+                ->where('is_read', false)
+                ->count();
+            $complaintNotificationsUnread = Notification::where('user_id', $user->user_id)
+                ->where('type', 'complaint')
+                ->where('is_read', false)
+                ->count();
+            $totalUnreadNotifications = Notification::where('user_id', $user->user_id)
+                ->where('is_read', false)
+                ->count();
+        }
 
         return [
             ...parent::share($request),
@@ -54,6 +72,9 @@ class HandleInertiaRequests extends Middleware
                 ] : null,
                 'accessible_modules' => $accessibleModules,
             ],
+            'discipline_notifications_unread' => $disciplineNotificationsUnread,
+            'complaint_notifications_unread' => $complaintNotificationsUnread,
+            'unread_notifications_count' => $totalUnreadNotifications,
         ];
     }
 }

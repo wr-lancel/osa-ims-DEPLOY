@@ -49,7 +49,7 @@ class StoreStudentRequest extends FormRequest
             'birth_date' => ['nullable', 'date'],
             'address' => ['nullable', 'string', 'max:500'],
             'course_id' => ['required', 'exists:courses,course_id'],
-            'section_id' => ['nullable', 'exists:sections,section_id'],
+            'section' => ['nullable', 'string', 'max:10'],
             'year_level' => ['required', 'string', 'in:1,2,3,4,5'],
         ];
     }
@@ -67,7 +67,7 @@ class StoreStudentRequest extends FormRequest
             'student_number.unique' => 'The student number has already been taken.',
             'course_id.required' => 'Please select a course.',
             'course_id.exists' => 'The selected course is invalid.',
-            'section_id.exists' => 'The selected section is invalid.',
+
             'year_level.required' => 'Please select a year level.',
             'year_level.in' => 'The year level must be between 1 and 5.',
         ];

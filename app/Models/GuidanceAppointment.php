@@ -23,6 +23,8 @@ class GuidanceAppointment extends Model
         'status',
         'notes',
         'admin_remarks',
+        'narrative_report',
+        'narrative_report_file',
         'approved_by',
         'approved_at',
         'rejected_by',
@@ -31,6 +33,7 @@ class GuidanceAppointment extends Model
 
     protected $casts = [
         'appointment_date' => 'date',
+        'appointment_time' => 'datetime',
         'approved_at' => 'datetime',
         'rejected_at' => 'datetime',
     ];
@@ -80,7 +83,7 @@ class GuidanceAppointment extends Model
      */
     public function getStatusColorAttribute(): string
     {
-        return match(strtolower($this->status)) {
+        return match (strtolower($this->status)) {
             'approved' => 'green',
             'completed' => 'green',
             'pending' => 'yellow',

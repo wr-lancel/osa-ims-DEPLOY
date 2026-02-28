@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Models\Notification;
+use App\Models\OrgMeeting;
 use App\Models\OrgOfficer;
 use App\Models\StudentOrganization;
 use Illuminate\Http\RedirectResponse;
@@ -78,6 +80,10 @@ class StudentOrganizationController extends Controller
                 $query->orderBy('event_date', 'desc')->limit(10);
             },
             'events.creator',
+            'meetings' => function ($query) {
+                $query->orderBy('meeting_date', 'desc')->limit(10);
+            },
+            'meetings.caller',
         ]);
 
         // Check if current student is an officer
@@ -103,6 +109,26 @@ class StudentOrganizationController extends Controller
                 'type' => $organization->type,
                 'status' => $organization->status,
                 'adviser_name' => $organization->adviser_display_name,
+                'mission' => $organization->mission,
+                'mission_file_url' => $organization->mission_file
+                    ? asset('storage/' . $organization->mission_file) : null,
+                'mission_file_name' => $organization->mission_file
+                    ? basename($organization->mission_file) : null,
+                'vision' => $organization->vision,
+                'vision_file_url' => $organization->vision_file
+                    ? asset('storage/' . $organization->vision_file) : null,
+                'vision_file_name' => $organization->vision_file
+                    ? basename($organization->vision_file) : null,
+                'goals' => $organization->goals,
+                'goals_file_url' => $organization->goals_file
+                    ? asset('storage/' . $organization->goals_file) : null,
+                'goals_file_name' => $organization->goals_file
+                    ? basename($organization->goals_file) : null,
+                'constitution_bylaws' => $organization->constitution_bylaws,
+                'constitution_bylaws_file_url' => $organization->constitution_bylaws_file
+                    ? asset('storage/' . $organization->constitution_bylaws_file) : null,
+                'constitution_bylaws_file_name' => $organization->constitution_bylaws_file
+                    ? basename($organization->constitution_bylaws_file) : null,
                 'officers' => $organization->officers->map(function ($officer) {
                     return [
                         'officer_id' => $officer->officer_id,
@@ -133,6 +159,20 @@ class StudentOrganizationController extends Controller
                         'created_by_name' => $event->creator->display_name ?? null,
                     ];
                 }),
+                'meetings' => $organization->meetings->map(function ($meeting) {
+                    return [
+                        'meeting_id' => $meeting->meeting_id,
+                        'title' => $meeting->title,
+                        'description' => $meeting->description,
+                        'meeting_date' => $meeting->meeting_date->format('Y-m-d'),
+                        'start_time' => $meeting->start_time,
+                        'end_time' => $meeting->end_time,
+                        'venue' => $meeting->venue,
+                        'target_audience' => $meeting->target_audience,
+                        'status' => $meeting->status,
+                        'called_by_name' => $meeting->caller->display_name ?? null,
+                    ];
+                }),
             ],
             'isOfficer' => $isOfficer,
             'officerRole' => $officerRole,
@@ -153,9 +193,52 @@ class StudentOrganizationController extends Controller
         $validated = $request->validate([
             'description' => 'nullable|string',
             'adviser_name' => 'nullable|string|max:255',
+            'mission' => 'nullable|string',
+            'mission_file' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
+            'remove_mission_file' => 'nullable|boolean',
+            'vision' => 'nullable|string',
+            'vision_file' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
+            'remove_vision_file' => 'nullable|boolean',
+            'goals' => 'nullable|string',
+            'goals_file' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
+            'remove_goals_file' => 'nullable|boolean',
+            'constitution_bylaws' => 'nullable|string',
+            'constitution_bylaws_file' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
+            'remove_constitution_bylaws_file' => 'nullable|boolean',
         ]);
 
-        $organization->update($validated);
+        $updateData = [
+            'description' => $validated['description'] ?? null,
+            'adviser_name' => $validated['adviser_name'] ?? null,
+        ];
+
+        // Handle each document type
+        $docTypes = [
+            'mission' => 'mission_file',
+            'vision' => 'vision_file',
+            'goals' => 'goals_file',
+            'constitution_bylaws' => 'constitution_bylaws_file',
+        ];
+
+        foreach ($docTypes as $textField => $fileField) {
+            if ($request->has($textField)) {
+                $updateData[$textField] = $validated[$textField] ?? null;
+            }
+
+            if ($request->hasFile($fileField)) {
+                // Delete old file
+                if ($organization->$fileField) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($organization->$fileField);
+                }
+                $updateData[$fileField] = $request->file($fileField)
+                    ->store('organizations/documents', 'public');
+            } elseif ($request->boolean("remove_{$fileField}") && $organization->$fileField) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($organization->$fileField);
+                $updateData[$fileField] = null;
+            }
+        }
+
+        $organization->update($updateData);
 
         return redirect()->route('student.organizations.show', $organization)
             ->with('success', 'Organization updated successfully.');
@@ -196,6 +279,84 @@ class StudentOrganizationController extends Controller
 
         return redirect()->route('student.organizations.show', $organization)
             ->with('success', 'Event created successfully.');
+    }
+
+    /**
+     * Store a new meeting for the organization (officers only).
+     */
+    public function storeMeeting(Request $request, StudentOrganization $organization): RedirectResponse
+    {
+        // Verify the user is an officer
+        $user = Auth::user();
+        if (!$this->isOfficer($user->student_number, $organization->org_id)) {
+            abort(403, 'You are not authorized to call meetings for this organization.');
+        }
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
+            'meeting_date' => 'required|date',
+            'start_time' => 'required',
+            'end_time' => 'nullable',
+            'venue' => 'nullable|string|max:255',
+            'target_audience' => 'required|in:officers,members,all',
+        ]);
+
+        $meeting = OrgMeeting::create([
+            'org_id' => $organization->org_id,
+            'title' => $validated['title'],
+            'description' => $validated['description'] ?? null,
+            'meeting_date' => $validated['meeting_date'],
+            'start_time' => $validated['start_time'],
+            'end_time' => $validated['end_time'] ?? null,
+            'venue' => $validated['venue'] ?? null,
+            'target_audience' => $validated['target_audience'],
+            'called_by' => $user->user_id,
+            'status' => 'scheduled',
+        ]);
+
+        // Send notifications to targeted audience
+        $this->sendMeetingNotifications($organization, $meeting);
+
+        return redirect()->route('student.organizations.show', $organization)
+            ->with('success', 'Meeting scheduled and notifications sent successfully.');
+    }
+
+    /**
+     * Send notifications to the targeted audience for a meeting.
+     */
+    private function sendMeetingNotifications(StudentOrganization $organization, OrgMeeting $meeting): void
+    {
+        $studentNumbers = collect();
+
+        if (in_array($meeting->target_audience, ['officers', 'all'])) {
+            $officerNumbers = $organization->officers()->pluck('student_number');
+            $studentNumbers = $studentNumbers->merge($officerNumbers);
+        }
+
+        if (in_array($meeting->target_audience, ['members', 'all'])) {
+            $memberNumbers = $organization->members()->pluck('student_number');
+            $studentNumbers = $studentNumbers->merge($memberNumbers);
+        }
+
+        $studentNumbers = $studentNumbers->unique();
+
+        // Find user accounts for these students
+        $users = \App\Models\User::whereIn('student_number', $studentNumbers)->get();
+
+        $timeStr = $meeting->start_time;
+        if ($meeting->end_time) {
+            $timeStr .= ' - ' . $meeting->end_time;
+        }
+
+        foreach ($users as $user) {
+            Notification::create([
+                'user_id' => $user->user_id,
+                'type' => 'org_meeting',
+                'title' => "Meeting Called: {$meeting->title}",
+                'message' => "{$organization->org_name} has scheduled a meeting on {$meeting->meeting_date->format('M d, Y')} at {$timeStr}." . ($meeting->venue ? " Venue: {$meeting->venue}." : '') . ($meeting->description ? " Agenda: {$meeting->description}" : ''),
+            ]);
+        }
     }
 
     /**

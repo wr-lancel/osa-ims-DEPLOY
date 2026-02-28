@@ -7,6 +7,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import TextInput from '@/Components/TextInput.vue';
 import Textarea from '@/Components/Textarea.vue';
 import InputError from '@/Components/InputError.vue';
+import Pagination from '@/Components/Pagination.vue';
 
 const props = defineProps({
     appointments: {
@@ -57,6 +58,10 @@ const getStatusBadgeClass = (status, statusColor) => {
         'gray': 'bg-gray-100 text-gray-800',
     };
     return colorMap[statusColor] || 'bg-gray-100 text-gray-800';
+};
+
+const goToDetail = (appointment) => {
+    router.visit(route('student.guidance.appointments.show', appointment.appointment_id));
 };
 </script>
 
@@ -212,7 +217,12 @@ const getStatusBadgeClass = (status, statusColor) => {
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                <tr v-for="appointment in appointments.data" :key="appointment.appointment_id" class="hover:bg-gray-50">
+                                <tr
+                                    v-for="appointment in appointments.data"
+                                    :key="appointment.appointment_id"
+                                    class="hover:bg-gray-50 cursor-pointer"
+                                    @click="goToDetail(appointment)"
+                                >
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm font-medium text-gray-900">{{ appointment.appointment_date }}</div>
                                         <div class="text-sm text-gray-500">{{ appointment.appointment_time }}</div>
@@ -223,7 +233,7 @@ const getStatusBadgeClass = (status, statusColor) => {
                                     <td class="px-6 py-4">
                                         <div class="text-sm text-gray-900 truncate max-w-xs">{{ appointment.concern }}</div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td class="px-6 py-4 whitespace-nowrap" @click.stop>
                                         <span
                                             class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
                                             :class="getStatusBadgeClass(appointment.status, appointment.status_color)"
@@ -231,7 +241,7 @@ const getStatusBadgeClass = (status, statusColor) => {
                                             {{ appointment.status }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" @click.stop>
                                         <Link
                                             :href="route('student.guidance.appointments.show', appointment.appointment_id)"
                                             class="text-indigo-600 hover:text-indigo-900"
@@ -244,26 +254,7 @@ const getStatusBadgeClass = (status, statusColor) => {
                         </table>
 
                         <!-- Pagination -->
-                        <div v-if="appointments.links && appointments.links.length > 3" class="mt-4 flex items-center justify-between">
-                            <div class="text-sm text-gray-700">
-                                Showing {{ appointments.meta?.from }} to {{ appointments.meta?.to }} of {{ appointments.meta?.total }} results
-                            </div>
-                            <div class="flex gap-2">
-                                <Link
-                                    v-for="link in appointments.links"
-                                    :key="link.label"
-                                    :href="link.url"
-                                    :class="[
-                                        'px-3 py-2 text-sm rounded-md',
-                                        link.active
-                                            ? 'bg-indigo-600 text-white'
-                                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50',
-                                        !link.url ? 'opacity-50 cursor-not-allowed' : ''
-                                    ]"
-                                    v-html="link.label"
-                                />
-                            </div>
-                        </div>
+                        <Pagination :data="appointments" />
                     </div>
 
                     <!-- Empty State -->

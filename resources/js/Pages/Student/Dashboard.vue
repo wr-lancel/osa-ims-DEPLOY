@@ -1,6 +1,7 @@
 <script setup>
 import StudentLayout from '@/Layouts/StudentLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
+import { getEventBadgeClass, getEventLabel } from '@/utils/eventHelpers';
 
 const props = defineProps({
     upcomingEvents: {
@@ -12,19 +13,6 @@ const props = defineProps({
         default: () => [],
     },
 });
-
-const getEventBadgeClass = (daysUntil) => {
-    if (daysUntil === 0) return 'bg-red-100 text-red-800';
-    if (daysUntil <= 3) return 'bg-orange-100 text-orange-800';
-    if (daysUntil <= 7) return 'bg-yellow-100 text-yellow-800';
-    return 'bg-blue-100 text-blue-800';
-};
-
-const getEventLabel = (daysUntil) => {
-    if (daysUntil === 0) return 'Today';
-    if (daysUntil === 1) return 'Tomorrow';
-    return `In ${daysUntil} days`;
-};
 
 const quickLinks = [
     {

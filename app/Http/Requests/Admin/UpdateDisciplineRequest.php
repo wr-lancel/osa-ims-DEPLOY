@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Models\DisciplineWorkflowStep;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateDisciplineRequest extends FormRequest
 {
@@ -22,13 +24,18 @@ class UpdateDisciplineRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'student_id' => ['required', 'exists:students,student_id'],
             'violation_date' => ['required', 'date'],
-            'violation_type' => ['required', 'string', 'max:255'],
+            'violation_type' => ['required', 'string', 'max:255', 'exists:discipline_violation_types,name'],
             'description' => ['required', 'string'],
             'severity' => ['nullable', 'in:Minor,Moderate,Major'],
-            'status' => ['required', 'in:Pending,Under Investigation,Resolved'],
+            'status' => ['required', Rule::in(DisciplineWorkflowStep::getStepNames())],
+            'sanction' => ['nullable', 'string', 'max:5000'],
+            'remarks' => ['nullable', 'string', 'max:5000'],
+            'date_resolved' => ['nullable', 'date'],
             'reported_by' => ['nullable', 'exists:users,user_id'],
+            'narrative_report' => ['nullable', 'string'],
+            'narrative_report_file' => ['nullable', 'file', 'mimes:pdf,doc,docx,jpg,jpeg,png', 'max:10240'],
+            'remove_narrative_file' => ['nullable', 'boolean'],
         ];
     }
 }

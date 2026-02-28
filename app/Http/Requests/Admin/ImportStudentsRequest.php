@@ -11,7 +11,7 @@ class ImportStudentsRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()?->hasAnyRole(['admin', 'staff']) ?? false;
+        return $this->user()?->hasAnyRole(['admin', 'super_admin', 'staff']) ?? false;
     }
 
     /**

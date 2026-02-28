@@ -6,7 +6,7 @@ import TextInput from '@/Components/TextInput.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import InputError from '@/Components/InputError.vue';
 import { useForm } from '@inertiajs/vue3';
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch } from 'vue';
 import axios from 'axios';
 
 const props = defineProps({
@@ -27,52 +27,26 @@ const props = defineProps({
 const emit = defineEmits(['close', 'saved']);
 
 const showDeleteConfirm = ref(false);
-const academicCalendars = ref([]);
 const showSuccessMessage = ref(false);
 const successMessage = ref('');
 const isProcessing = ref(false);
-const isLoadingCalendars = ref(false);
 
 const form = useForm({
     course_id: '',
-    calendar_id: '',
     section_code: '',
-    section_name: '',
 });
-
-const fetchAcademicCalendars = async () => {
-    isLoadingCalendars.value = true;
-    try {
-        const response = await axios.get(route('admin.academic-calendars.index'));
-        academicCalendars.value = response.data || [];
-        console.log('Academic calendars fetched:', academicCalendars.value.length);
-    } catch (error) {
-        console.error('Failed to fetch academic calendars:', error);
-        academicCalendars.value = [];
-    } finally {
-        isLoadingCalendars.value = false;
-    }
-};
 
 watch(() => props.show, (isShowing) => {
     if (isShowing) {
         showDeleteConfirm.value = false;
         showSuccessMessage.value = false;
-        // Fetch academic calendars when modal opens to ensure latest data
-        fetchAcademicCalendars();
         if (props.section) {
             form.course_id = props.section.course_id || '';
-            form.calendar_id = props.section.calendar_id || '';
             form.section_code = props.section.section_code || '';
-            form.section_name = props.section.section_name || '';
         } else {
             form.reset();
         }
     }
-});
-
-onMounted(() => {
-    fetchAcademicCalendars();
 });
 
 const submit = () => {
@@ -199,31 +173,6 @@ const close = () => {
                         <InputError :message="form.errors.course_id" class="mt-2" />
                     </div>
 
-                    <!-- Academic Year -->
-                    <div>
-                        <InputLabel for="calendar_id" value="Academic Year" />
-                        <select
-                            id="calendar_id"
-                            v-model="form.calendar_id"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            :class="{ 'border-red-500': form.errors.calendar_id }"
-                            :disabled="isLoadingCalendars"
-                        >
-                            <option value="">{{ isLoadingCalendars ? 'Loading...' : 'Select Academic Year (Optional)' }}</option>
-                            <option
-                                v-for="calendar in academicCalendars"
-                                :key="calendar.calendar_id"
-                                :value="calendar.calendar_id"
-                            >
-                                {{ calendar.academic_year }} - {{ calendar.semester }}
-                            </option>
-                        </select>
-                        <InputError :message="form.errors.calendar_id" class="mt-2" />
-                        <p v-if="academicCalendars.length === 0 && !isLoadingCalendars" class="mt-1 text-xs text-gray-500">
-                            No academic calendars available. Create one first.
-                        </p>
-                    </div>
-
                     <!-- Section Code -->
                     <div>
                         <InputLabel for="section_code" value="Section Code" />
@@ -236,19 +185,6 @@ const close = () => {
                             required
                         />
                         <InputError :message="form.errors.section_code" class="mt-2" />
-                    </div>
-
-                    <!-- Section Name -->
-                    <div>
-                        <InputLabel for="section_name" value="Section Name" />
-                        <TextInput
-                            id="section_name"
-                            v-model="form.section_name"
-                            type="text"
-                            class="mt-1 block w-full"
-                            :class="{ 'border-red-500': form.errors.section_name }"
-                        />
-                        <InputError :message="form.errors.section_name" class="mt-2" />
                     </div>
                 </div>
 

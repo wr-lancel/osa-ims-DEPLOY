@@ -8,8 +8,11 @@ use App\Http\Requests\Admin\RejectSportsBorrowingRequest;
 use App\Http\Requests\Admin\StoreSportsBorrowingRequest;
 use App\Http\Requests\Admin\UpdateSportsBorrowingRequest;
 use App\Models\SportsBorrowing;
+use App\Models\Sport;
+use App\Models\SportAthlete;
 use App\Models\Employee;
 use App\Models\Student;
+use App\Models\AcademicCalendar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -18,44 +21,16 @@ use Inertia\Response;
 class SportsController extends Controller
 {
     /**
-     * Display sports dashboard with officers and equipment borrowing.
+     * Display sports dashboard with equipment borrowing.
      */
     public function index(Request $request): Response
     {
         // Get dashboard statistics
-        // Sports Officers count - employees with position related to sports
-        $sportsOfficersCount = Employee::where('position', 'like', '%sport%')
-            ->orWhere('department', 'like', '%sport%')
-            ->count();
-        
+        $totalAthletes = SportAthlete::count();
+        $totalSports = Sport::active()->count();
         $equipmentBorrowed = SportsBorrowing::where('status', 'borrowed')->count();
         $overdueItems = SportsBorrowing::overdue()->count();
         $pendingRequests = SportsBorrowing::where('status', 'pending')->count();
-        
-        // Events this month (if events table has org_id for sports)
-        $eventsThisMonth = 0; // Placeholder - can be enhanced later
-
-        // Get officers list
-        $officersQuery = Employee::query();
-        
-        if ($request->filled('officer_search')) {
-            $search = $request->officer_search;
-            $officersQuery->where(function ($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                    ->orWhere('last_name', 'like', "%{$search}%")
-                    ->orWhere('position', 'like', "%{$search}%")
-                    ->orWhere('department', 'like', "%{$search}%");
-            });
-        }
-
-        $officers = $officersQuery
-            ->where(function ($q) {
-                $q->where('position', 'like', '%sport%')
-                    ->orWhere('department', 'like', '%sport%');
-            })
-            ->orderBy('first_name')
-            ->paginate(15, ['*'], 'officers_page')
-            ->withQueryString();
 
         // Get pending requests separately for prominent display
         $pendingBorrowings = SportsBorrowing::with(['student', 'employee', 'approver', 'rejector'])
@@ -66,7 +41,7 @@ class SportsController extends Controller
             ->map(function ($borrowing) {
                 $borrowerName = '';
                 $borrowerId = '';
-                
+
                 if ($borrowing->student) {
                     $borrowerName = $borrowing->student->full_name;
                     $borrowerId = $borrowing->student->student_number;
@@ -166,26 +141,16 @@ class SportsController extends Controller
 
         $borrowings = $borrowingsQuery
             ->orderBy('borrow_date', 'desc')
-            ->paginate(15, ['*'], 'borrowings_page')
+            ->paginate($request->input('perPage', 20), ['*'], 'borrowings_page')
             ->withQueryString();
 
-        // Transform officers data
-        $officers->getCollection()->transform(function ($officer) {
-            return [
-                'employee_id' => $officer->employee_id,
-                'employee_number' => $officer->employee_number,
-                'name' => $officer->full_name,
-                'position' => $officer->position,
-                'department' => $officer->department,
-                'contact' => $officer->email ?? $officer->phone,
-            ];
-        });
+
 
         // Transform borrowings data
         $borrowings->getCollection()->transform(function ($borrowing) {
             $borrowerName = '';
             $borrowerId = '';
-            
+
             if ($borrowing->student) {
                 $borrowerName = $borrowing->student->full_name;
                 $borrowerId = $borrowing->student->student_number;
@@ -272,16 +237,18 @@ class SportsController extends Controller
         });
 
         // Get students and employees for dropdowns
-        $students = Student::whereHas('enrollments', function ($query) {
-            $query->where('enrollment_status', 'active');
+        $activeCalendar = AcademicCalendar::active()->first();
+        $students = Student::whereHas('enrollments', function ($query) use ($activeCalendar) {
+            $query->where('enrollment_status', 'enrolled')
+                ->when($activeCalendar, fn($q) => $q->where('acad_id', $activeCalendar->calendar_id));
         })
-        ->get(['student_number', 'first_name', 'last_name', 'middle_name'])
-        ->map(function ($student) {
-            return [
-                'student_number' => $student->student_number,
-                'full_name' => $student->full_name,
-            ];
-        });
+            ->get(['student_number', 'first_name', 'last_name', 'middle_name'])
+            ->map(function ($student) {
+                return [
+                    'student_number' => $student->student_number,
+                    'full_name' => $student->full_name,
+                ];
+            });
 
         $employees = Employee::get(['employee_id', 'employee_number', 'first_name', 'last_name'])
             ->map(function ($employee) {
@@ -293,10 +260,9 @@ class SportsController extends Controller
             });
 
         return Inertia::render('Admin/Sports/Index', [
-            'officers' => $officers,
             'borrowings' => $borrowings,
             'pendingBorrowings' => $pendingBorrowings,
-            'filters' => $request->only(['officer_search', 'borrowing_search', 'borrowing_status']),
+            'filters' => $request->only(['borrowing_search', 'borrowing_status']),
             'students' => $students,
             'employees' => $employees,
             'dashboardStats' => [
@@ -306,14 +272,19 @@ class SportsController extends Controller
                     'color' => 'yellow',
                 ],
                 [
-                    'title' => 'Sports Officers',
-                    'value' => $sportsOfficersCount,
+                    'title' => 'Total Sports',
+                    'value' => $totalSports,
                     'color' => 'blue',
+                ],
+                [
+                    'title' => 'Total Athletes',
+                    'value' => $totalAthletes,
+                    'color' => 'green',
                 ],
                 [
                     'title' => 'Equipment Borrowed',
                     'value' => $equipmentBorrowed,
-                    'color' => 'green',
+                    'color' => 'indigo',
                 ],
                 [
                     'title' => 'Overdue Items',
@@ -341,7 +312,7 @@ class SportsController extends Controller
     public function updateBorrowing(UpdateSportsBorrowingRequest $request, SportsBorrowing $borrowing)
     {
         $data = $request->validated();
-        
+
         // If marking as returned, set return_date if not provided
         if ($data['status'] === 'returned' && !isset($data['return_date'])) {
             $data['return_date'] = now()->toDateString();
@@ -359,7 +330,7 @@ class SportsController extends Controller
     public function approveBorrowing(ApproveSportsBorrowingRequest $request, SportsBorrowing $borrowing)
     {
         $data = $request->validated();
-        
+
         $borrowing->update([
             'status' => $data['status'] ?? 'approved',
             'approved_by' => Auth::id(),
@@ -377,7 +348,7 @@ class SportsController extends Controller
     public function rejectBorrowing(RejectSportsBorrowingRequest $request, SportsBorrowing $borrowing)
     {
         $data = $request->validated();
-        
+
         $borrowing->update([
             'status' => 'rejected',
             'rejected_by' => Auth::id(),
@@ -433,5 +404,279 @@ class SportsController extends Controller
             ],
         ]);
     }
-}
 
+    /**
+     * Display the athletes page — grid of sport cards.
+     */
+    public function athletes(Request $request): Response
+    {
+        $sports = Sport::withCount('athletes')
+            ->orderBy('name')
+            ->get()
+            ->map(function ($sport) {
+                return [
+                    'sport_id' => $sport->sport_id,
+                    'name' => $sport->name,
+                    'description' => $sport->description,
+                    'status' => $sport->status,
+                    'athletes_count' => $sport->athletes_count,
+                ];
+            });
+
+        return Inertia::render('Admin/Sports/Athletes', [
+            'sports' => $sports,
+        ]);
+    }
+
+    /**
+     * Store a new sport.
+     */
+    public function storeSport(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255|unique:sports,name',
+            'description' => 'nullable|string|max:1000',
+        ]);
+
+        Sport::create($request->only('name', 'description'));
+
+        return redirect()->route('admin.sports.athletes')
+            ->with('success', 'Sport created successfully.');
+    }
+
+    /**
+     * Update an existing sport.
+     */
+    public function updateSport(Request $request, Sport $sport)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255|unique:sports,name,' . $sport->sport_id . ',sport_id',
+            'description' => 'nullable|string|max:1000',
+            'status' => 'nullable|in:active,inactive',
+        ]);
+
+        $sport->update($request->only('name', 'description', 'status'));
+
+        return redirect()->route('admin.sports.athletes')
+            ->with('success', 'Sport updated successfully.');
+    }
+
+    /**
+     * Display sport detail — paginated list of athletes.
+     */
+    public function showSport(Request $request, Sport $sport): Response
+    {
+        $query = SportAthlete::with(['student.enrollments.section', 'student.enrollments.course'])
+            ->where('sport_id', $sport->sport_id);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('student', function ($q) use ($search) {
+                $q->where('student_number', 'like', "%{$search}%")
+                    ->orWhere('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%");
+            });
+        }
+
+        $athletes = $query
+            ->orderBy('created_at', 'desc')
+            ->paginate($request->input('perPage', 20))
+            ->withQueryString();
+
+        // Get the active academic calendar for section lookup
+        $activeCalendar = AcademicCalendar::orderBy('start_date', 'desc')->first();
+
+        $athletes->getCollection()->transform(function ($athlete) use ($activeCalendar) {
+            $student = $athlete->student;
+            $section = null;
+            $course = null;
+
+            if ($student && $activeCalendar) {
+                $enrollment = $student->enrollments
+                    ->where('acad_id', $activeCalendar->calendar_id)
+                    ->first();
+                if ($enrollment) {
+                    $section = $enrollment->section?->section_name ?? null;
+                    $course = $enrollment->course?->course_code ?? null;
+                }
+            }
+
+            return [
+                'id' => $athlete->id,
+                'student_number' => $student->student_number ?? '',
+                'name' => $student->full_name ?? 'Unknown',
+                'section' => $section,
+                'course' => $course,
+                'added_at' => $athlete->created_at->format('Y-m-d'),
+            ];
+        });
+
+        // Students available for adding (active enrollments, not already in this sport)
+        $existingStudentNumbers = SportAthlete::where('sport_id', $sport->sport_id)
+            ->pluck('student_number');
+
+        $activeCalendar = AcademicCalendar::active()->first();
+        $availableStudents = Student::whereHas('enrollments', function ($q) use ($activeCalendar) {
+            $q->where('enrollment_status', 'enrolled')
+                ->when($activeCalendar, fn($q2) => $q2->where('acad_id', $activeCalendar->calendar_id));
+        })
+            ->whereNotIn('student_number', $existingStudentNumbers)
+            ->get(['student_number', 'first_name', 'last_name', 'middle_name'])
+            ->map(function ($student) {
+                return [
+                    'student_number' => $student->student_number,
+                    'full_name' => $student->full_name,
+                ];
+            });
+
+        return Inertia::render('Admin/Sports/ShowSport', [
+            'sport' => [
+                'sport_id' => $sport->sport_id,
+                'name' => $sport->name,
+                'description' => $sport->description,
+                'status' => $sport->status,
+            ],
+            'athletes' => $athletes,
+            'availableStudents' => $availableStudents,
+            'filters' => $request->only(['search']),
+        ]);
+    }
+
+    /**
+     * Add a student athlete to a sport.
+     */
+    public function storeAthlete(Request $request, Sport $sport)
+    {
+        $request->validate([
+            'student_number' => 'required|exists:students,student_number',
+        ]);
+
+        // Check for duplicate
+        $exists = SportAthlete::where('sport_id', $sport->sport_id)
+            ->where('student_number', $request->student_number)
+            ->exists();
+
+        if ($exists) {
+            return back()->withErrors(['student_number' => 'This student is already in this sport.']);
+        }
+
+        SportAthlete::create([
+            'sport_id' => $sport->sport_id,
+            'student_number' => $request->student_number,
+        ]);
+
+        return redirect()->route('admin.sports.sports.show', $sport)
+            ->with('success', 'Athlete added successfully.');
+    }
+
+    /**
+     * Remove an athlete from a sport.
+     */
+    public function removeAthlete(Sport $sport, Student $student)
+    {
+        SportAthlete::where('sport_id', $sport->sport_id)
+            ->where('student_number', $student->student_number)
+            ->delete();
+
+        return redirect()->route('admin.sports.sports.show', $sport)
+            ->with('success', 'Athlete removed successfully.');
+    }
+
+    /**
+     * Export sports borrowings to PDF.
+     */
+    public function exportPdf(Request $request)
+    {
+        $query = SportsBorrowing::with(['student', 'employee']);
+
+        if ($request->filled('borrowing_search')) {
+            $search = $request->borrowing_search;
+            $query->where(function ($q) use ($search) {
+                $q->where('item_name', 'like', "%{$search}%")
+                    ->orWhereHas('student', function ($studentQuery) use ($search) {
+                        $studentQuery->where('student_number', 'like', "%{$search}%")
+                            ->orWhere('first_name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('employee', function ($employeeQuery) use ($search) {
+                        $employeeQuery->where('first_name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        if ($request->filled('borrowing_status')) {
+            if ($request->borrowing_status === 'overdue') {
+                $query->overdue();
+            } else {
+                $query->where('status', $request->borrowing_status);
+            }
+        }
+
+        $borrowings = $query->orderBy('borrow_date', 'desc')->get();
+
+        $headers = ['ID', 'Borrower', 'Item', 'Borrow Date', 'Expected Return', 'Return Date', 'Status'];
+        $rows = $borrowings->map(function ($b) {
+            $borrowerName = '';
+            if ($b->student) {
+                $borrowerName = $b->student->full_name;
+            } elseif ($b->employee) {
+                $borrowerName = $b->employee->full_name;
+            }
+            return [
+                $b->borrowing_id,
+                $borrowerName ?: 'Unknown',
+                $b->item_name,
+                $b->borrow_date->format('Y-m-d'),
+                $b->expected_return_date->format('Y-m-d'),
+                $b->return_date ? $b->return_date->format('Y-m-d') : '—',
+                $b->formatted_status,
+            ];
+        })->toArray();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.pdf-table', [
+            'title' => 'Sports Equipment Borrowings Report',
+            'date' => now()->format('F j, Y g:i A'),
+            'headers' => $headers,
+            'rows' => $rows,
+            'filters' => $request->only(['borrowing_search', 'borrowing_status']),
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->download('sports_borrowings_export_' . date('Y-m-d_His') . '.pdf');
+    }
+
+    /**
+     * Update only the status of a borrowing record (from progress bar).
+     */
+    public function updateBorrowingStatus(Request $request, SportsBorrowing $borrowing)
+    {
+        $request->validate([
+            'status' => 'required|string|in:pending,approved,borrowed,returned,rejected,overdue',
+        ]);
+
+        $newStatus = $request->input('status');
+
+        if ($borrowing->status === $newStatus) {
+            return redirect()->back();
+        }
+
+        $updateData = ['status' => $newStatus];
+
+        if ($newStatus === 'returned' && !$borrowing->return_date) {
+            $updateData['return_date'] = now()->toDateString();
+        }
+        if ($newStatus === 'approved' && !$borrowing->approved_at) {
+            $updateData['approved_at'] = now();
+            $updateData['approved_by'] = Auth::id();
+        }
+        if ($newStatus === 'rejected' && !$borrowing->rejected_at) {
+            $updateData['rejected_at'] = now();
+            $updateData['rejected_by'] = Auth::id();
+        }
+
+        $borrowing->update($updateData);
+
+        return redirect()->route('admin.sports.borrowings.show', $borrowing)
+            ->with('success', "Borrowing status updated to {$newStatus}.");
+    }
+}

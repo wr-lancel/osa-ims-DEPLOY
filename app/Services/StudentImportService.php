@@ -20,21 +20,86 @@ class StudentImportService
     protected ?AcademicCalendar $academicCalendar = null;
 
     /**
+     * Column name aliases — maps various header names to our internal field names.
+     * Keys are lowercase/trimmed versions of possible header names.
+     */
+    protected array $columnAliases = [
+        // student_number
+        'student_number' => 'student_number',
+        'student' => 'student_number',
+        'student #' => 'student_number',
+        'student#' => 'student_number',
+        'student no' => 'student_number',
+        'student no.' => 'student_number',
+        'student_no' => 'student_number',
+        'studentno' => 'student_number',
+        'student id' => 'student_number',
+        'student_id' => 'student_number',
+        'id' => 'student_number',
+        'id no' => 'student_number',
+        'id no.' => 'student_number',
+        'studno' => 'student_number',
+
+        // last_name
+        'last_name' => 'last_name',
+        'last name' => 'last_name',
+        'lastname' => 'last_name',
+        'surname' => 'last_name',
+        'lname' => 'last_name',
+
+        // first_name
+        'first_name' => 'first_name',
+        'first name' => 'first_name',
+        'firstname' => 'first_name',
+        'given name' => 'first_name',
+        'given_name' => 'first_name',
+        'givenname' => 'first_name',
+        'fname' => 'first_name',
+
+        // middle_name
+        'middle_name' => 'middle_name',
+        'middle name' => 'middle_name',
+        'middlename' => 'middle_name',
+        'mname' => 'middle_name',
+        'mi' => 'middle_name',
+        'm.i.' => 'middle_name',
+
+        // year_level
+        'year_level' => 'year_level',
+        'year level' => 'year_level',
+        'yearlevel' => 'year_level',
+        'yr' => 'year_level',
+        'year' => 'year_level',
+        'yr level' => 'year_level',
+        'yrlevel' => 'year_level',
+        'level' => 'year_level',
+
+        // course
+        'course_code' => 'course_code',
+        'course code' => 'course_code',
+        'coursecode' => 'course_code',
+        'course' => 'course_code',
+        'course_name' => 'course_code',
+        'course name' => 'course_code',
+        'program' => 'course_code',
+
+        // section
+        'section_name' => 'section',
+        'section name' => 'section',
+        'section' => 'section',
+        'sec' => 'section',
+    ];
+
+    /**
      * Import students from Excel/CSV file.
-     *
-     * @param string $filePath
-     * @param int $acadId The academic calendar ID for this import
-     * @return array{success: bool, inserted: int, updated: int, failed: int, errors: array}
      */
     public function import(string $filePath, int $acadId): array
     {
-        // Reset counters
         $this->errors = [];
         $this->inserted = 0;
         $this->updated = 0;
         $this->failed = 0;
 
-        // Get the specified academic calendar
         $this->academicCalendar = AcademicCalendar::find($acadId);
 
         if (!$this->academicCalendar) {
@@ -54,7 +119,7 @@ class StudentImportService
 
             foreach ($rows as $rowNumber => $row) {
                 try {
-                    $this->processRow($rowNumber + 2, $row); // +2 because row 1 is header, and arrays are 0-indexed
+                    $this->processRow($rowNumber + 2, $row);
                 } catch (\Exception $e) {
                     $this->errors[] = [
                         'row' => $rowNumber + 2,
@@ -92,10 +157,7 @@ class StudentImportService
     }
 
     /**
-     * Read and parse the Excel/CSV file.
-     *
-     * @param string $filePath
-     * @return Collection
+     * Read and parse the file, auto-detecting column mapping from headers.
      */
     protected function readFile(string $filePath): Collection
     {
@@ -109,47 +171,120 @@ class StudentImportService
     }
 
     /**
+     * Map raw headers to internal field names using aliases.
+     * Returns an array where key = column index, value = internal field name.
+     */
+    protected function mapHeaders(array $rawHeaders): array
+    {
+        $mapping = [];
+
+        // Log raw headers for debugging
+        Log::info("Import raw headers: " . json_encode($rawHeaders));
+
+        foreach ($rawHeaders as $index => $header) {
+            if ($header === null)
+                continue;
+
+            $normalized = strtolower(trim((string) $header));
+            // Remove special chars like *, #, arrows, etc.
+            $normalized = preg_replace('/[^a-z0-9\s_.-]/', '', $normalized);
+            $normalized = trim($normalized);
+
+            Log::info("Import header [{$index}]: raw='{$header}', normalized='{$normalized}'");
+
+            if (isset($this->columnAliases[$normalized])) {
+                $fieldName = $this->columnAliases[$normalized];
+                // Only map the first occurrence of each field
+                if (!in_array($fieldName, $mapping)) {
+                    $mapping[$index] = $fieldName;
+                }
+            }
+        }
+
+        // Validate that required fields are mapped
+        $mappedFields = array_values($mapping);
+        if (!in_array('student_number', $mappedFields)) {
+            throw new \Exception("Could not find a 'Student Number' column. Raw headers found: " . json_encode($rawHeaders));
+        }
+
+        if (!in_array('course_code', $mappedFields)) {
+            throw new \Exception("Could not find a 'Course' column. Expected headers like: Course, Course Code, Program");
+        }
+
+        Log::info("Import column mapping: " . json_encode($mapping));
+
+        return $mapping;
+    }
+
+    /**
+     * Convert a raw data row to our internal format using the column mapping.
+     */
+    protected function mapRow(array $row, array $columnMapping): array
+    {
+        $mapped = [];
+
+        foreach ($columnMapping as $index => $fieldName) {
+            $mapped[$fieldName] = isset($row[$index]) ? trim((string) $row[$index]) : null;
+        }
+
+        return $mapped;
+    }
+
+    /**
      * Read Excel file using maatwebsite/excel.
-     *
-     * @param string $filePath
-     * @return Collection
+     * Auto-detects the header row by scanning for recognizable column names.
      */
     protected function readExcelFile(string $filePath): Collection
     {
         try {
-            // Check if Excel package is installed
             $excelFacade = '\\Maatwebsite\\Excel\\Facades\\Excel';
             if (!class_exists($excelFacade)) {
                 throw new \Exception("Excel package (maatwebsite/excel) is not installed. Please run: composer require maatwebsite/excel");
             }
-            
-            // Use string variable for facade class to avoid IDE type errors when package isn't installed
-            $data = $excelFacade::toArray([], $filePath);
-            $rows = collect($data[0] ?? []);
 
-            // Skip header row
-            if ($rows->isNotEmpty()) {
-                $rows = $rows->slice(1);
+            $data = $excelFacade::toArray([], $filePath);
+            $allRows = collect($data[0] ?? []);
+
+            if ($allRows->isEmpty()) {
+                throw new \Exception("The file is empty.");
             }
 
-            // Map to associative array using expected headers
-            return $rows->map(function ($row) {
-                return [
-                    'student_number' => $row[0] ?? null,
-                    'first_name' => $row[1] ?? null,
-                    'last_name' => $row[2] ?? null,
-                    'middle_name' => $row[3] ?? null,
-                    'email' => $row[4] ?? null,
-                    'phone' => $row[5] ?? null,
-                    'course_code' => $row[6] ?? null,
-                    'course_name' => $row[7] ?? null,
-                    'section_name' => $row[8] ?? null,
-                    'year_level' => $row[9] ?? null,
-                ];
+            // Auto-detect header row — scan first 10 rows for one containing recognizable columns
+            $headerRowIndex = null;
+            $columnMapping = null;
+
+            foreach ($allRows->take(10) as $index => $row) {
+                if (!is_array($row))
+                    continue;
+
+                // Check if this row has at least 3 non-null cells (likely a header, not a title)
+                $nonNullCount = count(array_filter($row, fn($cell) => $cell !== null && trim((string) $cell) !== ''));
+                if ($nonNullCount < 3)
+                    continue;
+
+                try {
+                    $mapping = $this->mapHeaders($row);
+                    // If we got here, this row has valid headers
+                    $headerRowIndex = $index;
+                    $columnMapping = $mapping;
+                    Log::info("Import: Found header row at index {$index}");
+                    break;
+                } catch (\Exception $e) {
+                    // Not a valid header row, continue scanning
+                    continue;
+                }
+            }
+
+            if ($headerRowIndex === null || $columnMapping === null) {
+                throw new \Exception("Could not find a valid header row in the first 10 rows of the file. Make sure your file has columns like: Student #, Course, Section, Yr");
+            }
+
+            // Data rows start after the header row
+            return $allRows->slice($headerRowIndex + 1)->map(function ($row) use ($columnMapping) {
+                return $this->mapRow($row, $columnMapping);
             })->filter(function ($row) {
-                // Filter out completely empty rows
                 return !empty($row['student_number']);
-            });
+            })->values();
         } catch (\Exception $e) {
             throw new \Exception("Failed to read Excel file: " . $e->getMessage());
         }
@@ -157,41 +292,62 @@ class StudentImportService
 
     /**
      * Read CSV file.
-     *
-     * @param string $filePath
-     * @return Collection
      */
     protected function readCsvFile(string $filePath): Collection
     {
-        $rows = [];
         $handle = fopen($filePath, 'r');
 
         if ($handle === false) {
             throw new \Exception("Failed to open CSV file.");
         }
 
-        // Read header
-        $headers = fgetcsv($handle);
+        // Read headers
+        $rawHeaders = fgetcsv($handle);
+        if (!$rawHeaders) {
+            fclose($handle);
+            throw new \Exception("The CSV file is empty or has no headers.");
+        }
+
+        $columnMapping = $this->mapHeaders($rawHeaders);
 
         // Read data rows
+        $rows = [];
         while (($row = fgetcsv($handle)) !== false) {
-            $rows[] = array_combine($headers, $row);
+            $mapped = $this->mapRow($row, $columnMapping);
+            if (!empty($mapped['student_number'])) {
+                $rows[] = $mapped;
+            }
         }
 
         fclose($handle);
 
-        return collect($rows)->filter(function ($row) {
-            return !empty($row['student_number'] ?? null);
-        });
+        return collect($rows);
+    }
+
+    /**
+     * Extract section letter from values like "BSHM-B", "BSBAFM-A", or just "A", "B".
+     */
+    protected function extractSectionLetter(?string $sectionValue): ?string
+    {
+        if (empty($sectionValue)) {
+            return null;
+        }
+
+        $sectionValue = trim($sectionValue);
+
+        // If it contains a dash, take the part after the last dash (e.g., "BSHM-B" → "B")
+        if (str_contains($sectionValue, '-')) {
+            $parts = explode('-', $sectionValue);
+            $letter = trim(end($parts));
+            return strtoupper($letter) ?: null;
+        }
+
+        // If it's already just a letter or short string, use it as-is
+        return strtoupper($sectionValue);
     }
 
     /**
      * Process a single row from the import file.
-     *
-     * @param int $rowNumber
-     * @param array $row
-     * @return void
-     * @throws \Exception
      */
     protected function processRow(int $rowNumber, array $row): void
     {
@@ -200,54 +356,85 @@ class StudentImportService
             throw new \Exception("Student number is required");
         }
 
-        if (empty($row['year_level'])) {
-            throw new \Exception("Year level is required");
+        // Clean student number — remove any decimals from Excel (e.g., "47862022.0" → "47862022")
+        $studentNumber = $row['student_number'];
+        if (is_numeric($studentNumber)) {
+            $studentNumber = (string) intval($studentNumber);
+        }
+
+        // Extract names — if no first/last name columns, try to parse from student_number context
+        $firstName = $row['first_name'] ?? '';
+        $lastName = $row['last_name'] ?? '';
+        $middleName = $row['middle_name'] ?? null;
+
+        if (empty($firstName) && empty($lastName)) {
+            throw new \Exception("Student name is required (first name and/or last name columns)");
         }
 
         // Resolve course
         $course = $this->resolveCourse($row);
         if (!$course) {
-            throw new \Exception("Course not found (course_code: " . ($row['course_code'] ?? 'N/A') . ", course_name: " . ($row['course_name'] ?? 'N/A') . ")");
+            throw new \Exception("Course not found: " . ($row['course_code'] ?? 'N/A'));
         }
 
-        // Resolve section (optional) - now includes year_level matching
-        $section = null;
-        if (!empty($row['section_name'])) {
-            $section = $this->resolveSection($course, $row);
+        // Extract year level
+        $yearLevel = $row['year_level'] ?? null;
+        if (!empty($yearLevel)) {
+            // Extract just the number (e.g., "C4" → "4", "Year 3" → "3")
+            if (preg_match('/(\d+)/', (string) $yearLevel, $matches)) {
+                $yearLevel = $matches[1];
+            }
+        }
+        if (empty($yearLevel)) {
+            throw new \Exception("Year level is required");
         }
 
-        // Upsert student
+        // Resolve section (extract letter from values like "BSHM-B")
+        $sectionId = null;
+        $sectionLetter = $this->extractSectionLetter($row['section'] ?? null);
+        if ($sectionLetter) {
+            $section = Section::firstOrCreate(
+                [
+                    'section_name' => $sectionLetter,
+                    'course_id' => $course->course_id,
+                ],
+                [
+                    'section_code' => $sectionLetter,
+                    'year_level' => $yearLevel,
+                ]
+            );
+            $sectionId = $section->section_id;
+        }
+
+        // Upsert student — only update name fields, leave profile fields for students
         $student = Student::updateOrCreate(
-            ['student_number' => $row['student_number']],
+            ['student_number' => $studentNumber],
             [
-                'first_name' => $row['first_name'] ?? '',
-                'last_name' => $row['last_name'] ?? '',
-                'middle_name' => $row['middle_name'] ?? null,
-                'email' => $row['email'] ?? null,
-                'phone' => $row['phone'] ?? null,
-                'status' => 'active',
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'middle_name' => $middleName,
+                'status' => 'enrolled',
             ]
         );
 
         $wasRecentlyCreated = $student->wasRecentlyCreated;
 
         // Create or update enrollment for the specified academic term
-        $enrollment = EnrolledStudent::updateOrCreate(
+        EnrolledStudent::updateOrCreate(
             [
                 'student_number' => $student->student_number,
                 'acad_id' => $this->academicCalendar->calendar_id,
             ],
             [
                 'course_id' => $course->course_id,
-                'section_id' => $section?->section_id,
-                'year_level' => $row['year_level'],
-                'enrollment_status' => 'active',
+                'section_id' => $sectionId,
+                'year_level' => $yearLevel,
+                'enrollment_status' => 'enrolled',
                 'enrollment_date' => now(),
                 'academic_year' => $this->academicCalendar->academic_year,
             ]
         );
 
-        // Count based on student creation, not enrollment
         if ($wasRecentlyCreated) {
             $this->inserted++;
         } else {
@@ -257,62 +444,37 @@ class StudentImportService
 
     /**
      * Resolve course from row data.
-     *
-     * @param array $row
-     * @return Course|null
      */
     protected function resolveCourse(array $row): ?Course
     {
-        // Prefer course_code, fallback to course_name
-        if (!empty($row['course_code'])) {
-            $course = Course::where('course_code', $row['course_code'])->first();
-            if ($course) {
-                return $course;
-            }
+        $courseValue = $row['course_code'] ?? null;
+
+        if (empty($courseValue)) {
+            return null;
         }
 
-        if (!empty($row['course_name'])) {
-            $course = Course::where('course_name', $row['course_name'])->first();
-            if ($course) {
-                return $course;
-            }
-        }
+        $courseValue = trim($courseValue);
+
+        // Try exact match by course_code
+        $course = Course::where('course_code', $courseValue)->first();
+        if ($course)
+            return $course;
+
+        // Try exact match by course_name
+        $course = Course::where('course_name', $courseValue)->first();
+        if ($course)
+            return $course;
+
+        // Try case-insensitive match
+        $course = Course::whereRaw('LOWER(course_code) = ?', [strtolower($courseValue)])->first();
+        if ($course)
+            return $course;
 
         return null;
     }
 
     /**
-     * Resolve section from row data.
-     * Matches by course_id + year_level + section_name
-     *
-     * @param Course $course
-     * @param array $row
-     * @return Section|null
-     */
-    protected function resolveSection(Course $course, array $row): ?Section
-    {
-        if (empty($row['section_name'])) {
-            return null;
-        }
-
-        $query = Section::where('course_id', $course->course_id)
-            ->where('section_name', $row['section_name']);
-
-        // If year_level is provided, also match by year_level
-        if (!empty($row['year_level'])) {
-            $query->where(function ($q) use ($row) {
-                $q->where('year_level', $row['year_level'])
-                  ->orWhereNull('year_level'); // Also allow sections without year_level set
-            });
-        }
-
-        return $query->first();
-    }
-
-    /**
      * Get error report as CSV content.
-     *
-     * @return string
      */
     public function getErrorReport(): string
     {

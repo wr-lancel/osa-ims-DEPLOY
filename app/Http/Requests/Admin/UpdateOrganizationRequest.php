@@ -26,6 +26,18 @@ class UpdateOrganizationRequest extends FormRequest
             'type' => ['nullable', 'in:Academic,Cultural,Governance,Special Interest'],
             'status' => ['required', 'in:active,inactive'],
             'adviser_name' => ['nullable', 'string', 'max:255'],
+            'mission' => ['nullable', 'string'],
+            'mission_file' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
+            'vision' => ['nullable', 'string'],
+            'vision_file' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
+            'goals' => ['nullable', 'string'],
+            'goals_file' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
+            'constitution_bylaws' => ['nullable', 'string'],
+            'constitution_bylaws_file' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
+            'remove_mission_file' => ['nullable', 'boolean'],
+            'remove_vision_file' => ['nullable', 'boolean'],
+            'remove_goals_file' => ['nullable', 'boolean'],
+            'remove_constitution_bylaws_file' => ['nullable', 'boolean'],
         ];
     }
 }

@@ -1,6 +1,7 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
+import { getEventBadgeClass, getEventLabel } from '@/utils/eventHelpers';
 
 const props = defineProps({
     upcomingEvents: {
@@ -45,19 +46,6 @@ const quickLinks = [
         icon: 'M7 4V2a1 1 0 011-1h4a1 1 0 011 1v2m0 0V1a1 1 0 011-1h2a1 1 0 011 1v3m0 0h-4m4 0v12a2 2 0 01-2 2H5a2 2 0 01-2-2V4h14z'
     }
 ];
-
-const getEventBadgeClass = (daysUntil) => {
-    if (daysUntil === 0) return 'bg-red-100 text-red-800';
-    if (daysUntil <= 3) return 'bg-orange-100 text-orange-800';
-    if (daysUntil <= 7) return 'bg-yellow-100 text-yellow-800';
-    return 'bg-blue-100 text-blue-800';
-};
-
-const getEventLabel = (daysUntil) => {
-    if (daysUntil === 0) return 'Today';
-    if (daysUntil === 1) return 'Tomorrow';
-    return `In ${daysUntil} days`;
-};
 </script>
 
 <template>
@@ -125,6 +113,65 @@ const getEventLabel = (daysUntil) => {
                         <div class="ml-4">
                             <p class="text-sm font-medium text-gray-500">Events This Month</p>
                             <p class="text-2xl font-semibold text-gray-900">{{ stats.events_this_month || 0 }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending / Action Required Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 p-3 bg-red-100 rounded-lg">
+                            <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500">Active Discipline Cases</p>
+                            <p class="text-2xl font-semibold text-gray-900">{{ stats.active_discipline_cases || 0 }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 p-3 bg-indigo-100 rounded-lg">
+                            <svg class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500">Pending Appointments</p>
+                            <p class="text-2xl font-semibold text-gray-900">{{ stats.pending_appointments || 0 }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 p-3 bg-teal-100 rounded-lg">
+                            <svg class="h-6 w-6 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500">Pending Borrowings</p>
+                            <p class="text-2xl font-semibold text-gray-900">{{ stats.pending_borrowings || 0 }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 p-3 bg-orange-100 rounded-lg">
+                            <svg class="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500">Pending Complaints</p>
+                            <p class="text-2xl font-semibold text-gray-900">{{ stats.pending_complaints || 0 }}</p>
                         </div>
                     </div>
                 </div>

@@ -1,6 +1,7 @@
 <script setup>
 import StudentLayout from '@/Layouts/StudentLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
+import StatusProgressBar from '@/Components/StatusProgressBar.vue';
 
 const props = defineProps({
     appointment: {
@@ -42,7 +43,7 @@ const getStatusBadgeClass = (status, statusColor) => {
         <div class="space-y-6">
             <!-- Status Card -->
             <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between mb-4">
                     <div>
                         <h3 class="text-lg font-semibold text-gray-900">Appointment Request</h3>
                         <p class="text-sm text-gray-500 mt-1">Request ID: #{{ appointment.appointment_id }}</p>
@@ -54,6 +55,15 @@ const getStatusBadgeClass = (status, statusColor) => {
                         {{ appointment.status }}
                     </span>
                 </div>
+                <StatusProgressBar
+                    :steps="[
+                        { value: 'pending', label: 'Pending' },
+                        { value: 'approved', label: 'Approved' },
+                        { value: 'completed', label: 'Completed' },
+                    ]"
+                    :current-status="appointment.status"
+                    :terminal-statuses="['rejected', 'cancelled']"
+                />
             </div>
 
             <!-- Appointment Information -->

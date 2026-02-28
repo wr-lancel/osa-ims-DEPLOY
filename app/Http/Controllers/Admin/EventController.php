@@ -45,7 +45,7 @@ class EventController extends Controller
         // Paginate results
         $events = $query->orderBy('event_date', 'desc')
             ->orderBy('start_time', 'desc')
-            ->paginate(15)
+            ->paginate($request->input('perPage', 20))
             ->withQueryString();
 
         // Transform data for frontend
@@ -86,7 +86,7 @@ class EventController extends Controller
     {
         $data = $request->validated();
         $data['created_by'] = auth()->id();
-        
+
         Event::create($data);
 
         return redirect()->route('admin.organizations.events.index')

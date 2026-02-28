@@ -30,9 +30,9 @@ class StaffController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('employee_number', 'like', "%{$search}%")
-                  ->orWhere('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -61,7 +61,7 @@ class StaffController extends Controller
         }
 
         $employees = $query->orderBy('employee_id', 'desc')
-            ->paginate(15)
+            ->paginate($request->input('perPage', 20))
             ->through(function ($employee) {
                 return [
                     'employee_id' => $employee->employee_id,
@@ -269,5 +269,66 @@ class StaffController extends Controller
                 'error' => config('app.debug') ? $e->getMessage() : 'Failed to delete staff member. Please try again.',
             ], 500);
         }
+    }
+
+    /**
+     * Export staff members to PDF.
+     */
+    public function exportPdf(Request $request)
+    {
+        $query = Employee::with(['user.roles']);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('employee_number', 'like', "%{$search}%")
+                    ->orWhere('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('department')) {
+            $query->where('department', $request->department);
+        }
+
+        if ($request->filled('position')) {
+            $query->where('position', $request->position);
+        }
+
+        if ($request->filled('role_id')) {
+            $query->whereHas('user.roles', function ($q) use ($request) {
+                $q->where('roles.role_id', $request->role_id);
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->whereHas('user', function ($q) use ($request) {
+                $q->where('status', $request->status);
+            });
+        }
+
+        $employees = $query->orderBy('employee_id', 'desc')->get();
+
+        $headers = ['Employee No', 'Name', 'Email', 'Department', 'Position', 'Role', 'Status'];
+        $rows = $employees->map(fn($e) => [
+            $e->employee_number,
+            $e->full_name,
+            $e->email,
+            $e->department ?? '—',
+            $e->position ?? '—',
+            $e->user ? $e->user->roles->pluck('role_name')->join(', ') : '—',
+            $e->user?->status ?? '—',
+        ])->toArray();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.pdf-table', [
+            'title' => 'Staff Members Report',
+            'date' => now()->format('F j, Y g:i A'),
+            'headers' => $headers,
+            'rows' => $rows,
+            'filters' => $request->only(['search', 'department', 'position', 'role_id', 'status']),
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->download('staff_export_' . date('Y-m-d_His') . '.pdf');
     }
 }

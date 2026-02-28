@@ -62,6 +62,38 @@ class EnrolledStudent extends Model
     }
 
     /**
+     * Get the candidacy applications for this enrollment.
+     */
+    public function candidacyApplications()
+    {
+        return $this->hasMany(CandidacyApplication::class, 'enrollment_id', 'enrollment_id');
+    }
+
+    /**
+     * Get the discipline cases for this enrollment.
+     */
+    public function disciplineCases()
+    {
+        return $this->hasMany(Discipline::class, 'enrollment_id', 'enrollment_id');
+    }
+
+    /**
+     * Get complaints where this enrollment is the complainant.
+     */
+    public function complaintsAsComplainant()
+    {
+        return $this->hasMany(Complaint::class, 'complainant_enrolled_id', 'enrollment_id');
+    }
+
+    /**
+     * Get complaints where this enrollment is the respondent.
+     */
+    public function complaintsAsRespondent()
+    {
+        return $this->hasMany(Complaint::class, 'respondent_enrolled_id', 'enrollment_id');
+    }
+
+    /**
      * Get the route key for the model.
      */
     public function getRouteKeyName(): string

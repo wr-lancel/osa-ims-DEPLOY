@@ -2,7 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Employee;
 use App\Models\Role;
+use App\Models\Student;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -13,110 +15,139 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Get roles for assignment
         $superAdminRole = Role::where('role_name', 'super_admin')->first();
         $sportsAdminRole = Role::where('role_name', 'sports_admin')->first();
         $organizationAdminRole = Role::where('role_name', 'organization_admin')->first();
         $guidanceAdminRole = Role::where('role_name', 'guidance_admin')->first();
         $studentRole = Role::where('role_name', 'student')->first();
 
-        // Super admin user
-        $superAdmin = User::firstOrCreate(
-            ['email' => 'superadmin@osa-ims.com'],
+        // Staff users: create employee records first, then link
+        $staffUsers = [
             [
-                'password' => 'superadmin123', // Automatically hashed by the 'hashed' cast
-                'status' => 'active',
-            ]
-        );
-            if ($superAdminRole && !$superAdmin->roles()->where('roles.role_id', $superAdminRole->role_id)->exists()) {
-            $superAdmin->roles()->attach($superAdminRole->role_id);
-        }
-
-        // Sports admin user
-        $sportsAdmin = User::firstOrCreate(
-            ['email' => 'sportsadmin@osa-ims.com'],
-            [
-                'password' => 'sportsadmin123', // Automatically hashed by the 'hashed' cast
-                'status' => 'active',
-            ]
-        );
-        if ($sportsAdminRole && !$sportsAdmin->roles()->where('roles.role_id', $sportsAdminRole->role_id)->exists()) {
-            $sportsAdmin->roles()->attach($sportsAdminRole->role_id);
-        }
-
-        // Organization admin user
-        $organizationAdmin = User::firstOrCreate(
-            ['email' => 'organizationadmin@osa-ims.com'],
-            [
-                'password' => 'organizationadmin123', // Automatically hashed by the 'hashed' cast
-                'status' => 'active',
-            ]
-        );
-        if ($organizationAdminRole && !$organizationAdmin->roles()->where('roles.role_id', $organizationAdminRole->role_id)->exists()) {
-            $organizationAdmin->roles()->attach($organizationAdminRole->role_id);
-        }
-
-        // Student user
-        $student = User::firstOrCreate(
-            ['email' => 'student@osa-ims.com'],
-            [
-                'password' => 'student123', // Automatically hashed by the 'hashed' cast
-                'status' => 'active',
-            ]
-        );
-        if ($studentRole && !$student->roles()->where('roles.role_id', $studentRole->role_id)->exists()) {
-            $student->roles()->attach($studentRole->role_id);
-        }
-
-        // Sports admin user
-        $sportsAdmin = User::firstOrCreate(
-            ['email' => 'sports@osa-ims.com'],
-            [
-                'password' => 'sports123', // Automatically hashed by the 'hashed' cast
-                'status' => 'active',
-            ]
-        );
-        if ($sportsAdminRole && !$sportsAdmin->roles()->where('roles.role_id', $sportsAdminRole->role_id)->exists()) {
-            $sportsAdmin->roles()->attach($sportsAdminRole->role_id);
-        }
-
-        // Optional: Create additional sample users
-        $sampleUsers = [
-            [
-                'email' => 'john.doe@student.osa-ims.com',
-                'password' => 'password123',
-                'status' => 'active',
-                'role' => 'student',
+                'email' => 'superadmin@osa-ims.com',
+                'password' => 'superadmin123',
+                'employee_number' => 'EMP-SUPERADMIN',
+                'first_name' => 'Super',
+                'last_name' => 'Admin',
+                'department' => 'OSA',
+                'position' => 'Administrator',
+                'role' => $superAdminRole,
             ],
             [
-                'email' => 'jane.smith@student.osa-ims.com',
-                'password' => 'password123',
-                'status' => 'active',
-                'role' => 'student',
+                'email' => 'sportsadmin@osa-ims.com',
+                'password' => 'sportsadmin123',
+                'employee_number' => 'EMP-SPORTS',
+                'first_name' => 'Sports',
+                'last_name' => 'Admin',
+                'department' => 'OSA',
+                'position' => 'Sports Administrator',
+                'role' => $sportsAdminRole,
+            ],
+            [
+                'email' => 'organizationadmin@osa-ims.com',
+                'password' => 'organizationadmin123',
+                'employee_number' => 'EMP-ORG',
+                'first_name' => 'Organization',
+                'last_name' => 'Admin',
+                'department' => 'OSA',
+                'position' => 'Organization Administrator',
+                'role' => $organizationAdminRole,
+            ],
+            [
+                'email' => 'sports@osa-ims.com',
+                'password' => 'sports123',
+                'employee_number' => 'EMP-SPORTS2',
+                'first_name' => 'Sports',
+                'last_name' => 'Staff',
+                'department' => 'OSA',
+                'position' => 'Sports Staff',
+                'role' => $sportsAdminRole,
             ],
             [
                 'email' => 'manager@osa-ims.com',
                 'password' => 'password123',
-                'status' => 'active',
-                'role' => 'staff',
+                'employee_number' => 'EMP-MANAGER',
+                'first_name' => 'Manager',
+                'last_name' => 'Staff',
+                'department' => 'OSA',
+                'position' => 'Manager',
+                'role' => Role::where('role_name', 'staff')->first(),
             ],
         ];
 
-        foreach ($sampleUsers as $userData) {
-            $user = User::firstOrCreate(
-                ['email' => $userData['email']],
+        foreach ($staffUsers as $data) {
+            $employee = Employee::firstOrCreate(
+                ['employee_number' => $data['employee_number']],
                 [
-                    'password' => $userData['password'], // Automatically hashed
-                    'status' => $userData['status'],
+                    'first_name' => $data['first_name'],
+                    'last_name' => $data['last_name'],
+                    'email' => $data['email'],
+                    'department' => $data['department'],
+                    'position' => $data['position'],
                 ]
             );
 
-            // Assign role
-            if (isset($userData['role'])) {
-                $role = Role::where('role_name', $userData['role'])->first();
-                if ($role && !$user->roles()->where('roles.role_id', $role->role_id)->exists()) {
-                    $user->roles()->attach($role->role_id);
-                }
+            $user = User::firstOrCreate(
+                ['email' => $data['email']],
+                [
+                    'password' => $data['password'],
+                    'status' => 'active',
+                    'employee_id' => $employee->employee_id,
+                ]
+            );
+
+            if ($data['role'] && !$user->roles()->where('roles.role_id', $data['role']->role_id)->exists()) {
+                $user->roles()->attach($data['role']->role_id);
+            }
+        }
+
+        // Student users: create student records first, then link
+        $studentUsers = [
+            [
+                'email' => 'student@osa-ims.com',
+                'password' => 'student123',
+                'student_number' => 'STU-00001',
+                'first_name' => 'Sample',
+                'last_name' => 'Student',
+            ],
+            [
+                'email' => 'john.doe@student.osa-ims.com',
+                'password' => 'password123',
+                'student_number' => 'STU-00002',
+                'first_name' => 'John',
+                'last_name' => 'Doe',
+            ],
+            [
+                'email' => 'jane.smith@student.osa-ims.com',
+                'password' => 'password123',
+                'student_number' => 'STU-00003',
+                'first_name' => 'Jane',
+                'last_name' => 'Smith',
+            ],
+        ];
+
+        foreach ($studentUsers as $data) {
+            $student = Student::firstOrCreate(
+                ['student_number' => $data['student_number']],
+                [
+                    'first_name' => $data['first_name'],
+                    'last_name' => $data['last_name'],
+                    'email' => $data['email'],
+                    'status' => 'active',
+                ]
+            );
+
+            $user = User::firstOrCreate(
+                ['email' => $data['email']],
+                [
+                    'password' => $data['password'],
+                    'status' => 'active',
+                    'student_number' => $student->student_number,
+                ]
+            );
+
+            if ($studentRole && !$user->roles()->where('roles.role_id', $studentRole->role_id)->exists()) {
+                $user->roles()->attach($studentRole->role_id);
             }
         }
     }

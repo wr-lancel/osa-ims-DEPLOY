@@ -13,6 +13,17 @@ class SystemSetting extends Model
 
     protected $fillable = ['key', 'value'];
 
+    // ─── Default values for each configurable list ───
+    public const DEFAULTS = [
+        'organization_types' => ['Academic', 'Cultural', 'Governance', 'Special Interest'],
+        'complaint_categories' => ['Academic Integrity', 'Campus Conduct', 'Prohibited Activities', 'Other'],
+        'guidance_case_types' => ['counseling', 'consultation', 'referral'],
+        'guidance_appointment_types' => ['counseling', 'consultation', 'referral', 'other'],
+        'event_statuses' => ['Planning', 'Upcoming', 'Completed'],
+        'violation_severities' => ['Minor', 'Moderate', 'Major'],
+        'default_org_positions' => ['President', 'Vice President', 'Secretary', 'Treasurer', 'Auditor', 'PIO', 'Business Manager', 'Sergeant-at-Arms'],
+    ];
+
     /**
      * Get a setting value by key.
      */
@@ -31,6 +42,29 @@ class SystemSetting extends Model
             ['key' => $key],
             ['value' => $value]
         );
+    }
+
+    /**
+     * Get a JSON list setting, with fallback to hardcoded defaults.
+     */
+    public static function getList(string $key): array
+    {
+        $value = static::getValue($key);
+        if ($value) {
+            $decoded = json_decode($value, true);
+            if (is_array($decoded)) {
+                return $decoded;
+            }
+        }
+        return self::DEFAULTS[$key] ?? [];
+    }
+
+    /**
+     * Set a JSON list setting.
+     */
+    public static function setList(string $key, array $values): void
+    {
+        static::setValue($key, json_encode(array_values($values)));
     }
 
     /**

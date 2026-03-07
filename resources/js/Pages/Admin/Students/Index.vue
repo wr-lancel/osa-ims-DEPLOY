@@ -10,6 +10,10 @@ import CreateStudentAccountModal from '@/Components/Admin/CreateStudentAccountMo
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import Pagination from '@/Components/Pagination.vue';
+import NotificationDialog from '@/Components/NotificationDialog.vue';
+import { useNotification } from '@/composables/useNotification';
+
+const { notification, notify, confirmAction, closeNotification, handleConfirm } = useNotification();
 
 const props = defineProps({
     students: {
@@ -33,6 +37,10 @@ const props = defineProps({
         default: null,
     },
     dashboardStats: {
+        type: Array,
+        default: () => [],
+    },
+    graduationRecommendations: {
         type: Array,
         default: () => [],
     },
@@ -168,32 +176,35 @@ const updateStudentStatus = (studentNumber, newStatus) => {
 
 const bulkUpdateStudentStatus = async (newStatus) => {
     if (selectedStudentsForBulk.value.length === 0) {
-        alert('Please select at least one student.');
+        notify('warning', 'Please select at least one student.');
         return;
     }
 
     const label = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
-    if (!confirm(`Mark ${selectedStudentsForBulk.value.length} selected student(s) as ${label}?`)) {
-        return;
-    }
+    confirmAction(
+        `Mark ${selectedStudentsForBulk.value.length} selected student(s) as ${label}?`,
+        `${label} Students`,
+        async () => {
+            try {
+                const response = await axios.post(route('admin.students.bulk-status'), {
+                    student_numbers: selectedStudentsForBulk.value,
+                    status: newStatus,
+                });
 
-    try {
-        const response = await axios.post(route('admin.students.bulk-status'), {
-            student_numbers: selectedStudentsForBulk.value,
-            status: newStatus,
-        });
-
-        if (response.data.success) {
-            alert(response.data.message);
-            selectedStudentsForBulk.value = [];
-            router.reload({ only: ['students', 'dashboardStats'] });
-        } else {
-            alert(response.data.message || 'Failed to update statuses.');
-        }
-    } catch (error) {
-        console.error('Bulk status update failed:', error);
-        alert(error.response?.data?.message || 'Failed to update statuses. Please try again.');
-    }
+                if (response.data.success) {
+                    notify('success', response.data.message);
+                    selectedStudentsForBulk.value = [];
+                    router.reload({ only: ['students', 'dashboardStats'] });
+                } else {
+                    notify('error', response.data.message || 'Failed to update statuses.');
+                }
+            } catch (error) {
+                console.error('Bulk status update failed:', error);
+                notify('error', error.response?.data?.message || 'Failed to update statuses. Please try again.');
+            }
+        },
+        { confirmLabel: label, cancelLabel: 'Cancel' }
+    );
 };
 
 // Navigate to student profile
@@ -219,30 +230,33 @@ const handleAccountCreated = () => {
 
 const bulkCreateAccounts = async () => {
     if (selectedStudentsForBulk.value.length === 0) {
-        alert('Please select at least one student.');
+        notify('warning', 'Please select at least one student.');
         return;
     }
 
-    if (!confirm(`Create accounts for ${selectedStudentsForBulk.value.length} selected student(s)?`)) {
-        return;
-    }
+    confirmAction(
+        `Create accounts for ${selectedStudentsForBulk.value.length} selected student(s)?`,
+        'Bulk Create Accounts',
+        async () => {
+            try {
+                const response = await axios.post(route('admin.students.accounts.bulk-create'), {
+                    student_numbers: selectedStudentsForBulk.value,
+                });
 
-    try {
-        const response = await axios.post(route('admin.students.accounts.bulk-create'), {
-            student_numbers: selectedStudentsForBulk.value,
-        });
-
-        if (response.data.success) {
-            alert(response.data.message);
-            selectedStudentsForBulk.value = [];
-            router.reload({ only: ['students'] });
-        } else {
-            alert(response.data.message || 'Failed to create accounts.');
-        }
-    } catch (error) {
-        console.error('Bulk account creation failed:', error);
-        alert(error.response?.data?.message || 'Failed to create accounts. Please try again.');
-    }
+                if (response.data.success) {
+                    notify('success', response.data.message);
+                    selectedStudentsForBulk.value = [];
+                    router.reload({ only: ['students'] });
+                } else {
+                    notify('error', response.data.message || 'Failed to create accounts.');
+                }
+            } catch (error) {
+                console.error('Bulk account creation failed:', error);
+                notify('error', error.response?.data?.message || 'Failed to create accounts. Please try again.');
+            }
+        },
+        { confirmLabel: 'Create Accounts', cancelLabel: 'Cancel' }
+    );
 };
 
 const toggleStudentSelection = (studentId) => {
@@ -304,6 +318,90 @@ watch([allNoAccountSelected, someNoAccountSelected], () => {
 
 const flash = computed(() => page.props.flash || {});
 const importResult = computed(() => page.props.import_result || null);
+
+// Graduation recommendations
+const showGradRecommendations = ref(false);
+const selectedGradStudents = ref([]);
+
+const toggleGradSelection = (studentNumber) => {
+    const idx = selectedGradStudents.value.indexOf(studentNumber);
+    if (idx > -1) {
+        selectedGradStudents.value.splice(idx, 1);
+    } else {
+        selectedGradStudents.value.push(studentNumber);
+    }
+};
+
+const allGradSelected = computed(() => {
+    if (props.graduationRecommendations.length === 0) return false;
+    return props.graduationRecommendations.every(
+        r => selectedGradStudents.value.includes(r.student_number)
+    );
+});
+
+const someGradSelected = computed(() => {
+    if (props.graduationRecommendations.length === 0) return false;
+    const count = props.graduationRecommendations.filter(
+        r => selectedGradStudents.value.includes(r.student_number)
+    ).length;
+    return count > 0 && count < props.graduationRecommendations.length;
+});
+
+const gradSelectAllRef = ref(null);
+
+const toggleSelectAllGrad = () => {
+    const allNumbers = props.graduationRecommendations.map(r => r.student_number);
+    if (allGradSelected.value) {
+        selectedGradStudents.value = selectedGradStudents.value.filter(
+            n => !allNumbers.includes(n)
+        );
+    } else {
+        allNumbers.forEach(n => {
+            if (!selectedGradStudents.value.includes(n)) {
+                selectedGradStudents.value.push(n);
+            }
+        });
+    }
+};
+
+watch([allGradSelected, someGradSelected], () => {
+    nextTick(() => {
+        if (gradSelectAllRef.value) {
+            gradSelectAllRef.value.indeterminate = someGradSelected.value && !allGradSelected.value;
+        }
+    });
+}, { immediate: true });
+
+const graduateSelected = () => {
+    if (selectedGradStudents.value.length === 0) {
+        notify('warning', 'Please select at least one student.');
+        return;
+    }
+
+    confirmAction(
+        `Mark ${selectedGradStudents.value.length} student(s) as graduated? Their accounts will be removed.`,
+        'Graduate Selected Students',
+        async () => {
+            try {
+                const response = await axios.post(route('admin.students.bulk-status'), {
+                    student_numbers: selectedGradStudents.value,
+                    status: 'graduated',
+                });
+
+                if (response.data.success) {
+                    notify('success', response.data.message);
+                    selectedGradStudents.value = [];
+                    router.reload({ only: ['students', 'dashboardStats', 'graduationRecommendations'] });
+                } else {
+                    notify('error', response.data.message || 'Failed to graduate students.');
+                }
+            } catch (error) {
+                notify('error', error.response?.data?.message || 'Failed to graduate students.');
+            }
+        },
+        { confirmLabel: 'Graduate', cancelLabel: 'Cancel' }
+    );
+};
 </script>
 
 <template>
@@ -312,7 +410,7 @@ const importResult = computed(() => page.props.import_result || null);
 
     <AdminLayout>
         <template #header>
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <h2 class="text-2xl font-semibold text-gray-900">
                     Student Records
                 </h2>
@@ -408,6 +506,79 @@ const importResult = computed(() => page.props.import_result || null);
                             Row {{ error.row }} ({{ error.student_number }}): {{ error.error }}
                         </li>
                     </ul>
+                </div>
+            </div>
+
+            <!-- Graduation Recommendations -->
+            <div v-if="graduationRecommendations.length > 0"
+                class="bg-white rounded-lg border border-indigo-200 shadow-sm overflow-hidden">
+                <button type="button"
+                    class="w-full flex items-center justify-between px-4 py-3 bg-indigo-50 hover:bg-indigo-100 transition-colors"
+                    @click="showGradRecommendations = !showGradRecommendations">
+                    <div class="flex items-center gap-2">
+                        <svg class="h-5 w-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 14l9-5-9-5-9 5 9 5zm0 7l-9-5 9 5 9-5-9 5z" />
+                        </svg>
+                        <span class="text-sm font-semibold text-indigo-800">
+                            Graduation Recommendations ({{ graduationRecommendations.length }})
+                        </span>
+                        <span class="text-xs text-indigo-600">
+                            Year-4 students who may be ready to graduate
+                        </span>
+                    </div>
+                    <svg class="h-5 w-5 text-indigo-600 transition-transform"
+                        :class="{ 'rotate-180': showGradRecommendations }"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+                <div v-show="showGradRecommendations" class="border-t border-indigo-200">
+                    <div class="px-4 py-3 bg-indigo-50 border-b border-indigo-100 flex items-center justify-end">
+                        <button type="button" @click="graduateSelected"
+                            :disabled="selectedGradStudents.length === 0"
+                            class="inline-flex items-center rounded-md px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-white shadow-sm transition focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                            :class="selectedGradStudents.length > 0
+                                ? 'bg-indigo-600 hover:bg-indigo-700'
+                                : 'bg-indigo-300 cursor-not-allowed'">
+                            Mark as Graduated ({{ selectedGradStudents.length }})
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-10">
+                                        <input ref="gradSelectAllRef" type="checkbox"
+                                            :checked="allGradSelected"
+                                            @change="toggleSelectAllGrad"
+                                            class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                            title="Select all" />
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student ID</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Section</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr v-for="rec in graduationRecommendations" :key="rec.student_number"
+                                    class="hover:bg-gray-50 cursor-pointer"
+                                    @click="toggleGradSelection(rec.student_number)">
+                                    <td class="px-6 py-3 whitespace-nowrap" @click.stop>
+                                        <input type="checkbox"
+                                            :checked="selectedGradStudents.includes(rec.student_number)"
+                                            @change="toggleGradSelection(rec.student_number)"
+                                            class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                                    </td>
+                                    <td class="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{{ rec.student_number }}</td>
+                                    <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-900">{{ rec.name }}</td>
+                                    <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500">{{ rec.course_name }}</td>
+                                    <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500">{{ rec.section_name }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -626,5 +797,16 @@ const importResult = computed(() => page.props.import_result || null);
 
         <ImportStudentsModal :show="showImportModal" :import-result="importResult" :active-term="activeTerm"
             @close="closeImportModal" />
+
+        <NotificationDialog
+            :show="notification.show"
+            :type="notification.type"
+            :title="notification.title"
+            :message="notification.message"
+            :confirm-label="notification.confirmLabel"
+            :cancel-label="notification.cancelLabel"
+            @close="closeNotification"
+            @confirm="handleConfirm"
+        />
     </AdminLayout>
 </template>

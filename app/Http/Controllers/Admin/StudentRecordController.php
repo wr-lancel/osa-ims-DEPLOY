@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\StoreStudentRequest;
 use App\Http\Requests\Admin\UpdateStudentRequest;
 use App\Http\Requests\Admin\ImportStudentsRequest;
 use App\Models\Student;
+use App\Models\User;
 use App\Models\EnrolledStudent;
 use App\Models\Course;
 use App\Models\Section;
@@ -49,6 +50,7 @@ class StudentRecordController extends Controller
                     'course_name' => $c->course_name,
                 ]),
                 'activeTerm' => null,
+                'graduationRecommendations' => [],
                 'dashboardStats' => [],
                 'error' => 'No active academic term. Please set an active term in Settings.',
             ]);
@@ -58,53 +60,8 @@ class StudentRecordController extends Controller
         // For "graduated", "dropped", or "all" — show across all terms (most recent enrollment)
         $isActiveTermOnly = ($statusFilter === 'enrolled');
 
-        if ($isActiveTermOnly && $activeAcademicCalendar) {
-            // Current behavior: show enrollments from active term
-            $query = EnrolledStudent::with(['student.user', 'course', 'section'])
-                ->where('acad_id', $activeAcademicCalendar->calendar_id);
-
-            // Filter by student global status
-            $query->whereHas('student', function ($q) {
-                $q->where('status', 'enrolled');
-            });
-        } else {
-            // Cross-term: get the most recent enrollment per student
-            // Subquery to get the latest enrollment_id per student
-            $latestEnrollmentIds = EnrolledStudent::selectRaw('MAX(enrollment_id) as enrollment_id')
-                ->groupBy('student_number')
-                ->pluck('enrollment_id');
-
-            $query = EnrolledStudent::with(['student.user', 'course', 'section', 'academicCalendar'])
-                ->whereIn('enrollment_id', $latestEnrollmentIds);
-
-            // Filter by student global status (graduated, dropped, or all)
-            if ($statusFilter && $statusFilter !== 'all') {
-                $query->whereHas('student', function ($q) use ($statusFilter) {
-                    $q->where('status', $statusFilter);
-                });
-            }
-        }
-
-        // Search filter
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->whereHas('student', function ($q) use ($search) {
-                $q->where('student_number', 'like', "%{$search}%")
-                    ->orWhere('first_name', 'like', "%{$search}%")
-                    ->orWhere('last_name', 'like', "%{$search}%")
-                    ->orWhere('middle_name', 'like', "%{$search}%");
-            });
-        }
-
-        // Course filter
-        if ($request->filled('course_id')) {
-            $query->where('course_id', $request->course_id);
-        }
-
-        // Year level filter
-        if ($request->filled('year_level')) {
-            $query->where('year_level', $request->year_level);
-        }
+        $query = $this->buildFilteredEnrollmentQuery($request, $statusFilter, $activeAcademicCalendar)
+            ->with($isActiveTermOnly ? ['student.user', 'course', 'section'] : ['student.user', 'course', 'section', 'academicCalendar']);
 
         $students = $query->orderBy('enrollment_id', 'desc')
             ->paginate($request->input('perPage', 20))
@@ -144,6 +101,25 @@ class StudentRecordController extends Controller
             $droppedStudents = 0;
         }
 
+        // Graduation recommendations: year_level = 4 students still enrolled in active term
+        $graduationRecommendations = [];
+        if ($activeAcademicCalendar) {
+            $graduationRecommendations = EnrolledStudent::with(['student', 'course', 'section'])
+                ->where('acad_id', $activeAcademicCalendar->calendar_id)
+                ->where('year_level', '4')
+                ->whereHas('student', fn($q) => $q->where('status', 'enrolled'))
+                ->orderBy('enrollment_id', 'desc')
+                ->get()
+                ->map(fn($e) => [
+                    'student_number' => $e->student_number,
+                    'name' => $e->student?->full_name ?? 'N/A',
+                    'course_name' => $e->course?->course_name ?? 'N/A',
+                    'section_name' => $e->section?->section_name ?? 'N/A',
+                    'year_level' => $e->year_level,
+                ])
+                ->values();
+        }
+
         return Inertia::render('Admin/Students/Index', [
             'students' => $students,
             'filters' => $request->only(['search', 'year_level', 'course_id', 'status']),
@@ -158,6 +134,7 @@ class StudentRecordController extends Controller
                 'semester' => $activeAcademicCalendar->semester,
                 'display_label' => $activeAcademicCalendar->display_label,
             ] : null,
+            'graduationRecommendations' => $graduationRecommendations,
             'dashboardStats' => [
                 [
                     'title' => 'Total Students',
@@ -210,8 +187,8 @@ class StudentRecordController extends Controller
                     'first_name' => $request->first_name,
                     'last_name' => $request->last_name,
                     'middle_name' => $request->middle_name,
-                    'email' => $request->email,
-                    'phone' => $request->phone,
+                    'email' => null,
+                    'phone' => null,
                     'birth_date' => $request->birth_date,
                     'address' => $request->address,
                     'status' => 'enrolled',
@@ -222,8 +199,6 @@ class StudentRecordController extends Controller
                     'first_name' => $request->first_name,
                     'last_name' => $request->last_name,
                     'middle_name' => $request->middle_name,
-                    'email' => $request->email,
-                    'phone' => $request->phone,
                     'birth_date' => $request->birth_date,
                     'address' => $request->address,
                 ]);
@@ -339,14 +314,24 @@ class StudentRecordController extends Controller
         ]);
 
         try {
-            $student->update([
-                'status' => $request->status,
-            ]);
+            DB::transaction(function () use ($request, $student) {
+                $student->update([
+                    'status' => $request->status,
+                ]);
+
+                if ($request->status === 'graduated') {
+                    $this->removeStudentAccount($student->student_number);
+                }
+            });
 
             Log::info("Student status updated: {$student->student_number} to {$request->status} by user {$request->user()->user_id}");
 
-            return redirect()->back()
-                ->with('success', 'Student status updated successfully.');
+            $message = 'Student status updated successfully.';
+            if ($request->status === 'graduated') {
+                $message .= ' Account has been removed.';
+            }
+
+            return redirect()->back()->with('success', $message);
         } catch (\Exception $e) {
             Log::error("Failed to update student status: " . $e->getMessage());
 
@@ -368,14 +353,28 @@ class StudentRecordController extends Controller
         ]);
 
         try {
-            $count = Student::whereIn('student_number', $request->student_numbers)
-                ->update(['status' => $request->status]);
+            $count = DB::transaction(function () use ($request) {
+                $count = Student::whereIn('student_number', $request->student_numbers)
+                    ->update(['status' => $request->status]);
+
+                if ($request->status === 'graduated') {
+                    $deleted = User::whereIn('student_number', $request->student_numbers)->delete();
+                    Log::info("Bulk graduation: removed {$deleted} student account(s).");
+                }
+
+                return $count;
+            });
 
             Log::info("Bulk student status update: {$count} students to {$request->status} by user {$request->user()->user_id}");
 
+            $message = "Successfully updated {$count} student(s) to {$request->status}.";
+            if ($request->status === 'graduated') {
+                $message .= ' Their accounts have been removed.';
+            }
+
             return response()->json([
                 'success' => true,
-                'message' => "Successfully updated {$count} student(s) to {$request->status}.",
+                'message' => $message,
                 'count' => $count,
             ]);
         } catch (\Exception $e) {
@@ -552,7 +551,10 @@ class StudentRecordController extends Controller
         $emergencyContact = $student->emergencyContact;
         $userAccount = $student->user;
 
+        $profileComplete = $this->isProfileComplete($profile, $educationalBackground, $familyInfo, $emergencyContact);
+
         return Inertia::render('Admin/Students/Profile', [
+            'profileComplete' => $profileComplete,
             'student' => [
                 'student_number' => $student->student_number,
                 'first_name' => $student->first_name,
@@ -673,20 +675,14 @@ class StudentRecordController extends Controller
     public function createAccount(Request $request, Student $student)
     {
         $request->validate([
-            'email' => ['nullable', 'email', 'unique:users,email'],
             'password' => ['nullable', 'string', 'min:6'],
         ]);
 
         try {
-            $email = $request->input('email');
             $password = $request->input('password');
 
-            $user = $this->accountService->createAccount($student, $email, $password);
-
-            // Get generated email if not provided
-            if (!$email) {
-                $email = $this->accountService->generateEmail($student->student_number);
-            }
+            // Email is always auto-generated from student number (institutional format)
+            $user = $this->accountService->createAccount($student, null, $password);
 
             return response()->json([
                 'success' => true,
@@ -759,44 +755,12 @@ class StudentRecordController extends Controller
         $academicCalendar = AcademicCalendar::active()->first();
         $isActiveTermOnly = ($statusFilter === 'enrolled');
 
-        if ($isActiveTermOnly) {
-            if (!$academicCalendar) {
-                abort(404, 'No active academic calendar found.');
-            }
-            $query = EnrolledStudent::with(['student', 'course', 'section'])
-                ->where('acad_id', $academicCalendar->calendar_id);
-            $query->whereHas('student', function ($q) {
-                $q->where('status', 'enrolled');
-            });
-        } else {
-            $latestEnrollmentIds = EnrolledStudent::selectRaw('MAX(enrollment_id) as enrollment_id')
-                ->groupBy('student_number')
-                ->pluck('enrollment_id');
-            $query = EnrolledStudent::with(['student', 'course', 'section'])
-                ->whereIn('enrollment_id', $latestEnrollmentIds);
-            if ($statusFilter && $statusFilter !== 'all') {
-                $query->whereHas('student', function ($q) use ($statusFilter) {
-                    $q->where('status', $statusFilter);
-                });
-            }
+        if ($isActiveTermOnly && !$academicCalendar) {
+            abort(404, 'No active academic calendar found.');
         }
 
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->whereHas('student', function ($q) use ($search) {
-                $q->where('student_number', 'like', "%{$search}%")
-                    ->orWhere('first_name', 'like', "%{$search}%")
-                    ->orWhere('last_name', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('course_id')) {
-            $query->where('course_id', $request->course_id);
-        }
-
-        if ($request->filled('year_level')) {
-            $query->where('year_level', $request->year_level);
-        }
+        $query = $this->buildFilteredEnrollmentQuery($request, $statusFilter, $academicCalendar)
+            ->with(['student', 'course', 'section']);
 
         $enrollments = $query->get();
 
@@ -823,5 +787,94 @@ class StudentRecordController extends Controller
         ])->setPaper('a4', 'landscape');
 
         return $pdf->download('students_export_' . date('Y-m-d_His') . '.pdf');
+    }
+
+    /**
+     * Build a filtered enrollment query (shared between index, export, exportPdf).
+     * Handles active-term vs cross-term logic, search, course, and year level filters.
+     */
+    private function buildFilteredEnrollmentQuery(Request $request, string $statusFilter, ?AcademicCalendar $activeCalendar)
+    {
+        $isActiveTermOnly = ($statusFilter === 'enrolled');
+
+        if ($isActiveTermOnly && $activeCalendar) {
+            $query = EnrolledStudent::query()
+                ->where('acad_id', $activeCalendar->calendar_id);
+            $query->whereHas('student', function ($q) {
+                $q->where('status', 'enrolled');
+            });
+        } else {
+            $latestEnrollmentIds = EnrolledStudent::selectRaw('MAX(enrollment_id) as enrollment_id')
+                ->groupBy('student_number')
+                ->pluck('enrollment_id');
+            $query = EnrolledStudent::query()
+                ->whereIn('enrollment_id', $latestEnrollmentIds);
+            if ($statusFilter && $statusFilter !== 'all') {
+                $query->whereHas('student', function ($q) use ($statusFilter) {
+                    $q->where('status', $statusFilter);
+                });
+            }
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('student', function ($q) use ($search) {
+                $q->where('student_number', 'like', "%{$search}%")
+                    ->orWhere('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('middle_name', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('course_id')) {
+            $query->where('course_id', $request->course_id);
+        }
+
+        if ($request->filled('year_level')) {
+            $query->where('year_level', $request->year_level);
+        }
+
+        return $query;
+    }
+
+    /**
+     * Check if all four profile sections are filled with their required fields.
+     */
+    private function isProfileComplete($profile, $educationalBackground, $familyInfo, $emergencyContact): bool
+    {
+        if (!$profile || !filled($profile->gender) || !filled($profile->citizenship) || !filled($profile->civil_status)) {
+            return false;
+        }
+
+        if (!$educationalBackground || !filled($educationalBackground->elementary_school) || !filled($educationalBackground->senior_high_school)) {
+            return false;
+        }
+
+        if (!$familyInfo) {
+            return false;
+        }
+        $hasFather = filled($familyInfo->father_first_name) && filled($familyInfo->father_last_name);
+        $hasMother = filled($familyInfo->mother_first_name) && filled($familyInfo->mother_maiden_last_name);
+        if (!$hasFather && !$hasMother) {
+            return false;
+        }
+
+        if (!$emergencyContact || !filled($emergencyContact->contact_name) || !filled($emergencyContact->relationship) || !filled($emergencyContact->contact_number)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Remove the User account for a student (used when graduating).
+     */
+    private function removeStudentAccount(string $studentNumber): void
+    {
+        $user = User::where('student_number', $studentNumber)->first();
+        if ($user) {
+            $user->delete();
+            Log::info("Student account removed for {$studentNumber} (user_id: {$user->user_id}).");
+        }
     }
 }

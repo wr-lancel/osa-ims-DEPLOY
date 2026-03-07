@@ -7,7 +7,9 @@ use App\Http\Requests\Admin\StoreEventRequest;
 use App\Http\Requests\Admin\UpdateEventRequest;
 use App\Models\Event;
 use App\Models\StudentOrganization;
+use App\Models\SystemSetting;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -76,6 +78,7 @@ class EventController extends Controller
             'events' => $events,
             'filters' => $request->only(['search', 'status', 'org_id']),
             'organizations' => $organizations,
+            'eventStatuses' => SystemSetting::getList('event_statuses'),
         ]);
     }
 
@@ -85,8 +88,22 @@ class EventController extends Controller
     public function store(StoreEventRequest $request)
     {
         $data = $request->validated();
-        $data['created_by'] = auth()->id();
+        $date = $data['event_date'] ?? null;
+        $orgId = isset($data['org_id']) ? (int) $data['org_id'] : null;
 
+        if ($date && ! $request->boolean('confirm_date_conflict')) {
+            $conflictingOrgs = Event::otherOrgsOnDate($date, null, $orgId);
+            if (! empty($conflictingOrgs)) {
+                $names = implode(', ', $conflictingOrgs);
+                throw ValidationException::withMessages([
+                    'date_conflict' => [
+                        "Another organization already has an event on this date ({$names}). Do you want to continue? Ask your adviser or org admin first.",
+                    ],
+                ]);
+            }
+        }
+
+        $data['created_by'] = auth()->id();
         Event::create($data);
 
         return redirect()->route('admin.organizations.events.index')
@@ -121,7 +138,22 @@ class EventController extends Controller
      */
     public function update(UpdateEventRequest $request, Event $event)
     {
-        $event->update($request->validated());
+        $data = $request->validated();
+        $date = $data['event_date'] ?? null;
+
+        if ($date && ! $request->boolean('confirm_date_conflict')) {
+            $conflictingOrgs = Event::otherOrgsOnDate($date, (int) $event->event_id, (int) $event->org_id);
+            if (! empty($conflictingOrgs)) {
+                $names = implode(', ', $conflictingOrgs);
+                throw ValidationException::withMessages([
+                    'date_conflict' => [
+                        "Another organization already has an event on this date ({$names}). Do you want to continue? Ask your adviser or org admin first.",
+                    ],
+                ]);
+            }
+        }
+
+        $event->update($data);
 
         return redirect()->route('admin.organizations.events.index')
             ->with('success', 'Event updated successfully.');

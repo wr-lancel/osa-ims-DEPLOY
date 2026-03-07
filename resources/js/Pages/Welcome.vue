@@ -37,13 +37,13 @@ const features = [
 <template>
     <Head title="OSA Information Management System" />
 
-    <div class="min-h-screen bg-slate-50">
+    <div class="min-h-screen bg-slate-50 overflow-x-hidden">
         <!-- Header / Navbar -->
         <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-slate-200/70">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between h-16">
+                <div class="flex items-center justify-between h-16 gap-3 min-w-0">
                     <!-- Brand -->
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-3 flex-shrink-0 min-w-0">
                         <div class="h-9 w-9 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-center">
                             <div class="h-4 w-4 rounded bg-slate-900"></div>
                         </div>
@@ -54,7 +54,7 @@ const features = [
                     </div>
 
                     <!-- Navigation Links -->
-                    <nav v-if="canLogin" class="flex items-center gap-2">
+                    <nav v-if="canLogin" class="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
                         <Link
                             v-if="$page.props.auth.user"
                             :href="route('dashboard')"
@@ -112,7 +112,7 @@ const features = [
                         A comprehensive platform for managing student services — from discipline and guidance to organizations and sports. Streamline workflows, track records, and empower both students and administrators.
                     </p>
 
-                    <div class="mt-10 flex flex-wrap items-center gap-4">
+                    <div class="mt-10 flex flex-wrap items-center gap-4 min-w-0">
                         <Link
                             v-if="canLogin && !$page.props.auth.user"
                             :href="route('login')"

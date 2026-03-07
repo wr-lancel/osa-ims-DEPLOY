@@ -7,6 +7,10 @@ import InputError from '@/Components/InputError.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { ref, computed, watch } from 'vue';
 import axios from 'axios';
+import NotificationDialog from '@/Components/NotificationDialog.vue';
+import { useNotification } from '@/composables/useNotification';
+
+const { notification, notify, confirmAction, closeNotification, handleConfirm } = useNotification();
 
 const props = defineProps({
     show: {
@@ -25,17 +29,16 @@ const isProcessing = ref(false);
 const showSuccessMessage = ref(false);
 const successMessage = ref('');
 const formErrors = ref({});
-const email = ref('');
 const password = ref('');
 
-const emailDomain = 'student.chcc.edu.ph';
+const emailDomain = 'chcc.edu.ph';
 
-// Generate email from student number
-const generateEmail = (studentNumber) => {
-    if (!studentNumber) return '';
-    const cleanNumber = studentNumber.toLowerCase().trim().replace(/[^a-z0-9-]/g, '');
+// Email is always auto-generated from student number (institutional format)
+const generatedEmail = computed(() => {
+    if (!props.student?.student_number) return '';
+    const cleanNumber = props.student.student_number.toLowerCase().trim().replace(/[^a-z0-9-]/g, '');
     return `${cleanNumber}@${emailDomain}`;
-};
+});
 
 // Generate default password (same as student number)
 const generateDefaultPassword = (studentNumber) => {
@@ -46,7 +49,6 @@ watch(() => props.show, (isShowing) => {
     if (isShowing && props.student) {
         showSuccessMessage.value = false;
         formErrors.value = {};
-        email.value = props.student.account_email || generateEmail(props.student.student_number);
         password.value = generateDefaultPassword(props.student.student_number);
     }
 });
@@ -54,7 +56,7 @@ watch(() => props.show, (isShowing) => {
 const copyToClipboard = async (text) => {
     try {
         await navigator.clipboard.writeText(text);
-        alert('Copied to clipboard!');
+        notify('success', 'Copied to clipboard!');
     } catch (err) {
         console.error('Failed to copy:', err);
     }
@@ -62,15 +64,14 @@ const copyToClipboard = async (text) => {
 
 const submit = () => {
     if (isProcessing.value || !props.student) return;
-    
+
     isProcessing.value = true;
     formErrors.value = {};
-    
+
     const formData = {
-        email: email.value || undefined,
         password: password.value || undefined,
     };
-    
+
     axios.post(route('admin.students.account.create', props.student.student_number), formData, {
         headers: {
             'Content-Type': 'application/json',
@@ -82,15 +83,20 @@ const submit = () => {
                 successMessage.value = 'Account created successfully!';
                 showSuccessMessage.value = true;
                 emit('created');
-                
+
                 // Show credentials if provided
                 if (response.data.account) {
+                    const credsMsg = `Email: ${response.data.account.email}\nPassword: ${response.data.account.password}`;
                     setTimeout(() => {
-                        const credsMsg = `Email: ${response.data.account.email}\nPassword: ${response.data.account.password}`;
-                        if (confirm(`Account created!\n\n${credsMsg}\n\nCopy credentials to clipboard?`)) {
-                            copyToClipboard(credsMsg);
-                        }
-                        close();
+                        confirmAction(
+                            credsMsg,
+                            'Account Created — Copy Credentials?',
+                            () => {
+                                copyToClipboard(credsMsg);
+                                close();
+                            },
+                            { confirmLabel: 'Copy to Clipboard', cancelLabel: 'Close', onClose: () => close() }
+                        );
                     }, 500);
                 } else {
                     setTimeout(() => {
@@ -99,7 +105,7 @@ const submit = () => {
                 }
             } else {
                 isProcessing.value = false;
-                alert(response.data.message || 'Failed to create account.');
+                notify('error', response.data.message || 'Failed to create account.');
             }
         })
         .catch((error) => {
@@ -108,15 +114,14 @@ const submit = () => {
                 const errors = error.response.data.errors || {};
                 formErrors.value = errors;
             } else if (error.response?.data?.message) {
-                alert(error.response.data.message);
+                notify('error', error.response.data.message);
             } else {
-                alert('Failed to create account. Please try again.');
+                notify('error', 'Failed to create account. Please try again.');
             }
         });
 };
 
 const close = () => {
-    email.value = '';
     password.value = '';
     showSuccessMessage.value = false;
     formErrors.value = {};
@@ -142,13 +147,12 @@ const isExistingAccount = computed(() => {
 
             <template v-else>
                 <!-- Success Message -->
-                <div
-                    v-if="showSuccessMessage"
-                    class="mb-4 p-4 bg-green-50 border border-green-200 rounded-md"
-                >
+                <div v-if="showSuccessMessage" class="mb-4 p-4 bg-green-50 border border-green-200 rounded-md">
                     <div class="flex items-center">
                         <svg class="h-5 w-5 text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clip-rule="evenodd" />
                         </svg>
                         <p class="text-sm font-medium text-green-800">{{ successMessage }}</p>
                     </div>
@@ -171,32 +175,25 @@ const isExistingAccount = computed(() => {
 
                 <form @submit.prevent="submit" v-if="!isExistingAccount">
                     <div class="space-y-4">
-                        <!-- Email -->
+                        <!-- Email (Read-only, auto-generated institutional email) -->
                         <div>
-                            <InputLabel for="email" value="Email Address *" />
+                            <InputLabel for="email" value="Institutional Email" />
                             <div class="mt-1 flex rounded-md shadow-sm">
-                                <TextInput
-                                    id="email"
-                                    v-model="email"
-                                    type="email"
-                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    :class="{ 'border-red-500': formErrors.email }"
-                                    required
-                                />
-                                <button
-                                    type="button"
-                                    @click="copyToClipboard(email)"
+                                <div
+                                    class="block w-full rounded-md border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-700 cursor-not-allowed">
+                                    {{ generatedEmail }}
+                                </div>
+                                <button type="button" @click="copyToClipboard(generatedEmail)"
                                     class="ml-2 inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                    title="Copy to clipboard"
-                                >
+                                    title="Copy to clipboard">
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                     </svg>
                                 </button>
                             </div>
-                            <InputError :message="formErrors.email" class="mt-2" />
                             <p class="mt-1 text-xs text-gray-500">
-                                Email will be auto-generated if left empty: {{ generateEmail(student.student_number) }}
+                                Auto-generated from student number. This is the student's institutional email.
                             </p>
                         </div>
 
@@ -204,22 +201,15 @@ const isExistingAccount = computed(() => {
                         <div>
                             <InputLabel for="password" value="Default Password *" />
                             <div class="mt-1 flex rounded-md shadow-sm">
-                                <TextInput
-                                    id="password"
-                                    v-model="password"
-                                    type="text"
+                                <TextInput id="password" v-model="password" type="text"
                                     class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    :class="{ 'border-red-500': formErrors.password }"
-                                    required
-                                />
-                                <button
-                                    type="button"
-                                    @click="copyToClipboard(password)"
+                                    :class="{ 'border-red-500': formErrors.password }" required />
+                                <button type="button" @click="copyToClipboard(password)"
                                     class="ml-2 inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                    title="Copy to clipboard"
-                                >
+                                    title="Copy to clipboard">
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                     </svg>
                                 </button>
                             </div>
@@ -248,11 +238,8 @@ const isExistingAccount = computed(() => {
                             <div>
                                 <span class="text-blue-700">Email:</span>
                                 <span class="ml-2 font-medium text-blue-900">{{ student.account_email || 'N/A' }}</span>
-                                <button
-                                    type="button"
-                                    @click="copyToClipboard(student.account_email)"
-                                    class="ml-2 text-blue-600 hover:text-blue-800 text-xs"
-                                >
+                                <button type="button" @click="copyToClipboard(student.account_email)"
+                                    class="ml-2 text-blue-600 hover:text-blue-800 text-xs">
                                     Copy
                                 </button>
                             </div>
@@ -261,7 +248,8 @@ const isExistingAccount = computed(() => {
 
                     <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
                         <p class="text-sm text-yellow-800">
-                            This student already has an account. To reset the password or modify account settings, please use the account management features.
+                            This student already has an account. To reset the password or modify account settings,
+                            please use the account management features.
                         </p>
                     </div>
 
@@ -274,5 +262,8 @@ const isExistingAccount = computed(() => {
             </template>
         </div>
     </Modal>
-</template>
 
+    <NotificationDialog :show="notification.show" :type="notification.type" :title="notification.title"
+        :message="notification.message" :confirm-label="notification.confirmLabel"
+        :cancel-label="notification.cancelLabel" @close="closeNotification" @confirm="handleConfirm" />
+</template>

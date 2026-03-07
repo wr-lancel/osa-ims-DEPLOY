@@ -6,6 +6,10 @@ import InputLabel from '@/Components/InputLabel.vue';
 import InputError from '@/Components/InputError.vue';
 import { useForm } from '@inertiajs/vue3';
 import { ref, watch, computed } from 'vue';
+import NotificationDialog from '@/Components/NotificationDialog.vue';
+import { useNotification } from '@/composables/useNotification';
+
+const { notification, notify, closeNotification } = useNotification();
 
 const props = defineProps({
     show: {
@@ -52,7 +56,7 @@ const canSubmit = computed(() => {
 
 const submit = () => {
     if (!props.activeTerm) {
-        alert('No active term set. Please set an active term in Settings first.');
+        notify('warning', 'No active term set. Please set an active term in Settings first.');
         return;
     }
     if (!form.file) {
@@ -242,4 +246,12 @@ const downloadErrorReport = () => {
             </form>
         </div>
     </Modal>
+
+    <NotificationDialog
+        :show="notification.show"
+        :type="notification.type"
+        :title="notification.title"
+        :message="notification.message"
+        @close="closeNotification"
+    />
 </template>

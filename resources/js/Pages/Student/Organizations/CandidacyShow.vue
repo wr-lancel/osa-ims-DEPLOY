@@ -1,6 +1,10 @@
 <script setup>
 import StudentLayout from '@/Layouts/StudentLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
+import NotificationDialog from '@/Components/NotificationDialog.vue';
+import { useNotification } from '@/composables/useNotification';
+
+const { notification, confirmAction, closeNotification, handleConfirm } = useNotification();
 
 const props = defineProps({
     application: {
@@ -24,8 +28,14 @@ const canWithdraw = () =>
     props.application.status === 'submitted' || props.application.status === 'under_review';
 
 const withdraw = () => {
-    if (!confirm('Are you sure you want to withdraw this candidacy?')) return;
-    router.post(route('student.organizations.candidacy.withdraw', props.application.application_id));
+    confirmAction(
+        'Are you sure you want to withdraw this candidacy? This action cannot be undone.',
+        'Withdraw Candidacy',
+        () => {
+            router.post(route('student.organizations.candidacy.withdraw', props.application.application_id));
+        },
+        { confirmLabel: 'Withdraw', cancelLabel: 'Cancel' }
+    );
 };
 </script>
 
@@ -110,4 +120,15 @@ const withdraw = () => {
             </div>
         </div>
     </StudentLayout>
+
+    <NotificationDialog
+        :show="notification.show"
+        :type="notification.type"
+        :title="notification.title"
+        :message="notification.message"
+        :confirm-label="notification.confirmLabel"
+        :cancel-label="notification.cancelLabel"
+        @close="closeNotification"
+        @confirm="handleConfirm"
+    />
 </template>

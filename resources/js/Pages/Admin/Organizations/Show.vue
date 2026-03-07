@@ -2,6 +2,10 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
+import NotificationDialog from '@/Components/NotificationDialog.vue';
+import { useNotification } from '@/composables/useNotification';
+
+const { notification, notify, confirmAction, closeNotification, handleConfirm } = useNotification();
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import DangerButton from '@/Components/DangerButton.vue';
@@ -20,6 +24,10 @@ const props = defineProps({
     enrolledStudents: {
         type: Array,
         default: () => [],
+    },
+    organizationTypes: {
+        type: Array,
+        default: () => ['Academic', 'Cultural', 'Governance', 'Special Interest'],
     },
 });
 
@@ -66,11 +74,16 @@ const submitOfficer = () => {
 };
 
 const removeOfficer = (officer) => {
-    if (confirm(`Are you sure you want to remove ${officer.student_name} as ${officer.position}?`)) {
-        router.delete(route('admin.organizations.officers.remove', [props.organization.org_id, officer.officer_id]), {
-            preserveScroll: true,
-        });
-    }
+    confirmAction(
+        `Are you sure you want to remove ${officer.student_name} as ${officer.position}?`,
+        'Remove Officer',
+        () => {
+            router.delete(route('admin.organizations.officers.remove', [props.organization.org_id, officer.officer_id]), {
+                preserveScroll: true,
+            });
+        },
+        { confirmLabel: 'Remove', cancelLabel: 'Cancel' }
+    );
 };
 
 // Adviser form
@@ -121,13 +134,10 @@ const editForm = ref({
 const editFormErrors = ref({});
 const editFormProcessing = ref(false);
 
-const typeOptions = [
+const typeOptions = computed(() => [
     { value: '', label: 'Select Type' },
-    { value: 'Academic', label: 'Academic' },
-    { value: 'Cultural', label: 'Cultural' },
-    { value: 'Governance', label: 'Governance' },
-    { value: 'Special Interest', label: 'Special Interest' },
-];
+    ...props.organizationTypes.map(t => ({ value: t, label: t })),
+]);
 
 const statusOptions = [
     { value: 'active', label: 'Active' },
@@ -248,13 +258,18 @@ const submitMeeting = () => {
 
 const updateMeetingStatus = (meeting, status) => {
     const label = status === 'completed' ? 'mark as completed' : 'cancel';
-    if (confirm(`Are you sure you want to ${label} this meeting?`)) {
-        router.put(route('admin.organizations.meetings.updateStatus', [props.organization.org_id, meeting.meeting_id]), {
-            status: status,
-        }, {
-            preserveScroll: true,
-        });
-    }
+    confirmAction(
+        `Are you sure you want to ${label} this meeting?`,
+        status === 'completed' ? 'Complete Meeting' : 'Cancel Meeting',
+        () => {
+            router.put(route('admin.organizations.meetings.updateStatus', [props.organization.org_id, meeting.meeting_id]), {
+                status: status,
+            }, {
+                preserveScroll: true,
+            });
+        },
+        { confirmLabel: status === 'completed' ? 'Complete' : 'Cancel Meeting', cancelLabel: 'Go Back' }
+    );
 };
 
 const getMeetingStatusColor = (status) => {
@@ -289,7 +304,7 @@ const hasAboutContent = computed(() => {
 
     <AdminLayout>
         <template #header>
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h2 class="text-2xl font-semibold text-gray-900">
                         {{ organization.org_name }}
@@ -907,5 +922,16 @@ const hasAboutContent = computed(() => {
                 </form>
             </div>
         </Modal>
+
+        <NotificationDialog
+            :show="notification.show"
+            :type="notification.type"
+            :title="notification.title"
+            :message="notification.message"
+            :confirm-label="notification.confirmLabel"
+            :cancel-label="notification.cancelLabel"
+            @close="closeNotification"
+            @confirm="handleConfirm"
+        />
     </AdminLayout>
 </template>

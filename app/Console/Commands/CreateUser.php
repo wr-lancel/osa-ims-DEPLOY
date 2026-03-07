@@ -17,6 +17,8 @@ class CreateUser extends Command
                             {email : The user email address}
                             {--password= : The user password (will be prompted if not provided)}
                             {--status=active : The user status}
+                            {--student_number= : Link to a student (mutually exclusive with --employee_id)}
+                            {--employee_id= : Link to an employee (mutually exclusive with --student_number)}
                             {--role=* : Assign roles to the user (e.g., --role=admin --role=staff)}';
 
     /**
@@ -34,11 +36,33 @@ class CreateUser extends Command
         $email = $this->argument('email');
         $status = $this->option('status') ?? 'active';
         $roles = $this->option('role');
+        $studentNumber = $this->option('student_number');
+        $employeeId = $this->option('employee_id');
 
-        // Validate email format
-        $validator = Validator::make(['email' => $email], [
-            'email' => 'required|email|unique:users,email',
-        ]);
+        if ($studentNumber && $employeeId) {
+            $this->error('Cannot set both --student_number and --employee_id. A user must be linked to exactly one.');
+            return Command::FAILURE;
+        }
+
+        if (!$studentNumber && !$employeeId) {
+            $this->error('You must provide either --student_number or --employee_id to link this user.');
+            return Command::FAILURE;
+        }
+
+        $validationRules = ['email' => 'required|email|unique:users,email'];
+        $validationData = ['email' => $email];
+
+        if ($studentNumber) {
+            $validationRules['student_number'] = 'exists:students,student_number';
+            $validationData['student_number'] = $studentNumber;
+        }
+
+        if ($employeeId) {
+            $validationRules['employee_id'] = 'exists:employees,employee_id';
+            $validationData['employee_id'] = $employeeId;
+        }
+
+        $validator = Validator::make($validationData, $validationRules);
 
         if ($validator->fails()) {
             $this->error('Validation failed:');
@@ -66,12 +90,21 @@ class CreateUser extends Command
         }
 
         try {
-            // Create user (password will be automatically hashed by the 'hashed' cast)
-            $user = User::create([
+            $userData = [
                 'email' => $email,
-                'password' => $password, // Automatically hashed by the 'hashed' cast
+                'password' => $password,
                 'status' => $status,
-            ]);
+            ];
+
+            if ($studentNumber) {
+                $userData['student_number'] = $studentNumber;
+            }
+
+            if ($employeeId) {
+                $userData['employee_id'] = $employeeId;
+            }
+
+            $user = User::create($userData);
 
             $this->info("✓ User created successfully!");
             $this->table(

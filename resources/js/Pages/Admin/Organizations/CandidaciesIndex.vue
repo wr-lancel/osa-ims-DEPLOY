@@ -78,7 +78,7 @@ const toggleCandidacy = () => {
 
     <AdminLayout>
         <template #header>
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h2 class="text-2xl font-semibold text-gray-900">
                         Candidacy Applications

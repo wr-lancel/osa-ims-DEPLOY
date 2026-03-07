@@ -12,6 +12,22 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
+    protected static function booted(): void
+    {
+        static::saving(function (User $user) {
+            $hasStudent = !is_null($user->student_number);
+            $hasEmployee = !is_null($user->employee_id);
+
+            if ($hasStudent && $hasEmployee) {
+                throw new \InvalidArgumentException('A user cannot be linked to both a student and an employee.');
+            }
+
+            if (!$hasStudent && !$hasEmployee) {
+                throw new \InvalidArgumentException('A user must be linked to either a student (student_number) or an employee (employee_id).');
+            }
+        });
+    }
+
     /**
      * The primary key for the model.
      *
@@ -32,11 +48,11 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'user_id',
         'email',
         'password',
         'status',
         'student_number',
+        'employee_id',
     ];
 
     /**
@@ -97,6 +113,14 @@ class User extends Authenticatable
     public function student()
     {
         return $this->belongsTo(Student::class, 'student_number', 'student_number');
+    }
+
+    /**
+     * Get the employee associated with this user.
+     */
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class, 'employee_id', 'employee_id');
     }
 
     /**

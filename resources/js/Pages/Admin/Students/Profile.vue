@@ -2,6 +2,7 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
+import { formatLabel } from '@/utils/formatLabel.js';
 
 const props = defineProps({
     student: {
@@ -31,6 +32,10 @@ const props = defineProps({
     enrollmentHistory: {
         type: Array,
         default: () => [],
+    },
+    profileComplete: {
+        type: Boolean,
+        default: true,
     },
 });
 
@@ -95,7 +100,7 @@ const calculateAge = (birthDate) => {
 
     <AdminLayout>
         <template #header>
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-4">
                     <button
                         @click="goBack"
@@ -125,6 +130,18 @@ const calculateAge = (birthDate) => {
         </template>
 
         <div class="space-y-6">
+            <!-- Incomplete profile banner -->
+            <div v-if="!profileComplete"
+                class="flex items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3">
+                <svg class="h-5 w-5 flex-shrink-0 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p class="text-sm font-medium text-amber-800">
+                    Incomplete profile — student has not filled all required sections.
+                </p>
+            </div>
+
             <!-- STUDENT'S INFORMATION Section -->
             <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
                 <div class="bg-gray-800 px-6 py-3">
@@ -456,7 +473,7 @@ const calculateAge = (birthDate) => {
                                         :key="role"
                                         class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-indigo-100 text-indigo-800"
                                     >
-                                        {{ role }}
+                                        {{ formatLabel(role) }}
                                     </span>
                                 </div>
                             </div>

@@ -182,7 +182,8 @@ class ComplaintController extends Controller
             $title = $data['status'] === 'escalated'
                 ? 'Complaint escalated'
                 : 'Complaint status updated';
-            $message = 'Your complaint #' . $complaint->complaint_id . ' is now: ' . str_replace('_', ' ', $data['status']);
+            $statusLabel = str_replace('_', ' ', $data['status']);
+            $message = 'Your complaint has been updated. New status: ' . $statusLabel . "\n\n" . notification_contact_footer('complaint');
             $this->complaintService->notifyStudentStatusUpdated($complaint, $title, $message);
         });
 

@@ -4,9 +4,9 @@
  */
 export const STATUS_PRESETS = {
     violation: [
-        { value: 'Pending', label: 'Pending' },
-        { value: 'Under Investigation', label: 'Under Investigation' },
-        { value: 'Resolved', label: 'Resolved' },
+        { value: 'pending', label: 'Pending' },
+        { value: 'under investigation', label: 'Under Investigation' },
+        { value: 'resolved', label: 'Resolved' },
     ],
     sportsBorrowing: [
         { value: 'pending', label: 'Pending' },

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use App\Models\DisciplineWorkflowStep;
+use App\Models\SystemSetting;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -27,7 +28,7 @@ class UpdateDisciplineRequest extends FormRequest
             'violation_date' => ['required', 'date'],
             'violation_type' => ['required', 'string', 'max:255', 'exists:discipline_violation_types,name'],
             'description' => ['required', 'string'],
-            'severity' => ['nullable', 'in:Minor,Moderate,Major'],
+            'severity' => ['nullable', 'in:' . implode(',', SystemSetting::getList('violation_severities'))],
             'status' => ['required', Rule::in(DisciplineWorkflowStep::getStepNames())],
             'sanction' => ['nullable', 'string', 'max:5000'],
             'remarks' => ['nullable', 'string', 'max:5000'],

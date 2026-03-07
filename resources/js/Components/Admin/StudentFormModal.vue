@@ -234,22 +234,7 @@ const close = () => {
                         </div>
                     </div>
 
-                    <!-- Contact Info -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <InputLabel for="email" value="Email" />
-                            <TextInput id="email" v-model="form.email" type="email" class="mt-1 block w-full"
-                                :class="{ 'border-red-500': form.errors.email }" />
-                            <InputError :message="form.errors.email" class="mt-2" />
-                        </div>
 
-                        <div>
-                            <InputLabel for="phone" value="Phone" />
-                            <TextInput id="phone" v-model="form.phone" type="text" class="mt-1 block w-full"
-                                :class="{ 'border-red-500': form.errors.phone }" />
-                            <InputError :message="form.errors.phone" class="mt-2" />
-                        </div>
-                    </div>
 
                     <!-- Course, Year Level, and Section -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">

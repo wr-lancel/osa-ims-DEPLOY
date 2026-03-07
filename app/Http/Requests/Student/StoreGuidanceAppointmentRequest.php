@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Student;
 
+use App\Models\SystemSetting;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreGuidanceAppointmentRequest extends FormRequest
@@ -25,7 +26,7 @@ class StoreGuidanceAppointmentRequest extends FormRequest
             'appointment_date' => ['required', 'date', 'after_or_equal:today'],
             'appointment_time' => ['required', 'date_format:H:i'],
             'concern' => ['required', 'string', 'max:1000'],
-            'appointment_type' => ['required', 'string', 'in:counseling,consultation,referral,other'],
+            'appointment_type' => ['required', 'string', 'in:' . implode(',', SystemSetting::getList('guidance_appointment_types'))],
             'notes' => ['nullable', 'string'],
         ];
     }

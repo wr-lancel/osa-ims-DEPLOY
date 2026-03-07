@@ -7,6 +7,10 @@ import InputLabel from '@/Components/InputLabel.vue';
 import InputError from '@/Components/InputError.vue';
 import { ref, watch } from 'vue';
 import axios from 'axios';
+import NotificationDialog from '@/Components/NotificationDialog.vue';
+import { useNotification } from '@/composables/useNotification';
+
+const { notification, notify, closeNotification } = useNotification();
 
 const props = defineProps({
     show: {
@@ -75,7 +79,7 @@ const submit = () => {
             } else {
                 isProcessing.value = false;
                 if (response.data.message) {
-                    alert(response.data.message);
+                    notify('error', response.data.message);
                 }
             }
         })
@@ -85,9 +89,9 @@ const submit = () => {
                 // Handle validation errors
                 errors.value = error.response.data.errors || {};
             } else if (error.response?.data?.message) {
-                alert(error.response.data.message);
+                notify('error', error.response.data.message);
             } else {
-                alert('Failed to save role. Please try again.');
+                notify('error', 'Failed to save role. Please try again.');
             }
         });
 };
@@ -153,5 +157,13 @@ const close = () => {
             </form>
         </div>
     </Modal>
+
+    <NotificationDialog
+        :show="notification.show"
+        :type="notification.type"
+        :title="notification.title"
+        :message="notification.message"
+        @close="closeNotification"
+    />
 </template>
 

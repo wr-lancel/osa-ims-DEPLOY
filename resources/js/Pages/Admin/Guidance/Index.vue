@@ -13,6 +13,10 @@ import InputLabel from '@/Components/InputLabel.vue';
 import InputError from '@/Components/InputError.vue';
 import StatusProgressBar from '@/Components/StatusProgressBar.vue';
 import Pagination from '@/Components/Pagination.vue';
+import NotificationDialog from '@/Components/NotificationDialog.vue';
+import { useNotification } from '@/composables/useNotification';
+
+const { notification, notify, confirmAction, closeNotification, handleConfirm } = useNotification();
 
 const props = defineProps({
     cases: {
@@ -128,7 +132,7 @@ const viewCaseDetails = async (caseItem) => {
         }
     } catch (error) {
         console.error('Failed to load case details:', error);
-        alert(error.response?.data?.message || 'Failed to load case details.');
+        notify('error', error.response?.data?.message || 'Failed to load case details.');
     }
 };
 
@@ -151,21 +155,25 @@ const handleActionSaved = () => {
 };
 
 const deleteCase = async (caseItem) => {
-    if (!confirm(`Are you sure you want to delete case ${caseItem.case_no}?`)) {
-        return;
-    }
-
-    try {
-        const response = await axios.delete(route('admin.guidance.destroy', caseItem.guidance_case_id));
-        if (response.data.success) {
-            router.reload({ only: ['cases'] });
-        } else {
-            alert(response.data.message || 'Failed to delete case.');
-        }
-    } catch (error) {
-        console.error('Failed to delete case:', error);
-        alert(error.response?.data?.message || 'Failed to delete case.');
-    }
+    confirmAction(
+        `Are you sure you want to delete case ${caseItem.case_no}?`,
+        'Delete Case',
+        async () => {
+            try {
+                const response = await axios.delete(route('admin.guidance.destroy', caseItem.guidance_case_id));
+                if (response.data.success) {
+                    notify('success', 'Case deleted successfully.');
+                    router.reload({ only: ['cases'] });
+                } else {
+                    notify('error', response.data.message || 'Failed to delete case.');
+                }
+            } catch (error) {
+                console.error('Failed to delete case:', error);
+                notify('error', error.response?.data?.message || 'Failed to delete case.');
+            }
+        },
+        { confirmLabel: 'Delete', cancelLabel: 'Cancel' }
+    );
 };
 
 const getStatusBadgeClass = (status, statusColor = null) => {
@@ -287,7 +295,7 @@ const rejectAppointment = () => {
 
     <AdminLayout>
         <template #header>
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <h2 class="text-2xl font-semibold text-gray-900">
                     Guidance Unit
                 </h2>
@@ -881,5 +889,16 @@ const rejectAppointment = () => {
         </div>
 
 
+
+        <NotificationDialog
+            :show="notification.show"
+            :type="notification.type"
+            :title="notification.title"
+            :message="notification.message"
+            :confirm-label="notification.confirmLabel"
+            :cancel-label="notification.cancelLabel"
+            @close="closeNotification"
+            @confirm="handleConfirm"
+        />
     </AdminLayout>
 </template>

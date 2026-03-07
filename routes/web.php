@@ -74,6 +74,14 @@ Route::middleware('auth')->group(function () {
             ->middleware('module:dashboard')
             ->name('dashboard');
 
+        // Term summary report (all admin roles)
+        Route::get('/reports/term-summary', [AdminDashboardController::class, 'termSummaryReport'])
+            ->middleware('module:dashboard')
+            ->name('reports.term-summary');
+        Route::get('/reports/term-summary/pdf', [AdminDashboardController::class, 'termSummaryPdf'])
+            ->middleware('module:dashboard')
+            ->name('reports.term-summary.pdf');
+
         // Student Records (Admin/Super Admin only)
         Route::prefix('students')->name('students.')
             ->middleware(['role:admin,super_admin', 'module:students'])
@@ -227,6 +235,9 @@ Route::middleware('auth')->group(function () {
             Route::post('/settings/violation-types', [SettingsController::class, 'storeViolationType'])->name('settings.violation-types.store');
             Route::put('/settings/violation-types/{type}', [SettingsController::class, 'updateViolationType'])->name('settings.violation-types.update');
             Route::delete('/settings/violation-types/{type}', [SettingsController::class, 'destroyViolationType'])->name('settings.violation-types.destroy');
+
+            // Lookup Values management
+            Route::put('/settings/lookup-values', [SettingsController::class, 'updateLookupValues'])->name('settings.lookup-values.update');
         });
     });
 

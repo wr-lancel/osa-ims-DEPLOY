@@ -8,6 +8,11 @@ import RoleFormModal from '@/Components/Admin/RoleFormModal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import Pagination from '@/Components/Pagination.vue';
+import NotificationDialog from '@/Components/NotificationDialog.vue';
+import { useNotification } from '@/composables/useNotification';
+import { formatLabel } from '@/utils/formatLabel.js';
+
+const { notification, notify, confirmAction, closeNotification, handleConfirm } = useNotification();
 
 const props = defineProps({
     employees: {
@@ -106,21 +111,25 @@ const handleRoleSaved = () => {
 };
 
 const deleteEmployee = async (employee) => {
-    if (!confirm(`Are you sure you want to delete ${employee.full_name}? This will also delete their user account.`)) {
-        return;
-    }
-
-    try {
-        const response = await axios.delete(route('admin.staff.destroy', employee.employee_id));
-        if (response.data.success) {
-            router.reload({ only: ['employees', 'departments', 'positions'] });
-        } else {
-            alert(response.data.message || 'Failed to delete staff member.');
-        }
-    } catch (error) {
-        console.error('Failed to delete employee:', error);
-        alert(error.response?.data?.message || 'Failed to delete staff member.');
-    }
+    confirmAction(
+        `Are you sure you want to delete ${employee.full_name}? This will also delete their user account.`,
+        'Delete Staff Member',
+        async () => {
+            try {
+                const response = await axios.delete(route('admin.staff.destroy', employee.employee_id));
+                if (response.data.success) {
+                    notify('success', 'Staff member deleted successfully.');
+                    router.reload({ only: ['employees', 'departments', 'positions'] });
+                } else {
+                    notify('error', response.data.message || 'Failed to delete staff member.');
+                }
+            } catch (error) {
+                console.error('Failed to delete employee:', error);
+                notify('error', error.response?.data?.message || 'Failed to delete staff member.');
+            }
+        },
+        { confirmLabel: 'Delete', cancelLabel: 'Cancel' }
+    );
 };
 
 const flash = computed(() => page.props.flash || {});
@@ -143,14 +152,11 @@ const exportPdf = () => {
 
     <AdminLayout>
         <template #header>
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <h2 class="text-2xl font-semibold text-gray-900">
                     Manage Staff
                 </h2>
                 <div class="flex flex-wrap gap-2">
-                    <SecondaryButton @click="openRoleModal">
-                        Manage Roles
-                    </SecondaryButton>
                     <SecondaryButton @click="exportPdf">
                         Export PDF
                     </SecondaryButton>
@@ -219,7 +225,7 @@ const exportPdf = () => {
                             class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                             <option value="">All</option>
                             <option v-for="role in roles" :key="role.role_id" :value="role.role_id">
-                                {{ role.role_name }}
+                                {{ formatLabel(role.role_name) }}
                             </option>
                         </select>
                     </div>
@@ -307,14 +313,14 @@ const exportPdf = () => {
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     <span v-if="employee.roles && employee.roles.length > 0"
                                         class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                        {{employee.roles.map(r => r.role_name).join(', ')}}
+                                        {{ employee.roles.map(r => formatLabel(r.role_name)).join(', ') }}
                                     </span>
                                     <span v-else class="text-gray-400">No role</span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                                     <span :class="employee.status === 'active' ? 'text-green-600' : 'text-red-600'"
                                         class="font-medium">
-                                        {{ employee.status || 'N/A' }}
+                                        {{ formatLabel(employee.status) || 'N/A' }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -341,5 +347,16 @@ const exportPdf = () => {
             @saved="handleStaffSaved" />
 
         <RoleFormModal :show="showRoleModal" @close="closeRoleModal" @saved="handleRoleSaved" />
+
+        <NotificationDialog
+            :show="notification.show"
+            :type="notification.type"
+            :title="notification.title"
+            :message="notification.message"
+            :confirm-label="notification.confirmLabel"
+            :cancel-label="notification.cancelLabel"
+            @close="closeNotification"
+            @confirm="handleConfirm"
+        />
     </AdminLayout>
 </template>

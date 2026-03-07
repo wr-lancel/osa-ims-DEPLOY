@@ -30,6 +30,10 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    violationSeverities: {
+        type: Array,
+        default: () => ['Minor', 'Moderate', 'Major'],
+    },
 });
 
 const emit = defineEmits(['close', 'saved']);
@@ -43,7 +47,7 @@ const form = useForm({
     violation_type: '',
     description: '',
     severity: '',
-    status: 'Pending',
+    status: 'pending',
     sanction: '',
     remarks: '',
     date_resolved: '',
@@ -58,12 +62,10 @@ const enrollmentOptions = computed(() => {
     }));
 });
 
-const severityOptions = [
+const severityOptions = computed(() => [
     { value: '', label: 'Select Severity' },
-    { value: 'Minor', label: 'Minor' },
-    { value: 'Moderate', label: 'Moderate' },
-    { value: 'Major', label: 'Major' },
-];
+    ...props.violationSeverities.map(s => ({ value: s, label: s })),
+]);
 
 // Default status = first workflow step
 const defaultStatus = computed(() => props.statusOptions[0]?.value || 'Violation Reported');

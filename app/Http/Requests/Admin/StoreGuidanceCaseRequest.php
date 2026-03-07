@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Models\SystemSetting;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreGuidanceCaseRequest extends FormRequest
@@ -24,7 +25,7 @@ class StoreGuidanceCaseRequest extends FormRequest
         return [
             'enrollment_id' => ['required', 'exists:enrolled_students,enrollment_id'],
             'case_no' => ['required', 'string', 'max:50', 'unique:guidance_cases,case_no'],
-            'case_type' => ['required', 'string', 'in:counseling,consultation,referral'],
+            'case_type' => ['required', 'string', 'in:' . implode(',', SystemSetting::getList('guidance_case_types'))],
             'concern' => ['nullable', 'string'],
             'status' => ['required', 'string', 'in:pending,ongoing,resolved,closed'],
             'assigned_staff_id' => ['nullable', 'exists:employees,employee_id'],

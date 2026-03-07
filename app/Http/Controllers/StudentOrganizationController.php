@@ -10,6 +10,7 @@ use App\Models\StudentOrganization;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -265,6 +266,18 @@ class StudentOrganizationController extends Controller
             'status' => 'required|in:Planning,Upcoming,Completed',
         ]);
 
+        if (! $request->boolean('confirm_date_conflict')) {
+            $conflictingOrgs = Event::otherOrgsOnDate($validated['event_date'], null, (int) $organization->org_id);
+            if (! empty($conflictingOrgs)) {
+                $names = implode(', ', $conflictingOrgs);
+                throw ValidationException::withMessages([
+                    'date_conflict' => [
+                        "Another organization already has an event on this date ({$names}). Do you want to continue? Ask your adviser or org admin first.",
+                    ],
+                ]);
+            }
+        }
+
         Event::create([
             'org_id' => $organization->org_id,
             'event_name' => $validated['event_name'],
@@ -349,12 +362,13 @@ class StudentOrganizationController extends Controller
             $timeStr .= ' - ' . $meeting->end_time;
         }
 
+        $body = 'You are notified of the following meeting. ' . $organization->org_name . ' has scheduled a meeting on ' . $meeting->meeting_date->format('M d, Y') . ' at ' . $timeStr . '.' . ($meeting->venue ? ' Venue: ' . $meeting->venue . '.' : '') . ($meeting->description ? ' Agenda: ' . $meeting->description : '') . "\n\n" . notification_contact_footer('org_meeting');
         foreach ($users as $user) {
             Notification::create([
                 'user_id' => $user->user_id,
                 'type' => 'org_meeting',
                 'title' => "Meeting Called: {$meeting->title}",
-                'message' => "{$organization->org_name} has scheduled a meeting on {$meeting->meeting_date->format('M d, Y')} at {$timeStr}." . ($meeting->venue ? " Venue: {$meeting->venue}." : '') . ($meeting->description ? " Agenda: {$meeting->description}" : ''),
+                'message' => $body,
             ]);
         }
     }

@@ -8,6 +8,10 @@ import InputError from '@/Components/InputError.vue';
 import { useForm } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 import axios from 'axios';
+import NotificationDialog from '@/Components/NotificationDialog.vue';
+import { useNotification } from '@/composables/useNotification';
+
+const { notification, notify, closeNotification } = useNotification();
 
 const props = defineProps({
     show: {
@@ -77,7 +81,7 @@ const submit = () => {
             } else {
                 isProcessing.value = false;
                 if (response.data.message) {
-                    alert(response.data.message);
+                    notify('error', response.data.message);
                 }
             }
         })
@@ -90,9 +94,9 @@ const submit = () => {
                     form.setError(key, errors[key][0]);
                 });
             } else if (error.response?.data?.message) {
-                alert(error.response.data.message);
+                notify('error', error.response.data.message);
             } else {
-                alert('Failed to save section. Please try again.');
+                notify('error', 'Failed to save section. Please try again.');
             }
         });
 };
@@ -112,9 +116,9 @@ const handleDelete = () => {
             })
             .catch((error) => {
                 if (error.response?.data?.message) {
-                    alert(error.response.data.message);
+                    notify('error', error.response.data.message);
                 } else {
-                    alert('Failed to delete section.');
+                    notify('error', 'Failed to delete section.');
                 }
             });
     } else {
@@ -211,5 +215,13 @@ const close = () => {
             </form>
         </div>
     </Modal>
+
+    <NotificationDialog
+        :show="notification.show"
+        :type="notification.type"
+        :title="notification.title"
+        :message="notification.message"
+        @close="closeNotification"
+    />
 </template>
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Student;
 
+use App\Models\SystemSetting;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreComplaintRequest extends FormRequest
@@ -21,7 +22,7 @@ class StoreComplaintRequest extends FormRequest
      */
     public function rules(): array
     {
-        $categories = ['Academic Integrity', 'Campus Conduct', 'Prohibited Activities', 'Other'];
+        $categories = SystemSetting::getList('complaint_categories');
 
         return [
             'category' => ['required', 'string', 'in:' . implode(',', $categories)],

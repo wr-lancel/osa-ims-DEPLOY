@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Models\SystemSetting;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreOrganizationRequest extends FormRequest
@@ -17,7 +18,7 @@ class StoreOrganizationRequest extends FormRequest
             'org_name' => ['required', 'string', 'max:255'],
             'org_code' => ['required', 'string', 'max:50', 'unique:student_org,org_code'],
             'description' => ['nullable', 'string'],
-            'type' => ['nullable', 'in:Academic,Cultural,Governance,Special Interest'],
+            'type' => ['nullable', 'in:' . implode(',', SystemSetting::getList('organization_types'))],
             'status' => ['required', 'in:active,inactive'],
         ];
     }

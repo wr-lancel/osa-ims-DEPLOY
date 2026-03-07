@@ -42,7 +42,7 @@ class ComplaintService
     {
         $adminIds = $this->getDisciplineAdminUserIds();
         $title = 'New complaint submitted';
-        $message = 'Complaint #' . $complaint->complaint_id . ': ' . $complaint->subject;
+        $message = 'A new complaint has been submitted: ' . $complaint->subject;
 
         foreach ($adminIds as $userId) {
             Notification::create([

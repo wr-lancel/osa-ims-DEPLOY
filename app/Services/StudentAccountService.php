@@ -16,14 +16,16 @@ class StudentAccountService
 
     public function __construct()
     {
-        $this->emailDomain = config('app.student_email_domain', 'student.chcc.edu.ph');
+        $this->emailDomain = config('app.student_email_domain', 'chcc.edu.ph');
     }
 
     /**
      * Create a user account for a student.
+     * Email is always auto-generated from the student number following
+     * the institutional format: {student_number}@chcc.edu.ph
      *
      * @param Student $student
-     * @param string|null $email Override email (if null, will generate)
+     * @param string|null $email Ignored — always auto-generated
      * @param string|null $password Override password (if null, will use student_number)
      * @return User
      * @throws \Exception
@@ -35,10 +37,8 @@ class StudentAccountService
             throw new \Exception("Student already has an account.");
         }
 
-        // Generate email if not provided
-        if (!$email) {
-            $email = $this->generateEmail($student->student_number);
-        }
+        // Always auto-generate email from student number (institutional format)
+        $email = $this->generateEmail($student->student_number);
 
         // Generate password if not provided
         if (!$password) {

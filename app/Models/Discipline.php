@@ -13,6 +13,11 @@ class Discipline extends Model
     protected $primaryKey = 'discipline_id';
     public $incrementing = true;
 
+    /**
+     * Cached workflow steps to avoid repeated DB queries when rendering lists.
+     */
+    private static ?object $cachedSteps = null;
+
     protected $fillable = [
         'student_number',
         'enrollment_id',
@@ -100,7 +105,11 @@ class Discipline extends Model
      */
     public function getStatusColorAttribute(): string
     {
-        $steps = DisciplineWorkflowStep::ordered()->get();
+        if (static::$cachedSteps === null) {
+            static::$cachedSteps = DisciplineWorkflowStep::ordered()->get();
+        }
+
+        $steps = static::$cachedSteps;
         $total = $steps->count();
 
         if ($total === 0) {

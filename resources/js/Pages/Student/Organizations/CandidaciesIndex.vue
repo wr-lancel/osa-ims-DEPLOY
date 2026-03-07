@@ -2,11 +2,19 @@
 import StudentLayout from '@/Layouts/StudentLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
+import NotificationDialog from '@/Components/NotificationDialog.vue';
+import { useNotification } from '@/composables/useNotification';
+
+const { notification, confirmAction, closeNotification, handleConfirm } = useNotification();
 
 const props = defineProps({
     candidacies: {
         type: Array,
         default: () => [],
+    },
+    candidacyOpen: {
+        type: Boolean,
+        default: true,
     },
 });
 
@@ -24,8 +32,14 @@ const getStatusColor = (status) => {
 const canWithdraw = (status) => status === 'submitted' || status === 'under_review';
 
 const withdraw = (application) => {
-    if (!confirm('Are you sure you want to withdraw this candidacy?')) return;
-    router.post(route('student.organizations.candidacy.withdraw', application.application_id));
+    confirmAction(
+        'Are you sure you want to withdraw this candidacy? This action cannot be undone.',
+        'Withdraw Candidacy',
+        () => {
+            router.post(route('student.organizations.candidacy.withdraw', application.application_id));
+        },
+        { confirmLabel: 'Withdraw', cancelLabel: 'Cancel' }
+    );
 };
 </script>
 
@@ -45,6 +59,20 @@ const withdraw = (application) => {
         </template>
 
         <div class="space-y-6">
+            <!-- Candidacy Closed Warning -->
+            <div v-if="!candidacyOpen" class="bg-amber-50 border border-amber-300 rounded-lg p-4">
+                <div class="flex items-center">
+                    <svg class="h-5 w-5 text-amber-500 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                    <div>
+                        <h3 class="text-sm font-semibold text-amber-800">Candidacy Submissions Closed</h3>
+                        <p class="text-sm text-amber-700 mt-1">
+                            Certificate of Candidacy submissions are currently not open. You cannot submit new candidacies at this time.
+                        </p>
+                    </div>
+                </div>
+            </div>
             <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Certificate of Candidacy Applications</h3>
 
@@ -116,4 +144,15 @@ const withdraw = (application) => {
             </div>
         </div>
     </StudentLayout>
+
+    <NotificationDialog
+        :show="notification.show"
+        :type="notification.type"
+        :title="notification.title"
+        :message="notification.message"
+        :confirm-label="notification.confirmLabel"
+        :cancel-label="notification.cancelLabel"
+        @close="closeNotification"
+        @confirm="handleConfirm"
+    />
 </template>

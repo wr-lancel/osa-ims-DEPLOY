@@ -15,6 +15,7 @@ use App\Models\EnrolledStudent;
 use App\Models\AcademicCalendar;
 use App\Models\Employee;
 use App\Models\Student;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -126,73 +127,7 @@ class GuidanceController extends Controller
             ->orderBy('created_at', 'asc')
             ->limit(10)
             ->get()
-            ->map(function ($appointment) {
-                $studentName = '';
-                $studentId = '';
-
-                if ($appointment->student) {
-                    $studentName = $appointment->student->full_name;
-                    $studentId = $appointment->student->student_number;
-                } elseif ($appointment->employee) {
-                    $studentName = $appointment->employee->full_name;
-                    $studentId = $appointment->employee->employee_number;
-                } else {
-                    if ($appointment->student_number) {
-                        $student = Student::where('student_number', $appointment->student_number)->first();
-                        if ($student) {
-                            $studentName = $student->full_name;
-                            $studentId = $student->student_number;
-                        }
-                    }
-                    if (empty($studentName) && $appointment->employee_id) {
-                        $employee = Employee::where('employee_id', $appointment->employee_id)->first();
-                        if ($employee) {
-                            $studentName = $employee->full_name;
-                            $studentId = $employee->employee_number;
-                        }
-                    }
-                    if (empty($studentName) && !$appointment->student_number && !$appointment->employee_id) {
-                        $studentName = 'Unknown Student';
-                        $studentId = 'N/A';
-                    }
-                }
-
-                $approverName = null;
-                if ($appointment->approver) {
-                    if ($appointment->approver->student) {
-                        $approverName = $appointment->approver->student->full_name;
-                    } else {
-                        $employee = Employee::where('email', $appointment->approver->email)->first();
-                        $approverName = $employee ? $employee->full_name : $appointment->approver->email;
-                    }
-                }
-
-                $rejectorName = null;
-                if ($appointment->rejector) {
-                    if ($appointment->rejector->student) {
-                        $rejectorName = $appointment->rejector->student->full_name;
-                    } else {
-                        $employee = Employee::where('email', $appointment->rejector->email)->first();
-                        $rejectorName = $employee ? $employee->full_name : $appointment->rejector->email;
-                    }
-                }
-
-                return [
-                    'appointment_id' => $appointment->appointment_id,
-                    'student_name' => $studentName,
-                    'student_id' => $studentId,
-                    'appointment_date' => $appointment->appointment_date->format('Y-m-d'),
-                    'appointment_time' => substr($appointment->appointment_time, 0, 5),
-                    'concern' => $appointment->concern,
-                    'appointment_type' => $appointment->appointment_type,
-                    'created_at' => $appointment->created_at->format('Y-m-d H:i'),
-                    'admin_remarks' => $appointment->admin_remarks,
-                    'approved_at' => $appointment->approved_at ? $appointment->approved_at->format('Y-m-d H:i') : null,
-                    'rejected_at' => $appointment->rejected_at ? $appointment->rejected_at->format('Y-m-d H:i') : null,
-                    'approver_name' => $approverName,
-                    'rejector_name' => $rejectorName,
-                ];
-            });
+            ->map(fn($a) => $this->transformAppointmentForList($a));
 
         // Get all appointments with filters
         $appointmentsQuery = GuidanceAppointment::with(['student', 'employee', 'approver', 'rejector']);
@@ -231,75 +166,7 @@ class GuidanceController extends Controller
             ->withQueryString();
 
         // Transform appointments data
-        $appointments->getCollection()->transform(function ($appointment) {
-            $studentName = '';
-            $studentId = '';
-
-            if ($appointment->student) {
-                $studentName = $appointment->student->full_name;
-                $studentId = $appointment->student->student_number;
-            } elseif ($appointment->employee) {
-                $studentName = $appointment->employee->full_name;
-                $studentId = $appointment->employee->employee_number;
-            } else {
-                if ($appointment->student_number) {
-                    $student = Student::where('student_number', $appointment->student_number)->first();
-                    if ($student) {
-                        $studentName = $student->full_name;
-                        $studentId = $student->student_number;
-                    }
-                }
-                if (empty($studentName) && $appointment->employee_id) {
-                    $employee = Employee::where('employee_id', $appointment->employee_id)->first();
-                    if ($employee) {
-                        $studentName = $employee->full_name;
-                        $studentId = $employee->employee_number;
-                    }
-                }
-                if (empty($studentName) && !$appointment->student_number && !$appointment->employee_id) {
-                    $studentName = 'Unknown Student';
-                    $studentId = 'N/A';
-                }
-            }
-
-            $approverName = null;
-            if ($appointment->approver) {
-                if ($appointment->approver->student) {
-                    $approverName = $appointment->approver->student->full_name;
-                } else {
-                    $employee = Employee::where('email', $appointment->approver->email)->first();
-                    $approverName = $employee ? $employee->full_name : $appointment->approver->email;
-                }
-            }
-
-            $rejectorName = null;
-            if ($appointment->rejector) {
-                if ($appointment->rejector->student) {
-                    $rejectorName = $appointment->rejector->student->full_name;
-                } else {
-                    $employee = Employee::where('email', $appointment->rejector->email)->first();
-                    $rejectorName = $employee ? $employee->full_name : $appointment->rejector->email;
-                }
-            }
-
-            return [
-                'appointment_id' => $appointment->appointment_id,
-                'student_name' => $studentName,
-                'student_id' => $studentId,
-                'appointment_date' => $appointment->appointment_date->format('Y-m-d'),
-                'appointment_time' => substr($appointment->appointment_time, 0, 5),
-                'concern' => $appointment->concern,
-                'appointment_type' => $appointment->appointment_type,
-                'status' => $appointment->formatted_status,
-                'status_color' => $appointment->status_color,
-                'admin_remarks' => $appointment->admin_remarks,
-                'approved_at' => $appointment->approved_at ? $appointment->approved_at->format('Y-m-d H:i') : null,
-                'rejected_at' => $appointment->rejected_at ? $appointment->rejected_at->format('Y-m-d H:i') : null,
-                'approver_name' => $approverName,
-                'rejector_name' => $rejectorName,
-                'created_at' => $appointment->created_at->format('Y-m-d H:i'),
-            ];
-        });
+        $appointments->getCollection()->transform(fn($a) => $this->transformAppointmentForList($a, true));
 
         return Inertia::render('Admin/Guidance/Index', [
             'cases' => $cases,
@@ -610,78 +477,7 @@ class GuidanceController extends Controller
             ->orderBy('created_at', 'asc')
             ->limit(10)
             ->get()
-            ->map(function ($appointment) {
-                $studentName = '';
-                $studentId = '';
-
-                if ($appointment->student) {
-                    $studentName = $appointment->student->full_name;
-                    $studentId = $appointment->student->student_number;
-                } elseif ($appointment->employee) {
-                    $studentName = $appointment->employee->full_name;
-                    $studentId = $appointment->employee->employee_number;
-                } else {
-                    // Fallback: try to get student directly if relationship didn't load
-                    if ($appointment->student_number) {
-                        $student = Student::where('student_number', $appointment->student_number)->first();
-                        if ($student) {
-                            $studentName = $student->full_name;
-                            $studentId = $student->student_number;
-                        }
-                    }
-                    // Fallback: try to get employee directly if relationship didn't load
-                    if (empty($studentName) && $appointment->employee_id) {
-                        $employee = Employee::where('employee_id', $appointment->employee_id)->first();
-                        if ($employee) {
-                            $studentName = $employee->full_name;
-                            $studentId = $employee->employee_number;
-                        }
-                    }
-                    // Additional fallback: if student_number is null, show Unknown Student
-                    if (empty($studentName) && !$appointment->student_number && !$appointment->employee_id) {
-                        $studentName = 'Unknown Student';
-                        $studentId = 'N/A';
-                    }
-                }
-
-                // Get approver name
-                $approverName = null;
-                if ($appointment->approver) {
-                    if ($appointment->approver->student) {
-                        $approverName = $appointment->approver->student->full_name;
-                    } else {
-                        $employee = Employee::where('email', $appointment->approver->email)->first();
-                        $approverName = $employee ? $employee->full_name : $appointment->approver->email;
-                    }
-                }
-
-                // Get rejector name
-                $rejectorName = null;
-                if ($appointment->rejector) {
-                    if ($appointment->rejector->student) {
-                        $rejectorName = $appointment->rejector->student->full_name;
-                    } else {
-                        $employee = Employee::where('email', $appointment->rejector->email)->first();
-                        $rejectorName = $employee ? $employee->full_name : $appointment->rejector->email;
-                    }
-                }
-
-                return [
-                    'appointment_id' => $appointment->appointment_id,
-                    'student_name' => $studentName,
-                    'student_id' => $studentId,
-                    'appointment_date' => $appointment->appointment_date->format('Y-m-d'),
-                    'appointment_time' => substr($appointment->appointment_time, 0, 5), // Extract HH:mm from TIME format
-                    'concern' => $appointment->concern,
-                    'appointment_type' => $appointment->appointment_type,
-                    'created_at' => $appointment->created_at->format('Y-m-d H:i'),
-                    'admin_remarks' => $appointment->admin_remarks,
-                    'approved_at' => $appointment->approved_at ? $appointment->approved_at->format('Y-m-d H:i') : null,
-                    'rejected_at' => $appointment->rejected_at ? $appointment->rejected_at->format('Y-m-d H:i') : null,
-                    'approver_name' => $approverName,
-                    'rejector_name' => $rejectorName,
-                ];
-            });
+            ->map(fn($a) => $this->transformAppointmentForList($a));
 
         // Get all appointments with filters
         $appointmentsQuery = GuidanceAppointment::with(['student', 'employee', 'approver', 'rejector']);
@@ -720,80 +516,7 @@ class GuidanceController extends Controller
             ->withQueryString();
 
         // Transform appointments data
-        $appointments->getCollection()->transform(function ($appointment) {
-            $studentName = '';
-            $studentId = '';
-
-            if ($appointment->student) {
-                $studentName = $appointment->student->full_name;
-                $studentId = $appointment->student->student_number;
-            } elseif ($appointment->employee) {
-                $studentName = $appointment->employee->full_name;
-                $studentId = $appointment->employee->employee_number;
-            } else {
-                // Fallback: try to get student directly if relationship didn't load
-                if ($appointment->student_number) {
-                    $student = Student::where('student_number', $appointment->student_number)->first();
-                    if ($student) {
-                        $studentName = $student->full_name;
-                        $studentId = $student->student_number;
-                    }
-                }
-                // Fallback: try to get employee directly if relationship didn't load
-                if (empty($studentName) && $appointment->employee_id) {
-                    $employee = Employee::where('employee_id', $appointment->employee_id)->first();
-                    if ($employee) {
-                        $studentName = $employee->full_name;
-                        $studentId = $employee->employee_number;
-                    }
-                }
-                // Additional fallback: if student_number is null, show Unknown Student
-                if (empty($studentName) && !$appointment->student_number && !$appointment->employee_id) {
-                    $studentName = 'Unknown Student';
-                    $studentId = 'N/A';
-                }
-            }
-
-            // Get approver name
-            $approverName = null;
-            if ($appointment->approver) {
-                if ($appointment->approver->student) {
-                    $approverName = $appointment->approver->student->full_name;
-                } else {
-                    $employee = Employee::where('email', $appointment->approver->email)->first();
-                    $approverName = $employee ? $employee->full_name : $appointment->approver->email;
-                }
-            }
-
-            // Get rejector name
-            $rejectorName = null;
-            if ($appointment->rejector) {
-                if ($appointment->rejector->student) {
-                    $rejectorName = $appointment->rejector->student->full_name;
-                } else {
-                    $employee = Employee::where('email', $appointment->rejector->email)->first();
-                    $rejectorName = $employee ? $employee->full_name : $appointment->rejector->email;
-                }
-            }
-
-            return [
-                'appointment_id' => $appointment->appointment_id,
-                'student_name' => $studentName,
-                'student_id' => $studentId,
-                'appointment_date' => $appointment->appointment_date->format('Y-m-d'),
-                'appointment_time' => $appointment->appointment_time->format('H:i'),
-                'concern' => $appointment->concern,
-                'appointment_type' => $appointment->appointment_type,
-                'status' => $appointment->formatted_status,
-                'status_color' => $appointment->status_color,
-                'admin_remarks' => $appointment->admin_remarks,
-                'approved_at' => $appointment->approved_at ? $appointment->approved_at->format('Y-m-d H:i') : null,
-                'rejected_at' => $appointment->rejected_at ? $appointment->rejected_at->format('Y-m-d H:i') : null,
-                'approver_name' => $approverName,
-                'rejector_name' => $rejectorName,
-                'created_at' => $appointment->created_at->format('Y-m-d H:i'),
-            ];
-        });
+        $appointments->getCollection()->transform(fn($a) => $this->transformAppointmentForList($a, true));
 
         return Inertia::render('Admin/Guidance/Index', [
             'cases' => GuidanceCase::with(['enrollment.student', 'assignedStaff'])->paginate($request->input('perPage', 20)),
@@ -892,61 +615,15 @@ class GuidanceController extends Controller
     {
         $appointment->load(['student', 'employee', 'approver', 'rejector']);
 
-        $studentName = '';
-        $studentId = '';
-
-        if ($appointment->student) {
-            $studentName = $appointment->student->full_name;
-            $studentId = $appointment->student->student_number;
-        } elseif ($appointment->employee) {
-            $studentName = $appointment->employee->full_name;
-            $studentId = $appointment->employee->employee_number;
-        } else {
-            if ($appointment->student_number) {
-                $student = Student::where('student_number', $appointment->student_number)->first();
-                if ($student) {
-                    $studentName = $student->full_name;
-                    $studentId = $student->student_number;
-                }
-            }
-            if (empty($studentName) && $appointment->employee_id) {
-                $employee = Employee::where('employee_id', $appointment->employee_id)->first();
-                if ($employee) {
-                    $studentName = $employee->full_name;
-                    $studentId = $employee->employee_number;
-                }
-            }
-            if (empty($studentName)) {
-                $studentName = 'Unknown Student';
-                $studentId = 'N/A';
-            }
-        }
-
-        $approverName = null;
-        if ($appointment->approver) {
-            if ($appointment->approver->student) {
-                $approverName = $appointment->approver->student->full_name;
-            } else {
-                $employee = Employee::where('email', $appointment->approver->email)->first();
-                $approverName = $employee ? $employee->full_name : $appointment->approver->email;
-            }
-        }
-
-        $rejectorName = null;
-        if ($appointment->rejector) {
-            if ($appointment->rejector->student) {
-                $rejectorName = $appointment->rejector->student->full_name;
-            } else {
-                $employee = Employee::where('email', $appointment->rejector->email)->first();
-                $rejectorName = $employee ? $employee->full_name : $appointment->rejector->email;
-            }
-        }
+        $identity = $this->resolveAppointmentIdentity($appointment);
+        $approverName = $this->resolveUserDisplayName($appointment->approver);
+        $rejectorName = $this->resolveUserDisplayName($appointment->rejector);
 
         return Inertia::render('Admin/Guidance/ShowAppointment', [
             'appointment' => [
                 'appointment_id' => $appointment->appointment_id,
-                'student_name' => $studentName,
-                'student_id' => $studentId,
+                'student_name' => $identity['name'],
+                'student_id' => $identity['id'],
                 'appointment_date' => $appointment->appointment_date->format('Y-m-d'),
                 'appointment_time' => $appointment->appointment_time->format('H:i'),
                 'concern' => $appointment->concern,
@@ -1097,7 +774,7 @@ class GuidanceController extends Controller
     public function updateAppointmentStatus(Request $request, GuidanceAppointment $appointment)
     {
         $request->validate([
-            'status' => 'required|string|in:Pending,Approved,Completed,Rejected,Cancelled',
+            'status' => 'required|string|in:pending,approved,completed,rejected,cancelled',
         ]);
 
         $newStatus = $request->input('status');
@@ -1109,11 +786,11 @@ class GuidanceController extends Controller
         try {
             $updateData = ['status' => $newStatus];
 
-            if ($newStatus === 'Approved' && !$appointment->approved_at) {
+            if ($newStatus === 'approved' && !$appointment->approved_at) {
                 $updateData['approved_at'] = now();
                 $updateData['approved_by'] = Auth::id();
             }
-            if ($newStatus === 'Rejected' && !$appointment->rejected_at) {
+            if ($newStatus === 'rejected' && !$appointment->rejected_at) {
                 $updateData['rejected_at'] = now();
                 $updateData['rejected_by'] = Auth::id();
             }
@@ -1130,5 +807,98 @@ class GuidanceController extends Controller
             return redirect()->back()
                 ->withErrors(['error' => 'Failed to update appointment status.']);
         }
+    }
+
+    // ─── Private Helpers ─────────────────────────────────────────
+
+    /**
+     * Resolve the display name and ID for an appointment's requester (student or employee).
+     *
+     * @return array{name: string, id: string}
+     */
+    private function resolveAppointmentIdentity(GuidanceAppointment $appointment): array
+    {
+        if ($appointment->student) {
+            return ['name' => $appointment->student->full_name, 'id' => $appointment->student->student_number];
+        }
+
+        if ($appointment->employee) {
+            return ['name' => $appointment->employee->full_name, 'id' => $appointment->employee->employee_number];
+        }
+
+        // Fallback: try to get student directly if relationship didn't load
+        if ($appointment->student_number) {
+            $student = Student::where('student_number', $appointment->student_number)->first();
+            if ($student) {
+                return ['name' => $student->full_name, 'id' => $student->student_number];
+            }
+        }
+
+        // Fallback: try to get employee directly if relationship didn't load
+        if ($appointment->employee_id) {
+            $employee = Employee::where('employee_id', $appointment->employee_id)->first();
+            if ($employee) {
+                return ['name' => $employee->full_name, 'id' => $employee->employee_number];
+            }
+        }
+
+        return ['name' => 'Unknown Student', 'id' => 'N/A'];
+    }
+
+    /**
+     * Resolve the display name for a user (approver or rejector).
+     */
+    private function resolveUserDisplayName(?User $user): ?string
+    {
+        if (!$user) {
+            return null;
+        }
+
+        if ($user->student) {
+            return $user->student->full_name;
+        }
+
+        $employee = Employee::where('email', $user->email)->first();
+        return $employee ? $employee->full_name : $user->email;
+    }
+
+    /**
+     * Transform a GuidanceAppointment into a list-ready array.
+     *
+     * @param bool $includeStatusFields Whether to include formatted_status, status_color, etc.
+     */
+    private function transformAppointmentForList(GuidanceAppointment $appointment, bool $includeStatusFields = false): array
+    {
+        $identity = $this->resolveAppointmentIdentity($appointment);
+        $approverName = $this->resolveUserDisplayName($appointment->approver);
+        $rejectorName = $this->resolveUserDisplayName($appointment->rejector);
+
+        $timeValue = $appointment->appointment_time;
+        $formattedTime = $timeValue instanceof \DateTimeInterface
+            ? $timeValue->format('H:i')
+            : substr((string) $timeValue, 0, 5);
+
+        $data = [
+            'appointment_id' => $appointment->appointment_id,
+            'student_name' => $identity['name'],
+            'student_id' => $identity['id'],
+            'appointment_date' => $appointment->appointment_date->format('Y-m-d'),
+            'appointment_time' => $formattedTime,
+            'concern' => $appointment->concern,
+            'appointment_type' => $appointment->appointment_type,
+            'created_at' => $appointment->created_at->format('Y-m-d H:i'),
+            'admin_remarks' => $appointment->admin_remarks,
+            'approved_at' => $appointment->approved_at ? $appointment->approved_at->format('Y-m-d H:i') : null,
+            'rejected_at' => $appointment->rejected_at ? $appointment->rejected_at->format('Y-m-d H:i') : null,
+            'approver_name' => $approverName,
+            'rejector_name' => $rejectorName,
+        ];
+
+        if ($includeStatusFields) {
+            $data['status'] = $appointment->formatted_status;
+            $data['status_color'] = $appointment->status_color;
+        }
+
+        return $data;
     }
 }

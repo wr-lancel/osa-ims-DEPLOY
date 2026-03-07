@@ -108,6 +108,8 @@ const submitEdit = () => {
 
 // Create Event Modal
 const showEventModal = ref(false);
+const showEventConflictDialog = ref(false);
+const eventConflictMessage = ref('');
 const eventForm = useForm({
     event_name: '',
     description: '',
@@ -116,6 +118,7 @@ const eventForm = useForm({
     end_time: '',
     venue: '',
     status: 'Planning',
+    confirm_date_conflict: '',
 });
 
 const statusOptions = [
@@ -127,6 +130,7 @@ const openEventModal = () => {
     eventForm.reset();
     eventForm.event_date = new Date().toISOString().split('T')[0];
     eventForm.status = 'Planning';
+    eventForm.confirm_date_conflict = '';
     showEventModal.value = true;
 };
 
@@ -135,11 +139,30 @@ const closeEventModal = () => {
     eventForm.reset();
 };
 
-const submitEvent = () => {
+const doSubmitEvent = () => {
     eventForm.post(route('student.organizations.events.store', props.organization.org_id), {
         preserveScroll: true,
-        onSuccess: () => closeEventModal(),
+        onSuccess: () => {
+            eventForm.confirm_date_conflict = '';
+            closeEventModal();
+        },
+        onError: (errors) => {
+            if (errors.date_conflict && Array.isArray(errors.date_conflict) && errors.date_conflict[0]) {
+                eventConflictMessage.value = errors.date_conflict[0];
+                showEventConflictDialog.value = true;
+            }
+        },
     });
+};
+
+const submitEvent = () => {
+    doSubmitEvent();
+};
+
+const confirmEventConflictAndSubmit = () => {
+    showEventConflictDialog.value = false;
+    eventForm.confirm_date_conflict = '1';
+    doSubmitEvent();
 };
 
 const getStatusColor = (status) => {
@@ -774,6 +797,32 @@ const getAudienceLabel = (audience) => {
                         </PrimaryButton>
                     </div>
                 </form>
+
+                <!-- Event date conflict confirmation -->
+                <div
+                    v-if="showEventConflictDialog"
+                    class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="student-conflict-dialog-title"
+                >
+                    <div class="bg-white rounded-xl shadow-lg max-w-md w-full p-6">
+                        <h3 id="student-conflict-dialog-title" class="text-lg font-semibold text-gray-900 mb-2">
+                            Event date conflict
+                        </h3>
+                        <p class="text-sm text-gray-600 mb-6">
+                            {{ eventConflictMessage }}
+                        </p>
+                        <div class="flex justify-end space-x-3">
+                            <SecondaryButton type="button" @click="showEventConflictDialog = false">
+                                Cancel
+                            </SecondaryButton>
+                            <PrimaryButton type="button" @click="confirmEventConflictAndSubmit">
+                                Continue anyway
+                            </PrimaryButton>
+                        </div>
+                    </div>
+                </div>
             </div>
         </Modal>
 

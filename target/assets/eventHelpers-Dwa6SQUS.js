@@ -1,0 +1,1 @@
+function r(e){return e===0?"bg-red-100 text-red-800":e<=3?"bg-orange-100 text-orange-800":e<=7?"bg-yellow-100 text-yellow-800":"bg-blue-100 text-blue-800"}function t(e){return e===0?"Today":e===1?"Tomorrow":`In ${e} days`}export{t as a,r as g};

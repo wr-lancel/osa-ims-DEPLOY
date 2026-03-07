@@ -8,6 +8,8 @@ use App\Models\Course;
 use App\Models\Discipline;
 use App\Models\DisciplineViolationType;
 use App\Models\DisciplineWorkflowStep;
+use App\Models\Role;
+use App\Models\SystemSetting;
 use App\Models\Section;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -95,6 +97,18 @@ class SettingsController extends Controller
             'sort_order' => $t->sort_order,
             'cases_count' => Discipline::where('violation_type', $t->name)->where('severity', $t->severity)->count(),
         ]);
+        // Get roles with user counts
+        $roles = Role::withCount('users')->orderBy('role_name')->get()->map(fn($role) => [
+            'role_id' => $role->role_id,
+            'role_name' => $role->role_name,
+            'users_count' => $role->users_count,
+        ]);
+
+        // Get lookup values
+        $lookupValues = [];
+        foreach (array_keys(SystemSetting::DEFAULTS) as $key) {
+            $lookupValues[$key] = SystemSetting::getList($key);
+        }
 
         return Inertia::render('Admin/Settings/Index', [
             'academicCalendars' => $academicCalendars,
@@ -102,6 +116,8 @@ class SettingsController extends Controller
             'sections' => $sections,
             'disciplineWorkflowSteps' => $disciplineWorkflowSteps,
             'disciplineViolationTypes' => $disciplineViolationTypes,
+            'roles' => $roles,
+            'lookupValues' => $lookupValues,
         ]);
     }
 
@@ -297,5 +313,29 @@ class SettingsController extends Controller
 
         return redirect()->route('admin.settings')
             ->with('success', 'Violation type deleted successfully.');
+    }
+
+    // ─── Lookup Values CRUD ──────────────────────────────
+
+    /**
+     * Update a lookup value list.
+     */
+    public function updateLookupValues(Request $request): RedirectResponse
+    {
+        $allowedKeys = array_keys(SystemSetting::DEFAULTS);
+
+        $request->validate([
+            'key' => ['required', 'string', 'in:' . implode(',', $allowedKeys)],
+            'values' => ['required', 'array', 'min:1'],
+            'values.*' => ['required', 'string', 'max:255'],
+        ]);
+
+        // Ensure no duplicate values
+        $values = array_unique(array_map('trim', $request->values));
+
+        SystemSetting::setList($request->key, $values);
+
+        return redirect()->route('admin.settings')
+            ->with('success', 'Lookup values updated successfully.');
     }
 }

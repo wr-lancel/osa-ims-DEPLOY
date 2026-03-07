@@ -72,5 +72,37 @@ class Event extends Model
     {
         return $this->event_date >= now()->toDateString() && $this->status === 'Upcoming';
     }
+
+    /**
+     * Get organizations (names) that already have an event on the given date.
+     * Exclude a specific event (when editing) and/or a specific org.
+     *
+     * @param  string  $date  Y-m-d
+     * @param  int|null  $excludeEventId
+     * @param  int|null  $excludeOrgId
+     * @return array<string>
+     */
+    public static function otherOrgsOnDate(string $date, ?int $excludeEventId = null, ?int $excludeOrgId = null): array
+    {
+        $query = static::with('organization')
+            ->whereDate('event_date', $date);
+
+        if ($excludeEventId !== null) {
+            $query->where('event_id', '!=', $excludeEventId);
+        }
+        if ($excludeOrgId !== null) {
+            $query->where('org_id', '!=', $excludeOrgId);
+        }
+
+        $events = $query->get();
+        $names = [];
+        foreach ($events as $event) {
+            $name = $event->organization?->org_name ?? 'Unknown';
+            if (! in_array($name, $names, true)) {
+                $names[] = $name;
+            }
+        }
+        return $names;
+    }
 }
 

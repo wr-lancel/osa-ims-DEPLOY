@@ -6,7 +6,7 @@ import TextInput from '@/Components/TextInput.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import InputError from '@/Components/InputError.vue';
 import { useForm, router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 
 const props = defineProps({
     show: {
@@ -16,6 +16,10 @@ const props = defineProps({
     organization: {
         type: Object,
         default: null,
+    },
+    organizationTypes: {
+        type: Array,
+        default: () => ['Academic', 'Cultural', 'Governance', 'Special Interest'],
     },
 });
 
@@ -32,13 +36,10 @@ const form = useForm({
     status: 'active',
 });
 
-const typeOptions = [
+const typeOptions = computed(() => [
     { value: '', label: 'Select Type' },
-    { value: 'Academic', label: 'Academic' },
-    { value: 'Cultural', label: 'Cultural' },
-    { value: 'Governance', label: 'Governance' },
-    { value: 'Special Interest', label: 'Special Interest' },
-];
+    ...props.organizationTypes.map(t => ({ value: t, label: t })),
+]);
 
 const statusOptions = [
     { value: 'active', label: 'Active' },

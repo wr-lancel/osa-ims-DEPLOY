@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Models\SystemSetting;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -23,7 +24,7 @@ class UpdateOrganizationRequest extends FormRequest
                 Rule::unique('student_org', 'org_code')->ignore($this->route('organization')->org_id, 'org_id'),
             ],
             'description' => ['nullable', 'string'],
-            'type' => ['nullable', 'in:Academic,Cultural,Governance,Special Interest'],
+            'type' => ['nullable', 'in:' . implode(',', SystemSetting::getList('organization_types'))],
             'status' => ['required', 'in:active,inactive'],
             'adviser_name' => ['nullable', 'string', 'max:255'],
             'mission' => ['nullable', 'string'],

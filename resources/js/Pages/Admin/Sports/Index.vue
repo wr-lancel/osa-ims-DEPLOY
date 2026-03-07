@@ -196,7 +196,7 @@ const exportPdf = () => {
 
     <AdminLayout>
         <template #header>
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <h2 class="text-2xl font-semibold text-gray-900">
                     Sports Unit
                 </h2>
@@ -417,13 +417,13 @@ const exportPdf = () => {
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium" @click.stop>
                                         <div class="flex justify-end space-x-2">
                                             <button
-                                                v-if="borrowing.status === 'Pending' || borrowing.status === 'pending'"
+                                                v-if="borrowing.status === 'pending'"
                                                 @click.stop="openApproveModal(borrowing)"
                                                 class="text-green-600 hover:text-green-900">
                                                 Approve
                                             </button>
                                             <button
-                                                v-if="borrowing.status === 'Pending' || borrowing.status === 'pending'"
+                                                v-if="borrowing.status === 'pending'"
                                                 @click.stop="openRejectModal(borrowing)"
                                                 class="text-red-600 hover:text-red-900">
                                                 Reject

@@ -7,8 +7,16 @@ import SecondaryButton from '@/Components/SecondaryButton.vue';
 import AcademicCalendarFormModal from '@/Components/Admin/AcademicCalendarFormModal.vue';
 import CourseFormModal from '@/Components/Admin/CourseFormModal.vue';
 import SectionFormModal from '@/Components/Admin/SectionFormModal.vue';
+import RoleFormModal from '@/Components/Admin/RoleFormModal.vue';
+import Modal from '@/Components/Modal.vue';
 import StatusProgressBar from '@/Components/StatusProgressBar.vue';
 import Pagination from '@/Components/Pagination.vue';
+import NotificationDialog from '@/Components/NotificationDialog.vue';
+import { useNotification } from '@/composables/useNotification';
+import { formatLabel } from '@/utils/formatLabel.js';
+import axios from 'axios';
+
+const { notification, notify, confirmAction, closeNotification, handleConfirm } = useNotification();
 
 const props = defineProps({
     academicCalendars: {
@@ -31,6 +39,14 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    roles: {
+        type: Array,
+        default: () => [],
+    },
+    lookupValues: {
+        type: Object,
+        default: () => ({}),
+    },
 });
 
 // Tab management
@@ -40,8 +56,10 @@ const tabs = [
     { id: 'calendars', label: 'Academic Calendars', count: computed(() => props.academicCalendars.total ?? props.academicCalendars.data?.length ?? 0) },
     { id: 'courses', label: 'Courses', count: computed(() => props.courses.total ?? props.courses.data?.length ?? 0) },
     { id: 'sections', label: 'Sections', count: computed(() => props.sections.total ?? props.sections.data?.length ?? 0) },
+    { id: 'roles', label: 'Roles', count: computed(() => props.roles.length) },
     { id: 'discipline-workflow', label: 'Discipline Workflow', count: computed(() => props.disciplineWorkflowSteps.length) },
     { id: 'violation-types', label: 'Violation Types', count: computed(() => props.disciplineViolationTypes.length) },
+    { id: 'lookup-values', label: 'Lookup Values', count: computed(() => Object.keys(props.lookupValues).length) },
 ];
 
 // Academic Calendar Modal
@@ -134,6 +152,12 @@ const handleAddNew = () => {
             break;
         case 'violation-types':
             showAddTypeForm.value = true;
+            break;
+        case 'roles':
+            openRoleModal();
+            break;
+        case 'lookup-values':
+            // No global add — each card has its own add input
             break;
     }
 };
@@ -282,7 +306,7 @@ const previewTerminal = computed(() =>
 const typeProcessing = ref(false);
 const typeErrors = ref({});
 
-const severities = ['Minor', 'Moderate', 'Major'];
+const severities = computed(() => props.lookupValues?.violation_severities || ['Minor', 'Moderate', 'Major']);
 const severityColors = {
     Minor: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700', badge: 'bg-green-100 text-green-800' },
     Moderate: { bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-700', badge: 'bg-yellow-100 text-yellow-800' },
@@ -291,7 +315,7 @@ const severityColors = {
 
 const typesBySeverity = computed(() => {
     const grouped = {};
-    severities.forEach(s => { grouped[s] = []; });
+    severities.value.forEach(s => { grouped[s] = []; });
     (props.disciplineViolationTypes || []).forEach(t => {
         if (grouped[t.severity]) grouped[t.severity].push(t);
     });
@@ -321,6 +345,12 @@ const addType = () => {
         onError: (errors) => { typeErrors.value = errors; },
         onFinish: () => { typeProcessing.value = false; },
     });
+};
+
+const closeTypeModal = () => {
+    showAddTypeForm.value = false;
+    newType.value = { name: '', description: '', default_sanction: '' };
+    typeErrors.value = {};
 };
 
 // ── Edit Type ──
@@ -368,14 +398,197 @@ const deleteType = (typeId) => {
         },
     });
 };
+
+// ──────────────────────────────────────────────
+// Role Management
+// ──────────────────────────────────────────────
+const showRoleModal = ref(false);
+const selectedRole = ref(null);
+const editingRoleId = ref(null);
+const editRoleForm = ref({ role_name: '' });
+const roleProcessing = ref(false);
+const roleErrors = ref({});
+const confirmingDeleteRoleId = ref(null);
+
+const openRoleModal = (role = null) => {
+    selectedRole.value = role;
+    showRoleModal.value = true;
+};
+
+const closeRoleModal = () => {
+    showRoleModal.value = false;
+    selectedRole.value = null;
+    router.reload({ only: ['roles'] });
+};
+
+const startRoleEdit = (role) => {
+    editingRoleId.value = role.role_id;
+    editRoleForm.value = { role_name: role.role_name };
+    roleErrors.value = {};
+};
+
+const cancelRoleEdit = () => {
+    editingRoleId.value = null;
+    roleErrors.value = {};
+};
+
+const saveRoleEdit = async (roleId) => {
+    roleProcessing.value = true;
+    roleErrors.value = {};
+
+    try {
+        const response = await axios.put(route('admin.roles.update', roleId), editRoleForm.value);
+        if (response.data.success) {
+            notify('success', 'Role updated successfully.');
+            editingRoleId.value = null;
+            router.reload({ only: ['roles'] });
+        } else {
+            notify('error', response.data.message || 'Failed to update role.');
+        }
+    } catch (error) {
+        if (error.response?.status === 422) {
+            roleErrors.value = error.response.data.errors || {};
+        } else {
+            notify('error', error.response?.data?.message || 'Failed to update role.');
+        }
+    } finally {
+        roleProcessing.value = false;
+    }
+};
+
+const deleteRole = async (role) => {
+    confirmAction(
+        `Are you sure you want to delete the role "${formatLabel(role.role_name)}"?${role.users_count > 0 ? ` It is assigned to ${role.users_count} user(s).` : ''}`,
+        'Delete Role',
+        async () => {
+            try {
+                const response = await axios.delete(route('admin.roles.destroy', role.role_id));
+                if (response.data.success) {
+                    notify('success', 'Role deleted successfully.');
+                    router.reload({ only: ['roles'] });
+                } else {
+                    notify('error', response.data.message || 'Failed to delete role.');
+                }
+            } catch (error) {
+                notify('error', error.response?.data?.message || 'Failed to delete role.');
+            }
+        },
+        { confirmLabel: 'Delete', cancelLabel: 'Cancel' }
+    );
+};
+
+// ──────────────────────────────────────────────
+// Lookup Values Management
+// ──────────────────────────────────────────────
+const lookupLabels = {
+    organization_types: 'Organization Types',
+    complaint_categories: 'Complaint Categories',
+    guidance_case_types: 'Guidance Case Types',
+    guidance_appointment_types: 'Guidance Appointment Types',
+    event_statuses: 'Event Statuses',
+    violation_severities: 'Violation Severities',
+    default_org_positions: 'Default Org Positions',
+};
+
+const lookupDescriptions = {
+    organization_types: 'Types available when creating or editing student organizations.',
+    complaint_categories: 'Categories students can choose when filing complaints.',
+    guidance_case_types: 'Types available when creating guidance cases.',
+    guidance_appointment_types: 'Types available when booking guidance appointments.',
+    event_statuses: 'Status options for organization events.',
+    violation_severities: 'Severity levels for discipline violations.',
+    default_org_positions: 'Default officer positions seeded for new organizations.',
+};
+
+const lookupIcons = {
+    organization_types: '🏛️',
+    complaint_categories: '📋',
+    guidance_case_types: '🤝',
+    guidance_appointment_types: '📅',
+    event_statuses: '🎉',
+    violation_severities: '⚠️',
+    default_org_positions: '👤',
+};
+
+const lookupProcessing = ref(false);
+const newLookupItem = ref({});
+const editingLookupKey = ref(null);
+const editingLookupIndex = ref(null);
+const editingLookupValue = ref('');
+
+const addLookupItem = (key) => {
+    const value = (newLookupItem.value[key] || '').trim();
+    if (!value) return;
+    const currentValues = [...(props.lookupValues[key] || [])];
+    if (currentValues.includes(value)) {
+        notify('error', `"${value}" already exists in this list.`);
+        return;
+    }
+    currentValues.push(value);
+    saveLookupValues(key, currentValues);
+    newLookupItem.value[key] = '';
+};
+
+const removeLookupItem = (key, index) => {
+    const currentValues = [...(props.lookupValues[key] || [])];
+    if (currentValues.length <= 1) {
+        notify('error', 'Cannot remove the last item. At least one value is required.');
+        return;
+    }
+    const removed = currentValues.splice(index, 1);
+    confirmAction(
+        `Remove "${removed[0]}" from ${lookupLabels[key]}?`,
+        'Remove Value',
+        () => saveLookupValues(key, currentValues),
+        { confirmLabel: 'Remove', cancelLabel: 'Cancel' }
+    );
+};
+
+const startLookupEdit = (key, index) => {
+    editingLookupKey.value = key;
+    editingLookupIndex.value = index;
+    editingLookupValue.value = props.lookupValues[key][index];
+};
+
+const cancelLookupEdit = () => {
+    editingLookupKey.value = null;
+    editingLookupIndex.value = null;
+    editingLookupValue.value = '';
+};
+
+const saveLookupEdit = (key, index) => {
+    const value = editingLookupValue.value.trim();
+    if (!value) return;
+    const currentValues = [...(props.lookupValues[key] || [])];
+    // Check for duplicates (excluding current)
+    if (currentValues.some((v, i) => i !== index && v === value)) {
+        notify('error', `"${value}" already exists in this list.`);
+        return;
+    }
+    currentValues[index] = value;
+    saveLookupValues(key, currentValues);
+    cancelLookupEdit();
+};
+
+const saveLookupValues = (key, values) => {
+    lookupProcessing.value = true;
+    router.put(route('admin.settings.lookup-values.update'), {
+        key: key,
+        values: values,
+    }, {
+        preserveScroll: true,
+        onFinish: () => { lookupProcessing.value = false; },
+    });
+};
 </script>
 
 <template>
+
     <Head title="Settings" />
 
     <AdminLayout>
         <template #header>
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <h2 class="text-2xl font-semibold text-gray-900">
                     Settings
                 </h2>
@@ -393,26 +606,19 @@ const deleteType = (typeId) => {
             <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
                 <div class="border-b border-gray-200">
                     <nav class="flex -mb-px overflow-x-auto" aria-label="Tabs">
-                        <button
-                            v-for="tab in tabs"
-                            :key="tab.id"
-                            @click="activeTab = tab.id"
-                            :class="[
-                                'px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap',
-                                activeTab === tab.id
-                                    ? 'border-indigo-500 text-indigo-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                            ]"
-                        >
+                        <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id" :class="[
+                            'px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap',
+                            activeTab === tab.id
+                                ? 'border-indigo-500 text-indigo-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        ]">
                             {{ tab.label }}
-                            <span
-                                :class="[
-                                    'ml-2 px-2 py-0.5 text-xs rounded-full',
-                                    activeTab === tab.id
-                                        ? 'bg-indigo-100 text-indigo-600'
-                                        : 'bg-gray-100 text-gray-600'
-                                ]"
-                            >
+                            <span :class="[
+                                'ml-2 px-2 py-0.5 text-xs rounded-full',
+                                activeTab === tab.id
+                                    ? 'bg-indigo-100 text-indigo-600'
+                                    : 'bg-gray-100 text-gray-600'
+                            ]">
                                 {{ tab.count.value }}
                             </span>
                         </button>
@@ -431,13 +637,21 @@ const deleteType = (typeId) => {
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Academic Year</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Semester</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Start Date</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">End Date</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Enrollments</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Academic
+                                        Year
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Semester
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Start
+                                        Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">End Date
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        Enrollments</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -446,11 +660,8 @@ const deleteType = (typeId) => {
                                         No academic calendars found. Click "Add New" to create one.
                                     </td>
                                 </tr>
-                                <tr
-                                    v-for="calendar in academicCalendars.data"
-                                    :key="calendar.calendar_id"
-                                    class="hover:bg-gray-50"
-                                >
+                                <tr v-for="calendar in academicCalendars.data" :key="calendar.calendar_id"
+                                    class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                         {{ calendar.academic_year }}
                                     </td>
@@ -466,8 +677,7 @@ const deleteType = (typeId) => {
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span
                                             class="inline-flex px-2 py-1 text-xs font-semibold rounded-full capitalize"
-                                            :class="getStatusBadgeClass(calendar.status)"
-                                        >
+                                            :class="getStatusBadgeClass(calendar.status)">
                                             {{ calendar.status }}
                                         </span>
                                     </td>
@@ -475,10 +685,8 @@ const deleteType = (typeId) => {
                                         {{ calendar.enrollments_count }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button
-                                            @click="openCalendarModal(calendar)"
-                                            class="text-indigo-600 hover:text-indigo-900"
-                                        >
+                                        <button @click="openCalendarModal(calendar)"
+                                            class="text-indigo-600 hover:text-indigo-900">
                                             Edit
                                         </button>
                                     </td>
@@ -500,11 +708,16 @@ const deleteType = (typeId) => {
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Course Code</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Course Name</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sections</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Course
+                                        Code</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Course
+                                        Name</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        Description</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sections
+                                    </th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -513,11 +726,7 @@ const deleteType = (typeId) => {
                                         No courses found. Click "Add New" to create one.
                                     </td>
                                 </tr>
-                                <tr
-                                    v-for="course in courses.data"
-                                    :key="course.course_id"
-                                    class="hover:bg-gray-50"
-                                >
+                                <tr v-for="course in courses.data" :key="course.course_id" class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                         {{ course.course_code }}
                                     </td>
@@ -531,10 +740,8 @@ const deleteType = (typeId) => {
                                         {{ course.sections_count }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button
-                                            @click="openCourseModal(course)"
-                                            class="text-indigo-600 hover:text-indigo-900"
-                                        >
+                                        <button @click="openCourseModal(course)"
+                                            class="text-indigo-600 hover:text-indigo-900">
                                             Edit
                                         </button>
                                     </td>
@@ -557,16 +764,11 @@ const deleteType = (typeId) => {
                     <div class="mb-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Filter by Course</label>
-                            <select
-                                v-model="sectionCourseFilter"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            >
+                            <select v-model="sectionCourseFilter"
+                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <option value="">All Courses</option>
-                                <option
-                                    v-for="course in courses.data"
-                                    :key="course.course_id"
-                                    :value="course.course_id"
-                                >
+                                <option v-for="course in courses.data" :key="course.course_id"
+                                    :value="course.course_id">
                                     {{ course.course_code }} - {{ course.course_name }}
                                 </option>
                             </select>
@@ -577,9 +779,13 @@ const deleteType = (typeId) => {
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Section Code</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Course</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Section
+                                        Code
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Course
+                                    </th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -588,11 +794,8 @@ const deleteType = (typeId) => {
                                         No sections found. Click "Add New" to create one.
                                     </td>
                                 </tr>
-                                <tr
-                                    v-for="section in filteredSections"
-                                    :key="section.section_id"
-                                    class="hover:bg-gray-50"
-                                >
+                                <tr v-for="section in filteredSections" :key="section.section_id"
+                                    class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                         {{ section.section_code }}
                                     </td>
@@ -600,10 +803,8 @@ const deleteType = (typeId) => {
                                         {{ section.course_code || '-' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button
-                                            @click="openSectionModal(section)"
-                                            class="text-indigo-600 hover:text-indigo-900"
-                                        >
+                                        <button @click="openSectionModal(section)"
+                                            class="text-indigo-600 hover:text-indigo-900">
                                             Edit
                                         </button>
                                     </td>
@@ -618,7 +819,9 @@ const deleteType = (typeId) => {
                 <div v-if="activeTab === 'discipline-workflow'" class="p-6">
                     <div class="mb-4">
                         <p class="text-sm text-gray-600">
-                            Configure the workflow steps for discipline violation cases. These steps define the progress bar shown on each case.
+                            Configure the workflow steps for discipline violation cases. These steps define the progress
+                            bar
+                            shown on each case.
                             Drag rows to reorder. Steps with active cases cannot be deleted.
                         </p>
                     </div>
@@ -630,13 +833,10 @@ const deleteType = (typeId) => {
 
                     <!-- Live preview of current workflow -->
                     <div class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Progress Bar Preview</p>
-                        <StatusProgressBar
-                            :steps="previewSteps"
-                            :terminal-statuses="previewTerminal"
-                            current-status=""
-                            size="sm"
-                        />
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Progress Bar Preview
+                        </p>
+                        <StatusProgressBar :steps="previewSteps" :terminal-statuses="previewTerminal" current-status=""
+                            size="sm" />
                     </div>
 
                     <!-- Workflow steps table -->
@@ -645,12 +845,18 @@ const deleteType = (typeId) => {
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th class="w-10 px-3 py-3"></th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Step Name</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Terminal</th>
-                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Cases</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order
+                                    </th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Step
+                                        Name</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        Description</th>
+                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                                        Terminal</th>
+                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Cases
+                                    </th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -659,22 +865,17 @@ const deleteType = (typeId) => {
                                         No workflow steps defined. Click "Add New" to create one.
                                     </td>
                                 </tr>
-                                <tr
-                                    v-for="(step, index) in disciplineWorkflowSteps"
-                                    :key="step.id"
-                                    draggable="true"
-                                    @dragstart="onDragStart(index)"
-                                    @dragover="onDragOver($event, index)"
-                                    @dragend="onDragEnd"
-                                    :class="[
+                                <tr v-for="(step, index) in disciplineWorkflowSteps" :key="step.id" draggable="true"
+                                    @dragstart="onDragStart(index)" @dragover="onDragOver($event, index)"
+                                    @dragend="onDragEnd" :class="[
                                         'hover:bg-gray-50 transition-colors cursor-grab active:cursor-grabbing',
                                         dragOverIndex === index ? 'bg-indigo-50 border-t-2 border-indigo-400' : '',
-                                    ]"
-                                >
+                                    ]">
                                     <!-- Drag handle -->
                                     <td class="px-3 py-4 text-gray-400">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M4 8h16M4 16h16" />
                                         </svg>
                                     </td>
                                     <!-- Order -->
@@ -685,14 +886,11 @@ const deleteType = (typeId) => {
                                     <!-- Name (editable) -->
                                     <td class="px-4 py-4 whitespace-nowrap text-sm">
                                         <template v-if="editingStepId === step.id">
-                                            <input
-                                                v-model="editForm.name"
-                                                type="text"
+                                            <input v-model="editForm.name" type="text"
                                                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
-                                                @keyup.enter="saveEdit(step.id)"
-                                                @keyup.escape="cancelEdit"
-                                            />
-                                            <p v-if="stepErrors.name" class="mt-1 text-xs text-red-600">{{ stepErrors.name }}</p>
+                                                @keyup.enter="saveEdit(step.id)" @keyup.escape="cancelEdit" />
+                                            <p v-if="stepErrors.name" class="mt-1 text-xs text-red-600">{{
+                                                stepErrors.name }}</p>
                                         </template>
                                         <span v-else class="font-medium text-gray-900">{{ step.name }}</span>
                                     </td>
@@ -700,14 +898,10 @@ const deleteType = (typeId) => {
                                     <!-- Description (editable) -->
                                     <td class="px-4 py-4 text-sm text-gray-500 max-w-xs">
                                         <template v-if="editingStepId === step.id">
-                                            <input
-                                                v-model="editForm.description"
-                                                type="text"
+                                            <input v-model="editForm.description" type="text"
                                                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
-                                                placeholder="Optional description..."
-                                                @keyup.enter="saveEdit(step.id)"
-                                                @keyup.escape="cancelEdit"
-                                            />
+                                                placeholder="Optional description..." @keyup.enter="saveEdit(step.id)"
+                                                @keyup.escape="cancelEdit" />
                                         </template>
                                         <span v-else class="truncate block">{{ step.description || '—' }}</span>
                                     </td>
@@ -760,24 +954,17 @@ const deleteType = (typeId) => {
                                     <td class="px-3 py-4"></td>
                                     <td class="px-4 py-4 text-sm text-gray-400 font-mono">New</td>
                                     <td class="px-4 py-4">
-                                        <input
-                                            v-model="newStep.name"
-                                            type="text"
-                                            placeholder="Step name..."
+                                        <input v-model="newStep.name" type="text" placeholder="Step name..."
                                             class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
-                                            @keyup.enter="addStep"
-                                            @keyup.escape="showAddStepForm = false"
-                                        />
-                                        <p v-if="stepErrors.name" class="mt-1 text-xs text-red-600">{{ stepErrors.name }}</p>
+                                            @keyup.enter="addStep" @keyup.escape="showAddStepForm = false" />
+                                        <p v-if="stepErrors.name" class="mt-1 text-xs text-red-600">{{ stepErrors.name
+                                            }}</p>
                                     </td>
                                     <td class="px-4 py-4">
-                                        <input
-                                            v-model="newStep.description"
-                                            type="text"
+                                        <input v-model="newStep.description" type="text"
                                             placeholder="Optional description..."
                                             class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
-                                            @keyup.enter="addStep"
-                                        />
+                                            @keyup.enter="addStep" />
                                     </td>
                                     <td class="px-4 py-4 text-center">
                                         <input type="checkbox" v-model="newStep.is_terminal"
@@ -800,16 +987,19 @@ const deleteType = (typeId) => {
             <!-- ── Violation Types Tab ─────────────────────── -->
             <div v-if="activeTab === 'violation-types'">
                 <!-- Error banner -->
-                <div v-if="flashErrors.violation_type" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                <div v-if="flashErrors.violation_type"
+                    class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
                     {{ flashErrors.violation_type }}
                 </div>
 
                 <!-- Severity sections -->
                 <div v-for="sev in severities" :key="sev" class="mb-6">
-                    <div :class="[severityColors[sev].bg, severityColors[sev].border]" class="border rounded-lg overflow-hidden">
+                    <div :class="[severityColors[sev].bg, severityColors[sev].border]"
+                        class="border rounded-lg overflow-hidden">
                         <div class="px-4 py-3 flex items-center justify-between">
                             <div class="flex items-center gap-2">
-                                <span :class="severityColors[sev].badge" class="inline-flex px-2.5 py-0.5 text-xs font-semibold rounded-full">
+                                <span :class="severityColors[sev].badge"
+                                    class="inline-flex px-2.5 py-0.5 text-xs font-semibold rounded-full">
                                     {{ sev }}
                                 </span>
                                 <span class="text-sm font-medium text-gray-700">
@@ -821,48 +1011,71 @@ const deleteType = (typeId) => {
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Default Sanction</th>
-                                        <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Cases</th>
-                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name
+                                        </th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Description
+                                        </th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Default
+                                            Sanction</th>
+                                        <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">
+                                            Cases</th>
+                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+                                            Actions
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
                                     <tr v-if="typesBySeverity[sev].length === 0">
-                                        <td colspan="5" class="px-4 py-3 text-center text-sm text-gray-400">No violation types for {{ sev }} offenses yet.</td>
+                                        <td colspan="5" class="px-4 py-3 text-center text-sm text-gray-400">No violation
+                                            types
+                                            for {{ sev }} offenses yet.</td>
                                     </tr>
                                     <tr v-for="type in typesBySeverity[sev]" :key="type.id" class="hover:bg-gray-50">
                                         <!-- View mode -->
                                         <template v-if="editingTypeId !== type.id">
                                             <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ type.name }}</td>
-                                            <td class="px-4 py-3 text-sm text-gray-500">{{ type.description || '—' }}</td>
-                                            <td class="px-4 py-3 text-sm text-gray-500">{{ type.default_sanction || '—' }}</td>
-                                            <td class="px-4 py-3 text-center text-sm text-gray-500">{{ type.cases_count }}</td>
+                                            <td class="px-4 py-3 text-sm text-gray-500">{{ type.description || '—' }}
+                                            </td>
+                                            <td class="px-4 py-3 text-sm text-gray-500">{{ type.default_sanction || '—'
+                                                }}</td>
+                                            <td class="px-4 py-3 text-center text-sm text-gray-500">{{ type.cases_count
+                                                }}</td>
                                             <td class="px-4 py-3 text-right text-sm font-medium space-x-2">
-                                                <button @click="startTypeEdit(type)" class="text-indigo-600 hover:text-indigo-900">Edit</button>
+                                                <button @click="startTypeEdit(type)"
+                                                    class="text-indigo-600 hover:text-indigo-900">Edit</button>
                                                 <template v-if="confirmingDeleteTypeId === type.id">
-                                                    <button @click="deleteType(type.id)" :disabled="typeProcessing" class="text-red-600 hover:text-red-900 font-semibold">Confirm</button>
-                                                    <button @click="confirmingDeleteTypeId = null" class="text-gray-500 hover:text-gray-700">No</button>
+                                                    <button @click="deleteType(type.id)" :disabled="typeProcessing"
+                                                        class="text-red-600 hover:text-red-900 font-semibold">Confirm</button>
+                                                    <button @click="confirmingDeleteTypeId = null"
+                                                        class="text-gray-500 hover:text-gray-700">No</button>
                                                 </template>
-                                                <button v-else @click="confirmingDeleteTypeId = type.id" class="text-red-500 hover:text-red-700">Delete</button>
+                                                <button v-else @click="confirmingDeleteTypeId = type.id"
+                                                    class="text-red-500 hover:text-red-700">Delete</button>
                                             </td>
                                         </template>
                                         <!-- Edit mode -->
                                         <template v-else>
                                             <td class="px-4 py-3">
-                                                <input v-model="editTypeForm.name" type="text" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm" />
+                                                <input v-model="editTypeForm.name" type="text"
+                                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm" />
                                             </td>
                                             <td class="px-4 py-3">
-                                                <input v-model="editTypeForm.description" type="text" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm" />
+                                                <input v-model="editTypeForm.description" type="text"
+                                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm" />
                                             </td>
                                             <td class="px-4 py-3">
-                                                <input v-model="editTypeForm.default_sanction" type="text" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm" />
+                                                <input v-model="editTypeForm.default_sanction" type="text"
+                                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm" />
                                             </td>
-                                            <td class="px-4 py-3 text-center text-sm text-gray-400">{{ type.cases_count }}</td>
+                                            <td class="px-4 py-3 text-center text-sm text-gray-400">{{ type.cases_count
+                                                }}</td>
                                             <td class="px-4 py-3 text-right text-sm font-medium space-x-2">
-                                                <button @click="saveTypeEdit(type.id)" :disabled="typeProcessing" class="text-green-600 hover:text-green-900">Save</button>
-                                                <button @click="cancelTypeEdit" class="text-gray-500 hover:text-gray-700">Cancel</button>
+                                                <button @click="saveTypeEdit(type.id)" :disabled="typeProcessing"
+                                                    class="text-green-600 hover:text-green-900">Save</button>
+                                                <button @click="cancelTypeEdit"
+                                                    class="text-gray-500 hover:text-gray-700">Cancel</button>
                                             </td>
                                         </template>
                                     </tr>
@@ -873,59 +1086,233 @@ const deleteType = (typeId) => {
                 </div>
 
                 <!-- Add new type form -->
-                <div v-if="showAddTypeForm" class="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
-                    <h4 class="text-sm font-medium text-gray-700 mb-3">Add New Violation Type</h4>
-                    <div v-if="typeErrors.violation_type" class="mb-3 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-600">{{ typeErrors.violation_type }}</div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-500 mb-1">Severity</label>
-                            <select v-model="addTypeSeverity" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                                <option v-for="s in severities" :key="s" :value="s">{{ s }}</option>
-                            </select>
+                <Modal :show="showAddTypeForm" @close="closeTypeModal" max-width="2xl">
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Add New Violation Type</h3>
+                        <div v-if="typeErrors.violation_type"
+                            class="mb-3 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-600">{{
+                                typeErrors.violation_type }}</div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Severity</label>
+                                <select v-model="addTypeSeverity"
+                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <option v-for="s in severities" :key="s" :value="s">{{ s }}</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                                <input v-model="newType.name" type="text" placeholder="e.g. Tardiness"
+                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                                <p v-if="typeErrors.name" class="mt-1 text-xs text-red-600">{{ typeErrors.name }}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Description
+                                    (optional)</label>
+                                <input v-model="newType.description" type="text" placeholder="Short description..."
+                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Default Sanction
+                                    (optional)</label>
+                                <input v-model="newType.default_sanction" type="text" placeholder="e.g. Verbal Warning"
+                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-500 mb-1">Name</label>
-                            <input v-model="newType.name" type="text" placeholder="e.g. Tardiness" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm" />
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-500 mb-1">Description (optional)</label>
-                            <input v-model="newType.description" type="text" placeholder="Short description..." class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm" />
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-500 mb-1">Default Sanction (optional)</label>
-                            <input v-model="newType.default_sanction" type="text" placeholder="e.g. Verbal Warning" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm" />
+                        <div class="flex justify-end gap-3 mt-6">
+                            <SecondaryButton type="button" @click="closeTypeModal">Cancel</SecondaryButton>
+                            <PrimaryButton @click="addType" :disabled="typeProcessing || !newType.name">
+                                {{ typeProcessing ? 'Adding...' : 'Add Type' }}
+                            </PrimaryButton>
                         </div>
                     </div>
-                    <div class="flex justify-end gap-2 mt-3">
-                        <button @click="showAddTypeForm = false" class="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900">Cancel</button>
-                        <button @click="addType" :disabled="typeProcessing || !newType.name" class="px-3 py-1.5 text-sm text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50">Add Type</button>
+                </Modal>
+            </div>
+
+            <!-- ── Roles Tab ─────────────────────────────── -->
+            <div v-if="activeTab === 'roles'">
+                <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-gray-200">
+                        <p class="text-sm text-gray-600">
+                            Manage user roles. Roles assigned to active users cannot be deleted.
+                        </p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role
+                                        Name</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Users
+                                    </th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr v-if="roles.length === 0">
+                                    <td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500">
+                                        No roles found. Click "Add New" to create one.
+                                    </td>
+                                </tr>
+                                <tr v-for="role in roles" :key="role.role_id" class="hover:bg-gray-50">
+                                    <!-- Name -->
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        <template v-if="editingRoleId === role.role_id">
+                                            <input v-model="editRoleForm.role_name" type="text"
+                                                class="block w-full max-w-xs rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                                @keyup.enter="saveRoleEdit(role.role_id)"
+                                                @keyup.escape="cancelRoleEdit" />
+                                            <p v-if="roleErrors.role_name" class="mt-1 text-xs text-red-600">{{
+                                                roleErrors.role_name[0] }}</p>
+                                        </template>
+                                        <span v-else class="font-medium text-gray-900">{{ formatLabel(role.role_name)
+                                            }}</span>
+                                    </td>
+                                    <!-- Users Count -->
+                                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                                        <span class="inline-flex px-2 py-0.5 text-xs font-semibold rounded-full"
+                                            :class="role.users_count > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'">
+                                            {{ role.users_count }}
+                                        </span>
+                                    </td>
+                                    <!-- Actions -->
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                                        <template v-if="editingRoleId === role.role_id">
+                                            <button @click="saveRoleEdit(role.role_id)" :disabled="roleProcessing"
+                                                class="text-green-600 hover:text-green-900">Save</button>
+                                            <button @click="cancelRoleEdit"
+                                                class="text-gray-500 hover:text-gray-700">Cancel</button>
+                                        </template>
+                                        <template v-else>
+                                            <button @click="startRoleEdit(role)"
+                                                class="text-indigo-600 hover:text-indigo-900">Edit</button>
+                                            <button @click="deleteRole(role)"
+                                                class="text-red-500 hover:text-red-700">Delete</button>
+                                        </template>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div> <!-- Closes roles tab -->
+
+            <!-- Lookup Values Tab -->
+            <div v-if="activeTab === 'lookup-values'" class="p-6">
+                <div class="mb-4">
+                    <p class="text-sm text-gray-600">
+                        Manage configurable lookup values used across the system. Add, edit, or remove values as
+                        needed.
+                        Changes take effect immediately in forms and filters.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div v-for="(values, key) in lookupValues" :key="key"
+                        class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                        <!-- Card Header -->
+                        <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
+                            <div class="flex items-center gap-2">
+                                <span class="text-lg">{{ lookupIcons[key] || '📝' }}</span>
+                                <div>
+                                    <h3 class="text-sm font-semibold text-gray-900">{{ lookupLabels[key] || key }}
+                                    </h3>
+                                    <p class="text-xs text-gray-500 mt-0.5">{{ lookupDescriptions[key] || '' }}</p>
+                                </div>
+                                <span
+                                    class="ml-auto px-2 py-0.5 text-xs font-medium rounded-full bg-indigo-100 text-indigo-700">
+                                    {{ values.length }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Values List -->
+                        <div class="divide-y divide-gray-100 max-h-64 overflow-y-auto">
+                            <div v-for="(item, index) in values" :key="index"
+                                class="flex items-center gap-2 px-4 py-2 hover:bg-gray-50 transition-colors group">
+                                <!-- Editing mode -->
+                                <template v-if="editingLookupKey === key && editingLookupIndex === index">
+                                    <input v-model="editingLookupValue" type="text"
+                                        class="flex-1 text-sm rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        @keyup.enter="saveLookupEdit(key, index)" @keyup.escape="cancelLookupEdit" />
+                                    <button @click="saveLookupEdit(key, index)"
+                                        class="text-green-600 hover:text-green-800" :disabled="lookupProcessing">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </button>
+                                    <button @click="cancelLookupEdit" class="text-gray-400 hover:text-gray-600">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </template>
+
+                                <!-- Display mode -->
+                                <template v-else>
+                                    <span class="flex-1 text-sm text-gray-700">{{ item }}</span>
+                                    <button @click="startLookupEdit(key, index)"
+                                        class="opacity-0 group-hover:opacity-100 text-indigo-500 hover:text-indigo-700 transition-opacity">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                        </svg>
+                                    </button>
+                                    <button @click="removeLookupItem(key, index)"
+                                        class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </template>
+                            </div>
+
+                            <div v-if="!values || values.length === 0"
+                                class="px-4 py-3 text-center text-sm text-gray-400">
+                                No values configured.
+                            </div>
+                        </div>
+
+                        <!-- Add New Value -->
+                        <div class="px-4 py-3 bg-gray-50 border-t border-gray-200">
+                            <div class="flex items-center gap-2">
+                                <input v-model="newLookupItem[key]" type="text" placeholder="Add new value..."
+                                    class="flex-1 text-sm rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    @keyup.enter="addLookupItem(key)" />
+                                <button @click="addLookupItem(key)"
+                                    :disabled="lookupProcessing || !(newLookupItem[key] || '').trim()"
+                                    class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    Add
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-
         </div>
 
         <!-- Modals -->
-        <AcademicCalendarFormModal
-            :show="showCalendarModal"
-            :calendar="selectedCalendar"
-            @close="closeCalendarModal"
-            @saved="closeCalendarModal"
-        />
+        <AcademicCalendarFormModal :show="showCalendarModal" :calendar="selectedCalendar" @close="closeCalendarModal"
+            @saved="closeCalendarModal" />
 
-        <CourseFormModal
-            :show="showCourseModal"
-            :course="selectedCourse"
-            @close="closeCourseModal"
-            @saved="closeCourseModal"
-        />
+        <CourseFormModal :show="showCourseModal" :course="selectedCourse" @close="closeCourseModal"
+            @saved="closeCourseModal" />
 
-        <SectionFormModal
-            :show="showSectionModal"
-            :section="selectedSection"
-            :courses="courses.data || []"
-            @close="closeSectionModal"
-            @saved="closeSectionModal"
-        />
+        <SectionFormModal :show="showSectionModal" :section="selectedSection" :courses="courses.data || []"
+            @close="closeSectionModal" @saved="closeSectionModal" />
+
+        <RoleFormModal :show="showRoleModal" :role="selectedRole" @close="closeRoleModal" @saved="closeRoleModal" />
+
+        <NotificationDialog :show="notification.show" :type="notification.type" :title="notification.title"
+            :message="notification.message" :confirm-label="notification.confirmLabel"
+            :cancel-label="notification.cancelLabel" @close="closeNotification" @confirm="handleConfirm" />
     </AdminLayout>
 </template>

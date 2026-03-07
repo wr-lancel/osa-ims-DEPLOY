@@ -1,7 +1,22 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import { getEventBadgeClass, getEventLabel } from '@/utils/eventHelpers';
+import DashboardBarChart from '@/Components/Charts/DashboardBarChart.vue';
+import DashboardGroupedBarChart from '@/Components/Charts/DashboardGroupedBarChart.vue';
+import DashboardLineChart from '@/Components/Charts/DashboardLineChart.vue';
+import DashboardDoughnutChart from '@/Components/Charts/DashboardDoughnutChart.vue';
+import DashboardPolarChart from '@/Components/Charts/DashboardPolarChart.vue';
+import DashboardComboChart from '@/Components/Charts/DashboardComboChart.vue';
+import DashboardRadarChart from '@/Components/Charts/DashboardRadarChart.vue';
+
+const page = usePage();
+const accessibleModules = computed(() => page.props.auth?.accessible_modules || []);
+const canAccessStudents = computed(() => accessibleModules.value.includes('students'));
+const canAccessDiscipline = computed(() => accessibleModules.value.includes('discipline'));
+const canAccessGuidance = computed(() => accessibleModules.value.includes('guidance'));
+const canAccessOrganizations = computed(() => accessibleModules.value.includes('organizations'));
 
 const props = defineProps({
     upcomingEvents: {
@@ -12,281 +27,488 @@ const props = defineProps({
         type: Object,
         default: () => ({}),
     },
+    academicTermLabel: {
+        type: String,
+        default: null,
+    },
+    comparison: {
+        type: Object,
+        default: null,
+    },
+    chartTermSummary: {
+        type: Object,
+        default: () => ({ labels: [], values: [] }),
+    },
+    chartComparison: {
+        type: Object,
+        default: null,
+    },
+    chartEventsByMonth: {
+        type: Object,
+        default: () => ({ labels: [], values: [] }),
+    },
+    chartDisciplineByType: {
+        type: Object,
+        default: () => ({ labels: [], values: [] }),
+    },
+    chartComplaintsByCategory: {
+        type: Object,
+        default: () => ({ labels: [], values: [] }),
+    },
+    chartDisciplineByCourse: {
+        type: Object,
+        default: () => ({ labels: [], values: [] }),
+    },
+    chartGuidanceByCourse: {
+        type: Object,
+        default: () => ({ labels: [], values: [] }),
+    },
+    chartDisciplineBySeverity: {
+        type: Object,
+        default: () => ({ labels: [], values: [] }),
+    },
+    chartEnrollmentByYearLevel: {
+        type: Object,
+        default: () => ({ labels: [], values: [] }),
+    },
+    chartEventsByOrganization: {
+        type: Object,
+        default: () => ({ labels: [], values: [] }),
+    },
+    chartViolationsPerMonth: {
+        type: Object,
+        default: () => ({ labels: [], values: [] }),
+    },
 });
 
-const quickLinks = [
-    {
-        title: 'Student Records',
-        description: 'Manage student information and records',
-        route: 'admin.students.index',
-        icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z'
-    },
-    {
-        title: 'Manage Staff',
-        description: 'View and manage staff members',
-        route: 'admin.staff.index',
-        icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z'
-    },
-    {
-        title: 'Discipline Unit',
-        description: 'Handle disciplinary cases and violations',
-        route: 'admin.discipline.index',
-        icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
-    },
-    {
-        title: 'Organization Unit',
-        description: 'Manage student organizations and activities',
-        route: 'admin.organizations.index',
-        icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4'
-    },
-    {
-        title: 'Sports Unit',
-        description: 'Manage sports activities and equipment',
-        route: 'admin.sports.index',
-        icon: 'M7 4V2a1 1 0 011-1h4a1 1 0 011 1v2m0 0V1a1 1 0 011-1h2a1 1 0 011 1v3m0 0h-4m4 0v12a2 2 0 01-2 2H5a2 2 0 01-2-2V4h14z'
-    }
-];
+const hasTermSummaryData = () =>
+    props.chartTermSummary?.values?.some((v) => v > 0) ?? false;
+const hasEventsByMonthData = () =>
+    props.chartEventsByMonth?.values?.some((v) => v > 0) ?? false;
+const hasDisciplineByTypeData = () =>
+    props.chartDisciplineByType?.values?.length > 0 && props.chartDisciplineByType?.values?.some((v) => v > 0);
+const hasComplaintsByCategoryData = () =>
+    props.chartComplaintsByCategory?.values?.length > 0 && props.chartComplaintsByCategory?.values?.some((v) => v > 0);
+const hasDisciplineByCourseData = () =>
+    props.chartDisciplineByCourse?.values?.length > 0 && props.chartDisciplineByCourse?.values?.some((v) => v > 0);
+const hasGuidanceByCourseData = () =>
+    props.chartGuidanceByCourse?.values?.length > 0 && props.chartGuidanceByCourse?.values?.some((v) => v > 0);
+const hasDisciplineBySeverityData = () =>
+    props.chartDisciplineBySeverity?.values?.length > 0 && props.chartDisciplineBySeverity?.values?.some((v) => v > 0);
+const hasEnrollmentByYearLevelData = () =>
+    props.chartEnrollmentByYearLevel?.values?.length > 0 && props.chartEnrollmentByYearLevel?.values?.some((v) => v > 0);
+const hasEventsByOrganizationData = () =>
+    props.chartEventsByOrganization?.values?.length > 0 && props.chartEventsByOrganization?.values?.some((v) => v > 0);
+const hasViolationsPerMonthData = () =>
+    props.chartViolationsPerMonth?.values?.length > 0 && props.chartViolationsPerMonth?.values?.some((v) => v > 0);
+const hasEnrollmentPerSemesterData = () =>
+    props.chartEnrollmentPerSemester?.values?.length > 0 && props.chartEnrollmentPerSemester?.values?.some((v) => v > 0);
 </script>
 
 <template>
+
     <Head title="Admin Dashboard" />
 
     <AdminLayout>
         <template #header>
-            <h2 class="text-2xl font-semibold text-gray-900">
-                Admin Dashboard
-            </h2>
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <h2 class="text-2xl font-semibold text-gray-900">
+                    Admin Dashboard
+                </h2>
+                <div v-if="academicTermLabel" class="flex items-center gap-2">
+                    <span class="text-sm font-medium text-gray-600 bg-gray-100 px-3 py-1.5 rounded-lg">
+                        {{ academicTermLabel }}
+                    </span>
+                    <Link :href="route('admin.reports.term-summary')"
+                        class="text-sm text-indigo-600 hover:text-indigo-900">
+                        Term summary
+                    </Link>
+                </div>
+            </div>
         </template>
 
-        <div class="space-y-6">
-            <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 p-3 bg-blue-100 rounded-lg">
-                            <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                            </svg>
+        <div class="space-y-10">
+
+            <!-- ─── OVERVIEW ─── -->
+            <section>
+                <h3
+                    class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4 pl-1 border-l-2 border-indigo-400 pl-3">
+                    Overview
+                </h3>
+                <div class="space-y-5">
+                    <!-- Term Summary — Horizontal Bar -->
+                    <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-base font-semibold text-gray-800">Term summary</h4>
+                            <Link :href="route('admin.reports.term-summary')"
+                                class="text-sm text-indigo-600 hover:text-indigo-900">
+                                View report
+                            </Link>
                         </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-500">Enrolled Students</p>
-                            <p class="text-2xl font-semibold text-gray-900">{{ stats.total_students || 0 }}</p>
+                        <div v-if="!academicTermLabel" class="py-12 text-center text-gray-400 text-sm">
+                            No active term selected.
+                        </div>
+                        <div v-else-if="!hasTermSummaryData()" class="py-12 text-center text-gray-400 text-sm">
+                            No data for this term.
+                        </div>
+                        <div v-else class="h-[280px]">
+                            <DashboardBarChart :labels="chartTermSummary?.labels ?? []"
+                                :values="chartTermSummary?.values ?? []" label="This Term" :horizontal="true"
+                                :colors="['#6366f1', '#f43f5e', '#f97316', '#8b5cf6', '#0ea5e9', '#10b981', '#eab308']"
+                                :max-height="280" />
+                        </div>
+                    </div>
+
+                    <!-- Semester Comparison — Grouped Bar -->
+                    <div v-if="chartComparison" class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                        <h4 class="text-base font-semibold text-gray-800 mb-4">
+                            Semester comparison
+                            <span v-if="chartComparison.previousTermLabel" class="text-sm font-normal text-gray-500">
+                                vs {{ chartComparison.previousTermLabel }}
+                            </span>
+                        </h4>
+                        <div class="h-[280px]">
+                            <DashboardGroupedBarChart :labels="chartComparison.labels"
+                                :current-values="chartComparison.currentValues"
+                                :previous-values="chartComparison.previousValues" current-label="Current term"
+                                :previous-label="chartComparison.previousTermLabel || 'Previous term'"
+                                current-color="#6366f1" previous-color="#cbd5e1" :max-height="280" />
                         </div>
                     </div>
                 </div>
+            </section>
 
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 p-3 bg-green-100 rounded-lg">
-                            <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-500">Active Organizations</p>
-                            <p class="text-2xl font-semibold text-gray-900">{{ stats.total_organizations || 0 }}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 p-3 bg-purple-100 rounded-lg">
-                            <svg class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-500">Upcoming Events</p>
-                            <p class="text-2xl font-semibold text-gray-900">{{ stats.upcoming_events || 0 }}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 p-3 bg-yellow-100 rounded-lg">
-                            <svg class="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-500">Events This Month</p>
-                            <p class="text-2xl font-semibold text-gray-900">{{ stats.events_this_month || 0 }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Pending / Action Required Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 p-3 bg-red-100 rounded-lg">
-                            <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-500">Active Discipline Cases</p>
-                            <p class="text-2xl font-semibold text-gray-900">{{ stats.active_discipline_cases || 0 }}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 p-3 bg-indigo-100 rounded-lg">
-                            <svg class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-500">Pending Appointments</p>
-                            <p class="text-2xl font-semibold text-gray-900">{{ stats.pending_appointments || 0 }}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 p-3 bg-teal-100 rounded-lg">
-                            <svg class="h-6 w-6 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-500">Pending Borrowings</p>
-                            <p class="text-2xl font-semibold text-gray-900">{{ stats.pending_borrowings || 0 }}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 p-3 bg-orange-100 rounded-lg">
-                            <svg class="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-500">Pending Complaints</p>
-                            <p class="text-2xl font-semibold text-gray-900">{{ stats.pending_complaints || 0 }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Quick Access Cards -->
-                <div class="lg:col-span-2">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Access</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Link
-                            v-for="link in quickLinks"
-                            :key="link.route"
-                            :href="route(link.route)"
-                            class="group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 p-5 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-                        >
-                            <div class="flex items-start">
-                                <div class="flex-shrink-0">
-                                    <svg
-                                        class="h-6 w-6 text-gray-600 group-hover:text-gray-900 transition-colors"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            :d="link.icon"
-                                        />
-                                    </svg>
-                                </div>
-                                <div class="ml-4 flex-1">
-                                    <h3 class="text-base font-medium text-gray-900 group-hover:text-gray-700">
-                                        {{ link.title }}
-                                    </h3>
-                                    <p class="mt-1 text-sm text-gray-500">
-                                        {{ link.description }}
-                                    </p>
-                                </div>
+            <!-- ─── EVENTS & ORGANIZATIONS ─── -->
+            <section>
+                <h3
+                    class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4 pl-1 border-l-2 border-indigo-400 pl-3">
+                    Events &amp; Organizations
+                </h3>
+                <div class="space-y-5">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                        <!-- Events This Term — Line Chart -->
+                        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="text-base font-semibold text-gray-800">Events this term</h4>
+                                <Link v-if="canAccessOrganizations" :href="route('admin.organizations.events.index')"
+                                    class="text-sm text-indigo-600 hover:text-indigo-900">
+                                    View events
+                                </Link>
                             </div>
-                        </Link>
-                    </div>
-                </div>
+                            <div v-if="!academicTermLabel" class="py-12 text-center text-gray-400 text-sm">
+                                No active term.
+                            </div>
+                            <div v-else-if="!hasEventsByMonthData()" class="py-12 text-center text-gray-400 text-sm">
+                                No events for this term.
+                            </div>
+                            <div v-else class="h-[260px]">
+                                <DashboardLineChart :labels="chartEventsByMonth?.labels ?? []"
+                                    :values="chartEventsByMonth?.values ?? []" label="Events" border-color="#0ea5e9"
+                                    background-color="rgba(14, 165, 233, 0.12)" :max-height="260" />
+                            </div>
+                        </div>
 
-                <!-- Upcoming Events -->
-                <div class="lg:col-span-1">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold text-gray-900">Upcoming Events</h3>
-                        <Link
-                            :href="route('admin.organizations.events.index')"
-                            class="text-sm text-indigo-600 hover:text-indigo-900"
-                        >
-                            View all
-                        </Link>
+                        <!-- Events by Organization — Horizontal Bar -->
+                        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="text-base font-semibold text-gray-800">Events by organization</h4>
+                                <Link v-if="canAccessOrganizations" :href="route('admin.organizations.events.index')"
+                                    class="text-sm text-indigo-600 hover:text-indigo-900">
+                                    View events
+                                </Link>
+                            </div>
+                            <div v-if="!academicTermLabel" class="py-12 text-center text-gray-400 text-sm">
+                                No active term.
+                            </div>
+                            <div v-else-if="!hasEventsByOrganizationData()"
+                                class="py-12 text-center text-gray-400 text-sm">
+                                No events for this term.
+                            </div>
+                            <div v-else class="h-[260px]">
+                                <DashboardBarChart :labels="chartEventsByOrganization?.labels ?? []"
+                                    :values="chartEventsByOrganization?.values ?? []" label="Events" :horizontal="true"
+                                    :colors="['#0ea5e9', '#06b6d4', '#14b8a6', '#10b981', '#22c55e', '#84cc16', '#eab308', '#f59e0b', '#f97316', '#ef4444']"
+                                    :max-height="260" />
+                            </div>
+                        </div>
                     </div>
-                    <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
-                        <div v-if="upcomingEvents && upcomingEvents.length > 0" class="divide-y divide-gray-200">
-                            <div
-                                v-for="event in upcomingEvents"
-                                :key="event.event_id"
-                                class="p-4 hover:bg-gray-50 transition-colors"
-                            >
+
+                    <!-- Upcoming Events -->
+                    <div class="bg-white rounded-xl border border-gray-100 shadow-sm">
+                        <div class="flex items-center justify-between px-5 pt-5 pb-3">
+                            <h4 class="text-base font-semibold text-gray-800">Upcoming Events</h4>
+                            <Link v-if="canAccessOrganizations" :href="route('admin.organizations.events.index')"
+                                class="text-sm text-indigo-600 hover:text-indigo-900">
+                                View all
+                            </Link>
+                        </div>
+                        <div v-if="upcomingEvents && upcomingEvents.length > 0" class="divide-y divide-gray-100">
+                            <div v-for="event in upcomingEvents" :key="event.event_id"
+                                class="px-5 py-3 hover:bg-gray-50/60 transition-colors">
                                 <div class="flex items-start justify-between">
                                     <div class="flex-1 min-w-0">
                                         <p class="text-sm font-medium text-gray-900 truncate">
                                             {{ event.event_name }}
                                         </p>
-                                        <p class="text-xs text-gray-500 mt-1">
+                                        <p class="text-xs text-gray-500 mt-0.5">
                                             {{ event.organization_name }}
                                         </p>
-                                        <div class="flex items-center mt-2 text-xs text-gray-500">
-                                            <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        <div class="flex items-center mt-1.5 text-xs text-gray-400">
+                                            <svg class="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                             </svg>
                                             {{ event.event_date_display }}
                                             <span v-if="event.start_time" class="ml-2">
                                                 {{ event.start_time }}
                                             </span>
                                         </div>
-                                        <div v-if="event.venue" class="flex items-center mt-1 text-xs text-gray-500">
-                                            <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <div v-if="event.venue" class="flex items-center mt-0.5 text-xs text-gray-400">
+                                            <svg class="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                             </svg>
                                             {{ event.venue }}
                                         </div>
                                     </div>
                                     <span
-                                        class="ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full whitespace-nowrap"
-                                        :class="getEventBadgeClass(event.days_until)"
-                                    >
+                                        class="ml-2 inline-flex px-2 py-0.5 text-xs font-semibold rounded-full whitespace-nowrap"
+                                        :class="getEventBadgeClass(event.days_until)">
                                         {{ getEventLabel(event.days_until) }}
                                     </span>
                                 </div>
                             </div>
                         </div>
-                        <div v-else class="p-6 text-center">
-                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        <div v-else class="px-5 py-10 text-center">
+                            <svg class="mx-auto h-10 w-10 text-gray-300" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                            <p class="mt-2 text-sm text-gray-500">No upcoming events</p>
-                            <Link
-                                :href="route('admin.organizations.events.index')"
-                                class="mt-3 inline-flex items-center text-sm text-indigo-600 hover:text-indigo-900"
-                            >
+                            <p class="mt-2 text-sm text-gray-400">No upcoming events</p>
+                            <Link v-if="canAccessOrganizations" :href="route('admin.organizations.events.index')"
+                                class="mt-2 inline-flex items-center text-sm text-indigo-600 hover:text-indigo-900">
                                 Create an event
                                 <svg class="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7" />
                                 </svg>
                             </Link>
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
+
+            <!-- ─── STUDENTS ─── -->
+            <section>
+                <h3
+                    class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4 pl-1 border-l-2 border-indigo-400 pl-3">
+                    Students
+                </h3>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                    <!-- Enrollment by Year Level — Doughnut -->
+                    <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-base font-semibold text-gray-800">Enrollment by year level</h4>
+                            <Link v-if="canAccessStudents" :href="route('admin.students.index')"
+                                class="text-sm text-indigo-600 hover:text-indigo-900">
+                                View student records
+                            </Link>
+                        </div>
+                        <div v-if="!academicTermLabel" class="py-12 text-center text-gray-400 text-sm">
+                            No active term.
+                        </div>
+                        <div v-else-if="!hasEnrollmentByYearLevelData()"
+                            class="py-12 text-center text-gray-400 text-sm">
+                            No enrollment data for this term.
+                        </div>
+                        <div v-else class="h-[280px]">
+                            <DashboardDoughnutChart :labels="chartEnrollmentByYearLevel?.labels ?? []"
+                                :values="chartEnrollmentByYearLevel?.values ?? []"
+                                :colors="['#6366f1', '#0ea5e9', '#10b981', '#f59e0b', '#f43f5e']" :max-height="280" />
+                        </div>
+                    </div>
+
+                    <!-- Historical Enrollment — Combo Chart -->
+                    <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-base font-semibold text-gray-800">Historical enrollment trend</h4>
+                        </div>
+                        <div v-if="!hasEnrollmentPerSemesterData()" class="py-12 text-center text-gray-400 text-sm">
+                            No historical enrollment data.
+                        </div>
+                        <div v-else class="h-[280px]">
+                            <DashboardComboChart :labels="chartEnrollmentPerSemester?.labels ?? []"
+                                :values="chartEnrollmentPerSemester?.values ?? []" bar-label="Enrolled" line-label="Avg"
+                                :bar-colors="['#8b5cf6', '#d946ef', '#ec4899', '#f43f5e']" :max-height="280" />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ─── DISCIPLINE & COMPLAINTS ─── -->
+            <section>
+                <h3
+                    class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4 pl-1 border-l-2 border-indigo-400 pl-3">
+                    Discipline &amp; Complaints
+                </h3>
+                <div class="space-y-5">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                        <!-- Discipline by Type — Doughnut -->
+                        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="text-base font-semibold text-gray-800">Discipline by type</h4>
+                                <Link v-if="canAccessDiscipline" :href="route('admin.discipline.index')"
+                                    class="text-sm text-indigo-600 hover:text-indigo-900">
+                                    View discipline
+                                </Link>
+                            </div>
+                            <div v-if="!academicTermLabel" class="py-12 text-center text-gray-400 text-sm">
+                                No active term.
+                            </div>
+                            <div v-else-if="!hasDisciplineByTypeData()" class="py-12 text-center text-gray-400 text-sm">
+                                No discipline data for this term.
+                            </div>
+                            <div v-else class="h-[260px]">
+                                <DashboardDoughnutChart :labels="chartDisciplineByType?.labels ?? []"
+                                    :values="chartDisciplineByType?.values ?? []"
+                                    :colors="['#ec4899', '#6366f1', '#f97316', '#14b8a6', '#8b5cf6', '#eab308', '#06b6d4', '#f43f5e', '#10b981', '#a855f7']"
+                                    :max-height="260" />
+                            </div>
+                        </div>
+
+                        <!-- Discipline by Severity — Vertical Bar (user requested) -->
+                        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="text-base font-semibold text-gray-800">Violation by severity</h4>
+                                <Link v-if="canAccessDiscipline" :href="route('admin.discipline.index')"
+                                    class="text-sm text-indigo-600 hover:text-indigo-900">
+                                    View discipline
+                                </Link>
+                            </div>
+                            <div v-if="!academicTermLabel" class="py-12 text-center text-gray-400 text-sm">
+                                No active term.
+                            </div>
+                            <div v-else-if="!hasDisciplineBySeverityData()"
+                                class="py-12 text-center text-gray-400 text-sm">
+                                No discipline data for this term.
+                            </div>
+                            <div v-else class="h-[260px]">
+                                <DashboardBarChart :labels="chartDisciplineBySeverity?.labels ?? []"
+                                    :values="chartDisciplineBySeverity?.values ?? []" label="Violations"
+                                    :horizontal="false"
+                                    :colors="['#22c55e', '#f59e0b', '#f97316', '#ef4444', '#dc2626']"
+                                    :max-height="260" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                        <!-- Complaints by Category — Polar Area -->
+                        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="text-base font-semibold text-gray-800">Complaints by category</h4>
+                                <Link v-if="canAccessDiscipline" :href="route('admin.discipline.complaints.index')"
+                                    class="text-sm text-indigo-600 hover:text-indigo-900">
+                                    View complaints
+                                </Link>
+                            </div>
+                            <div v-if="!academicTermLabel" class="py-12 text-center text-gray-400 text-sm">
+                                No active term.
+                            </div>
+                            <div v-else-if="!hasComplaintsByCategoryData()"
+                                class="py-12 text-center text-gray-400 text-sm">
+                                No complaints for this term.
+                            </div>
+                            <div v-else class="h-[260px]">
+                                <DashboardPolarChart :labels="chartComplaintsByCategory?.labels ?? []"
+                                    :values="chartComplaintsByCategory?.values ?? []"
+                                    :colors="['#8b5cf6', '#06b6d4', '#f97316', '#10b981', '#f43f5e', '#eab308', '#6366f1', '#ec4899']"
+                                    :max-height="260" />
+                            </div>
+                        </div>
+
+                        <!-- Violations by Course — Combo Chart (user requested) -->
+                        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="text-base font-semibold text-gray-800">Violation by course</h4>
+                                <Link v-if="canAccessDiscipline" :href="route('admin.discipline.index')"
+                                    class="text-sm text-indigo-600 hover:text-indigo-900">
+                                    View discipline
+                                </Link>
+                            </div>
+                            <div v-if="!academicTermLabel" class="py-12 text-center text-gray-400 text-sm">
+                                No active term.
+                            </div>
+                            <div v-else-if="!hasDisciplineByCourseData()"
+                                class="py-12 text-center text-gray-400 text-sm">
+                                No discipline data for this term.
+                            </div>
+                            <div v-else class="h-[260px]">
+                                <DashboardComboChart :labels="chartDisciplineByCourse?.labels ?? []"
+                                    :values="chartDisciplineByCourse?.values ?? []" bar-label="Violations"
+                                    line-label="Average" :max-height="260" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Number of Violations This Semester — Line Chart (user requested) -->
+                    <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-base font-semibold text-gray-800">Number of violations this semester</h4>
+                            <Link v-if="canAccessDiscipline" :href="route('admin.discipline.index')"
+                                class="text-sm text-indigo-600 hover:text-indigo-900">
+                                View discipline
+                            </Link>
+                        </div>
+                        <div v-if="!academicTermLabel" class="py-12 text-center text-gray-400 text-sm">
+                            No active term.
+                        </div>
+                        <div v-else-if="!hasViolationsPerMonthData()" class="py-12 text-center text-gray-400 text-sm">
+                            No violation data for this term.
+                        </div>
+                        <div v-else class="h-[280px]">
+                            <DashboardLineChart :labels="chartViolationsPerMonth?.labels ?? []"
+                                :values="chartViolationsPerMonth?.values ?? []" label="Violations"
+                                border-color="#f43f5e" background-color="rgba(244, 63, 94, 0.1)" :max-height="280" />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ─── GUIDANCE ─── -->
+            <section>
+                <h3
+                    class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4 pl-1 border-l-2 border-indigo-400 pl-3">
+                    Guidance
+                </h3>
+                <!-- Guidance Cases by Course — Radar -->
+                <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="text-base font-semibold text-gray-800">Guidance cases by course</h4>
+                        <Link v-if="canAccessGuidance" :href="route('admin.guidance.index')"
+                            class="text-sm text-indigo-600 hover:text-indigo-900">
+                            View guidance
+                        </Link>
+                    </div>
+                    <div v-if="!academicTermLabel" class="py-12 text-center text-gray-400 text-sm">
+                        No active term.
+                    </div>
+                    <div v-else-if="!hasGuidanceByCourseData()" class="py-12 text-center text-gray-400 text-sm">
+                        No guidance cases for this term.
+                    </div>
+                    <div v-else class="h-[280px]">
+                        <DashboardRadarChart :labels="chartGuidanceByCourse?.labels ?? []"
+                            :values="chartGuidanceByCourse?.values ?? []" label="Cases" border-color="#8b5cf6"
+                            background-color="rgba(139, 92, 246, 0.2)" :max-height="280" />
+                    </div>
+                </div>
+            </section>
+
         </div>
     </AdminLayout>
 </template>

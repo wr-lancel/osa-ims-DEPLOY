@@ -11,6 +11,7 @@ use App\Models\Notification;
 use App\Models\OrgMeeting;
 use App\Models\OrgOfficer;
 use App\Models\StudentOrganization;
+use App\Models\SystemSetting;
 use App\Models\Event;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -84,6 +85,7 @@ class OrganizationController extends Controller
         return Inertia::render('Admin/Organizations/Index', [
             'organizations' => $organizations,
             'filters' => $request->only(['search', 'type', 'status']),
+            'organizationTypes' => SystemSetting::getList('organization_types'),
             'dashboardStats' => [
                 [
                     'title' => 'Total Organizations',
@@ -223,6 +225,7 @@ class OrganizationController extends Controller
                 }),
             ],
             'enrolledStudents' => $enrolledStudents,
+            'organizationTypes' => SystemSetting::getList('organization_types'),
         ]);
     }
 
@@ -412,12 +415,13 @@ class OrganizationController extends Controller
             $timeStr .= ' - ' . $meeting->end_time;
         }
 
+        $body = 'You are notified of the following meeting. ' . $organization->org_name . ' has scheduled a meeting on ' . $meeting->meeting_date->format('M d, Y') . ' at ' . $timeStr . '.' . ($meeting->venue ? ' Venue: ' . $meeting->venue . '.' : '') . ($meeting->description ? ' Agenda: ' . $meeting->description : '') . "\n\n" . notification_contact_footer('org_meeting');
         foreach ($users as $user) {
             Notification::create([
                 'user_id' => $user->user_id,
                 'type' => 'org_meeting',
                 'title' => "Meeting Called: {$meeting->title}",
-                'message' => "{$organization->org_name} has scheduled a meeting on {$meeting->meeting_date->format('M d, Y')} at {$timeStr}." . ($meeting->venue ? " Venue: {$meeting->venue}." : '') . ($meeting->description ? " Agenda: {$meeting->description}" : ''),
+                'message' => $body,
             ]);
         }
     }

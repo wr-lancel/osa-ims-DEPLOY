@@ -30,6 +30,14 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    isRepeatOffender: {
+        type: Boolean,
+        default: false,
+    },
+    studentViolationCount: {
+        type: Number,
+        default: 0,
+    },
 });
 
 const showEditModal = ref(false);
@@ -72,8 +80,8 @@ const handleMeetingSaved = () => {
 };
 
 const getStatusColor = (status) => {
-    if (status === 'Resolved') return 'bg-green-100 text-green-800';
-    if (status === 'Under Investigation') return 'bg-yellow-100 text-yellow-800';
+    if (status === 'resolved') return 'bg-green-100 text-green-800';
+    if (status === 'under investigation') return 'bg-yellow-100 text-yellow-800';
     return 'bg-gray-100 text-gray-800';
 };
 
@@ -140,13 +148,19 @@ const saveNarrative = () => {
 
     <AdminLayout>
         <template #header>
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h2 class="text-2xl font-semibold text-gray-900">
                         Case #{{ violation.discipline_id }}
                     </h2>
                     <p class="text-sm text-gray-500 mt-1">
                         {{ violation.student?.full_name }} ({{ violation.student?.student_number }})
+                        <button v-if="isRepeatOffender"
+                            type="button"
+                            class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-amber-500"
+                            @click="router.get(route('admin.discipline.index'), { search: violation.student?.student_number })">
+                            Repeat offender ({{ studentViolationCount }} violations) – View all
+                        </button>
                     </p>
                 </div>
                 <div class="flex items-center space-x-3">

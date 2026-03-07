@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Models\SystemSetting;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreEventRequest extends FormRequest
@@ -21,7 +22,7 @@ class StoreEventRequest extends FormRequest
             'start_time' => ['nullable', 'date_format:H:i'],
             'end_time' => ['nullable', 'date_format:H:i'],
             'venue' => ['nullable', 'string', 'max:255'],
-            'status' => ['required', 'in:Upcoming,Completed,Planning'],
+            'status' => ['required', 'in:' . implode(',', SystemSetting::getList('event_statuses'))],
         ];
     }
 }

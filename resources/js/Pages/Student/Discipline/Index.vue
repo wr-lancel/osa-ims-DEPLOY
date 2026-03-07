@@ -41,8 +41,8 @@ const applyTermFilter = () => {
 };
 
 const getStatusColor = (status) => {
-    if (status === 'Resolved') return 'bg-green-100 text-green-800';
-    if (status === 'Under Investigation') return 'bg-yellow-100 text-yellow-800';
+    if (status === 'resolved') return 'bg-green-100 text-green-800';
+    if (status === 'under investigation') return 'bg-yellow-100 text-yellow-800';
     return 'bg-gray-100 text-gray-800';
 };
 

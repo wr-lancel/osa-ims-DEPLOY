@@ -12,18 +12,19 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    organizationTypes: {
+        type: Array,
+        default: () => ['Academic', 'Cultural', 'Governance', 'Special Interest'],
+    },
 });
 
 const search = ref('');
 const filterType = ref('');
 
-const typeOptions = [
+const typeOptions = computed(() => [
     { value: '', label: 'All Types' },
-    { value: 'Academic', label: 'Academic' },
-    { value: 'Cultural', label: 'Cultural' },
-    { value: 'Governance', label: 'Governance' },
-    { value: 'Special Interest', label: 'Special Interest' },
-];
+    ...props.organizationTypes.map(t => ({ value: t, label: t })),
+]);
 
 const filteredOrganizations = computed(() => {
     let result = props.organizations;

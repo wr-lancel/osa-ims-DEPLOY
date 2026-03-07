@@ -6,7 +6,7 @@ import TextInput from '@/Components/TextInput.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import InputError from '@/Components/InputError.vue';
 import { useForm, router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 
 const props = defineProps({
     show: {
@@ -20,6 +20,10 @@ const props = defineProps({
     organizations: {
         type: Array,
         default: () => [],
+    },
+    eventStatuses: {
+        type: Array,
+        default: () => ['Planning', 'Upcoming', 'Completed'],
     },
 });
 
@@ -37,13 +41,15 @@ const form = useForm({
     end_time: '',
     venue: '',
     status: 'Planning',
+    confirm_date_conflict: '',
 });
 
-const statusOptions = [
-    { value: 'Planning', label: 'Planning' },
-    { value: 'Upcoming', label: 'Upcoming' },
-    { value: 'Completed', label: 'Completed' },
-];
+const showConflictDialog = ref(false);
+const conflictMessage = ref('');
+
+const statusOptions = computed(() =>
+    props.eventStatuses.map(s => ({ value: s, label: s }))
+);
 
 watch(() => props.show, (isShowing) => {
     if (isShowing) {
@@ -78,17 +84,31 @@ const submit = () => {
     router[method](url, form, {
         preserveScroll: true,
         onSuccess: () => {
+            form.confirm_date_conflict = '';
             emit('saved');
             close();
         },
         onError: (errors) => {
-            formErrors.value = errors;
+            if (errors.date_conflict && Array.isArray(errors.date_conflict) && errors.date_conflict[0]) {
+                conflictMessage.value = errors.date_conflict[0];
+                showConflictDialog.value = true;
+                const { date_conflict: _, ...rest } = errors;
+                formErrors.value = rest;
+            } else {
+                formErrors.value = errors;
+            }
             isProcessing.value = false;
         },
         onFinish: () => {
             isProcessing.value = false;
         },
     });
+};
+
+const confirmConflictAndSubmit = () => {
+    showConflictDialog.value = false;
+    form.confirm_date_conflict = '1';
+    submit();
 };
 
 const close = () => {
@@ -238,6 +258,32 @@ const close = () => {
                     </PrimaryButton>
                 </div>
             </form>
+
+            <!-- Date conflict confirmation dialog -->
+            <div
+                v-if="showConflictDialog"
+                class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="conflict-dialog-title"
+            >
+                <div class="bg-white rounded-xl shadow-lg max-w-md w-full p-6">
+                    <h3 id="conflict-dialog-title" class="text-lg font-semibold text-gray-900 mb-2">
+                        Event date conflict
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-6">
+                        {{ conflictMessage }}
+                    </p>
+                    <div class="flex justify-end space-x-3">
+                        <SecondaryButton type="button" @click="showConflictDialog = false">
+                            Cancel
+                        </SecondaryButton>
+                        <PrimaryButton type="button" @click="confirmConflictAndSubmit">
+                            Continue anyway
+                        </PrimaryButton>
+                    </div>
+                </div>
+            </div>
         </div>
     </Modal>
 </template>

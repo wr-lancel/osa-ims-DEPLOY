@@ -21,6 +21,10 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    organizationTypes: {
+        type: Array,
+        default: () => ['Academic', 'Cultural', 'Governance', 'Special Interest'],
+    },
 });
 
 const activeTab = ref('organizations');
@@ -31,13 +35,10 @@ const search = ref(props.filters.search || '');
 const type = ref(props.filters.type || '');
 const status = ref(props.filters.status || '');
 
-const typeOptions = [
+const typeOptions = computed(() => [
     { value: '', label: 'All Types' },
-    { value: 'Academic', label: 'Academic' },
-    { value: 'Cultural', label: 'Cultural' },
-    { value: 'Governance', label: 'Governance' },
-    { value: 'Special Interest', label: 'Special Interest' },
-];
+    ...props.organizationTypes.map(t => ({ value: t, label: t })),
+]);
 
 const statusOptions = [
     { value: '', label: 'All Statuses' },
@@ -99,7 +100,7 @@ const exportPdf = () => {
 
     <AdminLayout>
         <template #header>
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <h2 class="text-2xl font-semibold text-gray-900">
                     Organization Unit
                 </h2>

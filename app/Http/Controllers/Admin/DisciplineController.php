@@ -15,6 +15,7 @@ use App\Models\DisciplineViolationType;
 use App\Models\DisciplineWorkflowStep;
 use App\Models\EnrolledStudent;
 use App\Models\Notification;
+use App\Models\SystemSetting;
 use App\Services\DisciplineService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
@@ -22,6 +23,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -41,41 +43,12 @@ class DisciplineController extends Controller
     public function index(Request $request): Response
     {
         $totalViolations = Discipline::count();
-        $pendingCases = Discipline::where('status', 'Pending')->count();
-        $resolvedCases = Discipline::where('status', 'Resolved')->count();
+        $pendingCases = Discipline::where('status', 'pending')->count();
+        $resolvedCases = Discipline::where('status', 'resolved')->count();
         $majorCases = Discipline::where('severity', 'Major')->count();
 
-        $query = Discipline::with(['student', 'reportedBy', 'enrollment.academicCalendar']);
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->whereHas('student', function ($studentQuery) use ($search) {
-                    $studentQuery->where('student_number', 'like', "%{$search}%")
-                        ->orWhere('first_name', 'like', "%{$search}%")
-                        ->orWhere('last_name', 'like', "%{$search}%");
-                })
-                    ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhere('violation_type', 'like', "%{$search}%");
-                if (is_numeric($search)) {
-                    $q->orWhere('discipline_id', (int) $search);
-                }
-            });
-        }
-
-        if ($request->filled('severity')) {
-            $query->where('severity', $request->severity);
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('acad_id')) {
-            $query->whereHas('enrollment', function ($q) use ($request) {
-                $q->where('acad_id', $request->acad_id);
-            });
-        }
+        $query = $this->buildFilteredDisciplineQuery($request)
+            ->with(['student', 'reportedBy', 'enrollment.academicCalendar']);
 
         $violations = $query->orderBy('violation_date', 'desc')
             ->orderBy('created_at', 'desc')
@@ -130,6 +103,7 @@ class DisciplineController extends Controller
             'terms' => $terms,
             'workflowSteps' => $workflowSteps,
             'violationTypes' => DisciplineViolationType::getAllForDropdown(),
+            'violationSeverities' => SystemSetting::getList('violation_severities'),
             'dashboardStats' => [
                 ['title' => 'Total Violations', 'value' => $totalViolations, 'color' => 'blue'],
                 ['title' => 'Pending Cases', 'value' => $pendingCases, 'color' => 'yellow'],
@@ -155,8 +129,6 @@ class DisciplineController extends Controller
         $data['student_number'] = $enrollment->student_number;
         $data['enrollment_id'] = $enrollment->enrollment_id;
         $data['reported_by'] = $data['reported_by'] ?? Auth::id();
-        unset($data['enrollment_id']); // already set
-        $data['enrollment_id'] = $enrollment->enrollment_id;
 
         // Handle narrative report file upload
         $narrativeFilePath = null;
@@ -186,11 +158,15 @@ class DisciplineController extends Controller
 
             $userId = $this->disciplineService->resolveUserIdForEnrollment($discipline->enrollment_id);
             if ($userId) {
+                $descSummary = Str::length($discipline->description) > 100
+                    ? Str::limit($discipline->description, 100) . ' See details in the system.'
+                    : $discipline->description;
+                $message = 'A new violation has been recorded for your account. Violation type: ' . $discipline->violation_type . '. Date: ' . $discipline->violation_date->format('F j, Y') . '. ' . $descSummary . "\n\n" . notification_contact_footer('discipline');
                 Notification::create([
                     'user_id' => $userId,
                     'type' => 'discipline',
                     'title' => 'New violation recorded',
-                    'message' => 'A violation has been recorded for your account. Case #' . $discipline->discipline_id,
+                    'message' => $message,
                     'related_case_id' => $discipline->discipline_id,
                     'related_meeting_id' => null,
                     'is_read' => false,
@@ -265,6 +241,9 @@ class DisciplineController extends Controller
             'changed_by' => $h->changedBy->email ?? null,
         ]);
 
+        $studentViolationCount = Discipline::where('student_number', $discipline->student_number)->count();
+        $isRepeatOffender = $studentViolationCount >= 2;
+
         return Inertia::render('Admin/Discipline/Show', [
             'violation' => $violation,
             'meetings' => $meetings,
@@ -272,6 +251,9 @@ class DisciplineController extends Controller
             'workflowSteps' => DisciplineWorkflowStep::getStepsForProgressBar(),
             'terminalStatuses' => DisciplineWorkflowStep::getTerminalNames(),
             'violationTypes' => DisciplineViolationType::getAllForDropdown(),
+            'violationSeverities' => SystemSetting::getList('violation_severities'),
+            'isRepeatOffender' => $isRepeatOffender,
+            'studentViolationCount' => $studentViolationCount,
         ]);
     }
 
@@ -333,11 +315,12 @@ class DisciplineController extends Controller
 
             $userId = $this->disciplineService->resolveUserIdForDiscipline($discipline);
             if ($userId) {
+                $message = 'Your violation record has been updated. Current status: ' . $discipline->status . "\n\n" . notification_contact_footer('discipline');
                 Notification::create([
                     'user_id' => $userId,
                     'type' => 'discipline',
                     'title' => 'Violation case updated',
-                    'message' => 'Your violation case #' . $discipline->discipline_id . ' has been updated. Status: ' . $discipline->status,
+                    'message' => $message,
                     'related_case_id' => $discipline->discipline_id,
                     'related_meeting_id' => null,
                     'is_read' => false,
@@ -375,11 +358,12 @@ class DisciplineController extends Controller
                 $date = $meeting->meeting_date->format('M j, Y');
                 $time = $meeting->meeting_time ? \Carbon\Carbon::parse($meeting->meeting_time)->format('g:i A') : 'TBD';
                 $loc = $meeting->location;
+                $message = "You are requested to report to the following office call. Location: {$loc}. Date: {$date}. Time: {$time}.\n\n" . notification_contact_footer('discipline');
                 Notification::create([
                     'user_id' => $userId,
                     'type' => 'discipline',
                     'title' => 'Office call scheduled',
-                    'message' => "You are requested to report to {$loc} on {$date} at {$time}.",
+                    'message' => $message,
                     'related_case_id' => $discipline->discipline_id,
                     'related_meeting_id' => $meeting->meeting_id,
                     'is_read' => false,
@@ -412,13 +396,14 @@ class DisciplineController extends Controller
         ]);
 
         $userId = $this->disciplineService->resolveUserIdForDiscipline($discipline);
-        if ($userId && in_array($meeting->status, ['rescheduled', 'cancelled'], true)) {
+        if ($userId && $oldStatus !== $meeting->status && in_array($meeting->status, ['rescheduled', 'cancelled'], true)) {
             if ($meeting->status === 'cancelled') {
+                $message = "Your scheduled office call has been cancelled.\n\n" . notification_contact_footer('discipline');
                 Notification::create([
                     'user_id' => $userId,
                     'type' => 'discipline',
                     'title' => 'Meeting cancelled',
-                    'message' => 'Your scheduled office call for case #' . $discipline->discipline_id . ' has been cancelled.',
+                    'message' => $message,
                     'related_case_id' => $discipline->discipline_id,
                     'related_meeting_id' => $meeting->meeting_id,
                     'is_read' => false,
@@ -427,11 +412,12 @@ class DisciplineController extends Controller
                 $date = $meeting->meeting_date->format('M j, Y');
                 $time = $meeting->meeting_time ? \Carbon\Carbon::parse($meeting->meeting_time)->format('g:i A') : 'TBD';
                 $loc = $meeting->location;
+                $message = "You are requested to report to the following office call. Location: {$loc}. Date: {$date}. Time: {$time}.\n\n" . notification_contact_footer('discipline');
                 Notification::create([
                     'user_id' => $userId,
                     'type' => 'discipline',
                     'title' => 'Meeting rescheduled',
-                    'message' => "You are requested to report to {$loc} on {$date} at {$time}.",
+                    'message' => $message,
                     'related_case_id' => $discipline->discipline_id,
                     'related_meeting_id' => $meeting->meeting_id,
                     'is_read' => false,
@@ -448,37 +434,8 @@ class DisciplineController extends Controller
      */
     public function exportPdf(Request $request)
     {
-        $query = Discipline::with(['student', 'enrollment.academicCalendar']);
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->whereHas('student', function ($studentQuery) use ($search) {
-                    $studentQuery->where('student_number', 'like', "%{$search}%")
-                        ->orWhere('first_name', 'like', "%{$search}%")
-                        ->orWhere('last_name', 'like', "%{$search}%");
-                })
-                    ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhere('violation_type', 'like', "%{$search}%");
-                if (is_numeric($search)) {
-                    $q->orWhere('discipline_id', (int) $search);
-                }
-            });
-        }
-
-        if ($request->filled('severity')) {
-            $query->where('severity', $request->severity);
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('acad_id')) {
-            $query->whereHas('enrollment', function ($q) use ($request) {
-                $q->where('acad_id', $request->acad_id);
-            });
-        }
+        $query = $this->buildFilteredDisciplineQuery($request)
+            ->with(['student', 'enrollment.academicCalendar']);
 
         $violations = $query->orderBy('violation_date', 'desc')->get();
 
@@ -523,7 +480,7 @@ class DisciplineController extends Controller
             $updateData = ['status' => $newStatus];
 
             // Auto-set date_resolved when marking as Resolved
-            if ($newStatus === 'Resolved' && !$discipline->date_resolved) {
+            if ($newStatus === 'resolved' && !$discipline->date_resolved) {
                 $updateData['date_resolved'] = now()->toDateString();
             }
 
@@ -539,11 +496,12 @@ class DisciplineController extends Controller
 
             $userId = $this->disciplineService->resolveUserIdForDiscipline($discipline);
             if ($userId) {
+                $message = "Your violation record status has been updated from {$oldStatus} to {$newStatus}.\n\n" . notification_contact_footer('discipline');
                 Notification::create([
                     'user_id' => $userId,
                     'type' => 'discipline',
                     'title' => 'Case status updated',
-                    'message' => "Your case #{$discipline->discipline_id} status changed from {$oldStatus} to {$newStatus}.",
+                    'message' => $message,
                     'related_case_id' => $discipline->discipline_id,
                     'is_read' => false,
                 ]);
@@ -552,5 +510,45 @@ class DisciplineController extends Controller
 
         return redirect()->route('admin.discipline.show', $discipline)
             ->with('success', "Status updated to {$newStatus}.");
+    }
+
+    /**
+     * Build a Discipline query with search, severity, status, and acad_id filters applied.
+     */
+    private function buildFilteredDisciplineQuery(Request $request)
+    {
+        $query = Discipline::query();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('student', function ($studentQuery) use ($search) {
+                    $studentQuery->where('student_number', 'like', "%{$search}%")
+                        ->orWhere('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%");
+                })
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('violation_type', 'like', "%{$search}%");
+                if (is_numeric($search)) {
+                    $q->orWhere('discipline_id', (int) $search);
+                }
+            });
+        }
+
+        if ($request->filled('severity')) {
+            $query->where('severity', $request->severity);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('acad_id')) {
+            $query->whereHas('enrollment', function ($q) use ($request) {
+                $q->where('acad_id', $request->acad_id);
+            });
+        }
+
+        return $query;
     }
 }

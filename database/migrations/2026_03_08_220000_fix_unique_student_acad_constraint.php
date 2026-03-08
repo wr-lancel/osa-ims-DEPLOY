@@ -9,15 +9,14 @@ use Illuminate\Support\Facades\Log;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
-     * 
      * Fix: The old unique constraint 'unique_student_acad' was on (student_id, acad_id),
-     * but student_id was dropped and replaced with student_number.
-     * This migration drops the stale constraint and recreates it on (student_number, acad_id).
+     * but student_id was dropped. MySQL collapsed it to just UNIQUE(acad_id),
+     * meaning only 1 enrollment per term across ALL students.
+     * This recreates it correctly on (student_number, acad_id).
      */
     public function up(): void
     {
-        // Drop the old constraint if it still exists
+        // Drop ALL unique constraints on enrolled_students to clean up
         try {
             $constraints = DB::select("
                 SELECT CONSTRAINT_NAME 
@@ -25,21 +24,29 @@ return new class extends Migration
                 WHERE TABLE_SCHEMA = DATABASE() 
                 AND TABLE_NAME = 'enrolled_students' 
                 AND CONSTRAINT_TYPE = 'UNIQUE'
-                AND CONSTRAINT_NAME = 'unique_student_acad'
             ");
 
-            if (count($constraints) > 0) {
-                DB::statement("ALTER TABLE enrolled_students DROP INDEX `unique_student_acad`");
-                Log::info('Dropped stale unique_student_acad constraint.');
+            foreach ($constraints as $constraint) {
+                // Don't drop PRIMARY
+                if ($constraint->CONSTRAINT_NAME !== 'PRIMARY') {
+                    try {
+                        DB::statement("ALTER TABLE enrolled_students DROP INDEX `{$constraint->CONSTRAINT_NAME}`");
+                        Log::info("Dropped constraint: {$constraint->CONSTRAINT_NAME}");
+                    } catch (\Exception $e) {
+                        Log::warning("Could not drop {$constraint->CONSTRAINT_NAME}: " . $e->getMessage());
+                    }
+                }
             }
         } catch (\Exception $e) {
-            Log::info('Could not drop unique_student_acad: ' . $e->getMessage());
+            Log::error('Error cleaning up constraints: ' . $e->getMessage());
         }
 
-        // Recreate the unique constraint on (student_number, acad_id)
+        // Recreate the unique constraint correctly on (student_number, acad_id)
         Schema::table('enrolled_students', function (Blueprint $table) {
             $table->unique(['student_number', 'acad_id'], 'unique_student_acad');
         });
+
+        Log::info('Recreated unique_student_acad on (student_number, acad_id)');
     }
 
     /**

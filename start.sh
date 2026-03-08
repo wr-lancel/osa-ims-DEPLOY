@@ -24,6 +24,10 @@ php artisan view:cache
 echo "Running migrations..."
 php artisan migrate --force
 
+# Seed the database (only inserts if tables are empty, based on your seeders)
+echo "Seeding database..."
+php artisan db:seed --force
+
 # Start the queue worker in the background
 echo "Starting queue worker..."
 php artisan queue:work &

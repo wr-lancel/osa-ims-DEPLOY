@@ -20,10 +20,13 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-# Fresh migration + seed (drops all tables and rebuilds from scratch)
-# IMPORTANT: Change this back to "php artisan migrate --force" after the first successful deploy!
-echo "Running fresh migrations and seeding..."
-php artisan migrate:fresh --seed --force
+# Run migrations
+echo "Running migrations..."
+php artisan migrate --force
+
+# Seed the database
+echo "Seeding database..."
+php artisan db:seed --force
 
 # Start the queue worker in the background
 echo "Starting queue worker..."

@@ -1,24 +1,16 @@
-# Output to log what is happening
+#!/bin/bash
+
 echo "Starting deployment script..."
 
-# Railway doesn't copy .env automatically, so if one doesn't exist, we create it from example
-if [ ! -f .env ]; then
-    echo "Creating .env file..."
-    cp .env.example .env
-fi
-
-# If APP_KEY is empty, we must generate it or the app will 500
-if ! grep -q "^APP_KEY=base64:" .env; then
-    echo "Generating APP_KEY..."
-    php artisan key:generate --force
-fi
+# DO NOT copy .env.example — Railway injects env vars directly into the container.
+# Creating a .env file would OVERRIDE Railway's variables with wrong defaults.
 
 # Ensure storage directories exist
 mkdir -p storage/framework/{sessions,views,cache}
 mkdir -p storage/logs
 chmod -R 775 storage bootstrap/cache
 
-# Create the storage symlink (needed for serving assets)
+# Create the storage symlink (needed for serving uploaded files)
 echo "Creating storage link..."
 php artisan storage:link --force 2>/dev/null || true
 
@@ -27,6 +19,7 @@ echo "Optimizing application..."
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
+
 # Run migrations
 echo "Running migrations..."
 php artisan migrate --force

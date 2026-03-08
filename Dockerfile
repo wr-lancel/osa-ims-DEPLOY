@@ -9,7 +9,12 @@ RUN apt-get update && apt-get install -y \
     unzip \
     git \
     curl \
-    libzip-dev
+    libzip-dev \
+    gnupg
+
+# Install Node.js
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs
 
 # Install GD extension
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -27,6 +32,13 @@ COPY . .
 
 RUN composer install --optimize-autoloader --no-interaction
 
+# Install NPM dependencies and build frontend assets
+RUN npm install
+RUN npm run build
+
 EXPOSE 8000
 
-CMD php artisan serve --host=0.0.0.0 --port=8000
+# Make the start script executable
+RUN chmod +x start.sh
+
+CMD ["sh", "start.sh"]

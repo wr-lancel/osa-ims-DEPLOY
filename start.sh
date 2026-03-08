@@ -18,6 +18,10 @@ mkdir -p storage/framework/{sessions,views,cache}
 mkdir -p storage/logs
 chmod -R 775 storage bootstrap/cache
 
+# Create the storage symlink (needed for serving assets)
+echo "Creating storage link..."
+php artisan storage:link --force 2>/dev/null || true
+
 # Cache configuration and optimize
 echo "Optimizing application..."
 php artisan config:cache

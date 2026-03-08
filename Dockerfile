@@ -8,7 +8,8 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     git \
-    curl
+    curl \
+    libzip-dev
 
 # Install GD extension
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \

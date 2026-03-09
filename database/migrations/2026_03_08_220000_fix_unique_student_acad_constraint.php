@@ -41,12 +41,24 @@ return new class extends Migration
             Log::error('Error cleaning up constraints: ' . $e->getMessage());
         }
 
-        // Recreate the unique constraint correctly on (student_number, acad_id)
-        Schema::table('enrolled_students', function (Blueprint $table) {
-            $table->unique(['student_number', 'acad_id'], 'unique_student_acad');
-        });
+        // Only add the constraint if it doesn't already exist
+        $exists = DB::select("
+            SELECT CONSTRAINT_NAME 
+            FROM information_schema.TABLE_CONSTRAINTS 
+            WHERE TABLE_SCHEMA = DATABASE() 
+            AND TABLE_NAME = 'enrolled_students' 
+            AND CONSTRAINT_TYPE = 'UNIQUE'
+            AND CONSTRAINT_NAME = 'unique_student_acad'
+        ");
 
-        Log::info('Recreated unique_student_acad on (student_number, acad_id)');
+        if (empty($exists)) {
+            Schema::table('enrolled_students', function (Blueprint $table) {
+                $table->unique(['student_number', 'acad_id'], 'unique_student_acad');
+            });
+            Log::info('Recreated unique_student_acad on (student_number, acad_id)');
+        } else {
+            Log::info('unique_student_acad already exists, skipping creation.');
+        }
     }
 
     /**

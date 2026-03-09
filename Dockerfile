@@ -5,6 +5,13 @@ ENV APACHE_DOCUMENT_ROOT /app/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
+# Configure Apache to listen on Railway's dynamic $PORT environment variable
+RUN sed -i 's/Listen 80/Listen ${PORT}/g' /etc/apache2/ports.conf
+RUN sed -i 's/<VirtualHost \*:80>/<VirtualHost *:${PORT}>/g' /etc/apache2/sites-available/000-default.conf
+
+# Fix Apache MPM loading conflict (AH00534) by explicitly setting prefork (required for mod_php)
+RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork
+
 # 2. Enable Apache mod_rewrite for Laravel routing
 RUN a2enmod rewrite
 
@@ -44,9 +51,6 @@ RUN npm install && npm run build
 
 # 8. Set permissions for Apache
 RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
-
-# Expose standard web port
-EXPOSE 80
 
 # Make the start script executable
 RUN chmod +x start.sh

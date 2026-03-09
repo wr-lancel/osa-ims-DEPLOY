@@ -17,14 +17,6 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     gnupg
 
-# Fix Apache MPM loading conflict (AH00534)
-# Run this AFTER apt-get install, because installing packages might re-hydrate default MPMs!
-RUN rm -f /etc/apache2/mods-enabled/mpm_*.conf /etc/apache2/mods-enabled/mpm_*.load \
-    && rm -f /etc/apache2/mods-available/mpm_event.conf /etc/apache2/mods-available/mpm_event.load \
-    && rm -f /etc/apache2/mods-available/mpm_worker.conf /etc/apache2/mods-available/mpm_worker.load \
-    && a2dismod mpm_event mpm_worker || true \
-    && a2enmod mpm_prefork || true
-
 # 3. Enable Apache mod_rewrite for Laravel routing
 RUN a2enmod rewrite
 

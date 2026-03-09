@@ -5,19 +5,7 @@ ENV APACHE_DOCUMENT_ROOT /app/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# Fix Apache MPM loading conflict (AH00534)
-# Some environments activate mpm_event or mpm_worker, but php requires mpm_prefork
-# We forcefully remove all MPMs and only enable prefork.
-RUN rm -f /etc/apache2/mods-enabled/mpm_*.conf /etc/apache2/mods-enabled/mpm_*.load \
-    && rm -f /etc/apache2/mods-available/mpm_event.conf /etc/apache2/mods-available/mpm_event.load \
-    && rm -f /etc/apache2/mods-available/mpm_worker.conf /etc/apache2/mods-available/mpm_worker.load \
-    && a2dismod mpm_event mpm_worker || true \
-    && a2enmod mpm_prefork || true
-
-# 2. Enable Apache mod_rewrite for Laravel routing
-RUN a2enmod rewrite
-
-# 3. Install system dependencies
+# 2. Install system dependencies
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
@@ -28,6 +16,17 @@ RUN apt-get update && apt-get install -y \
     curl \
     libzip-dev \
     gnupg
+
+# Fix Apache MPM loading conflict (AH00534)
+# Run this AFTER apt-get install, because installing packages might re-hydrate default MPMs!
+RUN rm -f /etc/apache2/mods-enabled/mpm_*.conf /etc/apache2/mods-enabled/mpm_*.load \
+    && rm -f /etc/apache2/mods-available/mpm_event.conf /etc/apache2/mods-available/mpm_event.load \
+    && rm -f /etc/apache2/mods-available/mpm_worker.conf /etc/apache2/mods-available/mpm_worker.load \
+    && a2dismod mpm_event mpm_worker || true \
+    && a2enmod mpm_prefork || true
+
+# 3. Enable Apache mod_rewrite for Laravel routing
+RUN a2enmod rewrite
 
 # 4. Install Node.js
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \

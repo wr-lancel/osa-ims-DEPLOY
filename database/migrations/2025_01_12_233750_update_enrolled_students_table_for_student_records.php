@@ -83,13 +83,32 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('enrolled_students', function (Blueprint $table) {
-            // Drop unique constraint
-            $table->dropUnique('unique_student_acad');
-            
+        // Safely drop index
+        $indexExists = DB::select("
+            SELECT INDEX_NAME 
+            FROM information_schema.STATISTICS 
+            WHERE TABLE_SCHEMA = DATABASE() 
+            AND TABLE_NAME = 'enrolled_students' 
+            AND INDEX_NAME = 'unique_student_acad'
+        ");
+        
+        if (!empty($indexExists)) {
+            Schema::table('enrolled_students', function (Blueprint $table) {
+                $table->dropUnique('unique_student_acad');
+            });
+        }
+        
+        $acadIdFkExists = $this->foreignKeyExists('enrolled_students', 'fk_enrolled_students_acad_id');
+        $courseIdFkExists = $this->foreignKeyExists('enrolled_students', 'fk_enrolled_students_course_id');
+
+        Schema::table('enrolled_students', function (Blueprint $table) use ($acadIdFkExists, $courseIdFkExists) {
             // Drop foreign keys
-            $table->dropForeign('fk_enrolled_students_acad_id');
-            $table->dropForeign('fk_enrolled_students_course_id');
+            if ($acadIdFkExists) {
+                $table->dropForeign('fk_enrolled_students_acad_id');
+            }
+            if ($courseIdFkExists) {
+                $table->dropForeign('fk_enrolled_students_course_id');
+            }
         });
 
         // Drop columns

@@ -46,6 +46,7 @@ const filterByStatus = (status) => {
     router.get(route('student.guidance.index'), { status: status || null }, {
         preserveState: true,
         preserveScroll: true,
+        showProgress: false,
     });
 };
 

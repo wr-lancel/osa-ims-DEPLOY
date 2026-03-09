@@ -26,10 +26,39 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropForeign('fk_users_employee_id');
-            $table->dropIndex('idx_users_employee_id');
-            $table->dropColumn('employee_id');
-        });
+        // Safely drop foreign key and index if they exist
+        $fkExists = \Illuminate\Support\Facades\DB::select("
+            SELECT CONSTRAINT_NAME 
+            FROM information_schema.KEY_COLUMN_USAGE 
+            WHERE TABLE_SCHEMA = DATABASE() 
+            AND TABLE_NAME = 'users' 
+            AND CONSTRAINT_NAME = 'fk_users_employee_id'
+        ");
+
+        if (!empty($fkExists)) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropForeign('fk_users_employee_id');
+            });
+        }
+
+        $indexExists = \Illuminate\Support\Facades\DB::select("
+            SELECT INDEX_NAME 
+            FROM information_schema.STATISTICS 
+            WHERE TABLE_SCHEMA = DATABASE() 
+            AND TABLE_NAME = 'users' 
+            AND INDEX_NAME = 'idx_users_employee_id'
+        ");
+
+        if (!empty($indexExists)) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropIndex('idx_users_employee_id');
+            });
+        }
+
+        if (Schema::hasColumn('users', 'employee_id')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropColumn('employee_id');
+            });
+        }
     }
 };

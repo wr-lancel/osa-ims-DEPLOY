@@ -4,9 +4,12 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
 import DashboardCards from '@/Components/Admin/DashboardCards.vue';
 import OrganizationFormModal from '@/Components/Admin/OrganizationFormModal.vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import Pagination from '@/Components/Pagination.vue';
+import { useNotification } from '@/composables/useNotification';
+import axios from 'axios';
 
 const props = defineProps({
     organizations: {
@@ -54,6 +57,9 @@ const applyFilters = () => {
     }, {
         preserveState: true,
         preserveScroll: true,
+        replace: true,
+        showProgress: false,
+        only: ['organizations', 'filters', 'dashboardStats', 'organizationTypes'],
     });
 };
 
@@ -84,13 +90,35 @@ const handleSaved = () => {
     router.reload({ only: ['organizations', 'dashboardStats'] });
 };
 
-const exportPdf = () => {
-    const params = new URLSearchParams();
-    if (search.value) params.append('search', search.value);
-    if (type.value) params.append('type', type.value);
-    if (status.value) params.append('status', status.value);
+const { notify } = useNotification();
+const isExporting = ref(false);
 
-    window.location.href = route('admin.organizations.export.pdf') + (params.toString() ? '?' + params.toString() : '');
+const exportPdf = async () => {
+    isExporting.value = true;
+    try {
+        const params = new URLSearchParams();
+        if (search.value) params.append('search', search.value);
+        if (type.value) params.append('type', type.value);
+        if (status.value) params.append('status', status.value);
+
+        const response = await axios.get(route('admin.organizations.export.pdf') + (params.toString() ? '?' + params.toString() : ''), {
+            responseType: 'blob',
+        });
+
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'organizations_list.pdf');
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('Failed to export PDF:', error);
+        notify('error', 'Failed to generate PDF. Please try again.');
+    } finally {
+        isExporting.value = false;
+    }
 };
 </script>
 
@@ -99,6 +127,7 @@ const exportPdf = () => {
     <Head title="Organization Unit" />
 
     <AdminLayout>
+        <LoadingOverlay :show="isExporting" message="Generating PDF... Please wait." />
         <template #header>
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <h2 class="text-2xl font-semibold text-gray-900">

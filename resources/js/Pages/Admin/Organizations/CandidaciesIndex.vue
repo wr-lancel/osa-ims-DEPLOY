@@ -44,6 +44,9 @@ function applyFilters() {
     }, {
         preserveState: true,
         preserveScroll: true,
+        replace: true,
+        showProgress: false,
+        only: ['applications', 'filters', 'stats', 'organizations', 'terms', 'candidacyOpen'],
     });
 }
 

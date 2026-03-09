@@ -82,7 +82,7 @@ watch(() => page.url, () => {
 <template>
   <!-- Desktop Sidebar (only in flow on md+) -->
   <aside class="w-72 hidden md:block">
-    <div class="w-full sticky top-0 bg-white border-r border-slate-200/70">
+    <div class="w-full h-screen sticky top-0 bg-white border-r border-slate-200/70">
       <!-- Brand -->
       <div class="px-5 pt-6 pb-4">
         <div class="flex items-center gap-3">
@@ -126,12 +126,7 @@ watch(() => page.url, () => {
           </Link>
         </div>
 
-        <!-- Bottom subtle footer -->
-        <div class="mt-6 px-3 pt-4 border-t border-slate-200/70">
-          <div class="text-xs text-slate-500">
-            Minimal • Clean • Fast
-          </div>
-        </div>
+
       </nav>
     </div>
   </aside>
@@ -190,10 +185,7 @@ watch(() => page.url, () => {
             </div>
           </nav>
 
-          <!-- Footer -->
-          <div class="px-6 py-4 border-t border-slate-200/70">
-            <div class="text-xs text-slate-500">Minimal • Clean • Fast</div>
-          </div>
+
         </div>
       </div>
     </Transition>

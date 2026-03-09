@@ -7,6 +7,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import InputError from '@/Components/InputError.vue';
 import { useForm, router } from '@inertiajs/vue3';
 import { ref, watch, computed } from 'vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 
 const props = defineProps({
     show: {
@@ -96,6 +97,7 @@ const close = () => {
 </script>
 
 <template>
+    <LoadingOverlay :show="isProcessing" message="Saving organization... Please wait." />
     <Modal :show="show" @close="close">
         <div class="p-6">
             <h2 class="text-2xl font-semibold text-gray-900 mb-6">

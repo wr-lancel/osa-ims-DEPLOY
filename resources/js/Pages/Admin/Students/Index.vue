@@ -7,6 +7,7 @@ import DashboardCards from '@/Components/Admin/DashboardCards.vue';
 import StudentFormModal from '@/Components/Admin/StudentFormModal.vue';
 import ImportStudentsModal from '@/Components/Admin/ImportStudentsModal.vue';
 import CreateStudentAccountModal from '@/Components/Admin/CreateStudentAccountModal.vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import Pagination from '@/Components/Pagination.vue';
@@ -72,7 +73,6 @@ const statusOptions = [
     { value: 'dropped', label: 'Dropped' },
 ];
 
-// Auto-apply filters with debounce (term is locked to active term)
 const applyFilters = () => {
     router.get(route('admin.students.index'), {
         search: search.value || undefined,
@@ -82,6 +82,9 @@ const applyFilters = () => {
     }, {
         preserveState: true,
         preserveScroll: true,
+        replace: true,
+        showProgress: false,
+        only: ['students', 'filters', 'dashboardStats', 'graduationRecommendations', 'activeTerm'],
     });
 };
 
@@ -155,14 +158,38 @@ onUnmounted(() => {
 
 
 
-const exportPdf = () => {
-    const params = new URLSearchParams();
-    if (search.value) params.append('search', search.value);
-    if (yearLevel.value) params.append('year_level', yearLevel.value);
-    if (courseId.value) params.append('course_id', courseId.value);
-    if (status.value) params.append('status', status.value);
+const isExporting = ref(false);
 
-    window.location.href = route('admin.students.export.pdf') + (params.toString() ? '?' + params.toString() : '');
+const exportPdf = async () => {
+    isExporting.value = true;
+    try {
+        const params = new URLSearchParams();
+        if (search.value) params.append('search', search.value);
+        if (yearLevel.value) params.append('year_level', yearLevel.value);
+        if (courseId.value) params.append('course_id', courseId.value);
+        if (status.value) params.append('status', status.value);
+
+        const response = await axios.get(route('admin.students.export.pdf') + (params.toString() ? '?' + params.toString() : ''), {
+            responseType: 'blob', // Important: tell axios to expect a binary file
+        });
+
+        // Create a temporary link to download the blob
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'student_records.pdf');
+        document.body.appendChild(link);
+        link.click();
+        
+        // Clean up
+        link.parentNode.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('Failed to export PDF:', error);
+        notify('error', 'Failed to generate PDF. The dataset might be too large.');
+    } finally {
+        isExporting.value = false;
+    }
 };
 
 const updateStudentStatus = (studentNumber, newStatus) => {
@@ -409,7 +436,9 @@ const graduateSelected = () => {
     <Head title="Student Records" />
 
     <AdminLayout>
+        <LoadingOverlay :show="isExporting" message="Generating PDF... Please wait." />
         <template #header>
+
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <h2 class="text-2xl font-semibold text-gray-900">
                     Student Records

@@ -77,11 +77,7 @@ watch(() => page.url, () => {
                     </Link>
                 </div>
 
-                <div class="mt-6 px-3 pt-4 border-t border-slate-200/70">
-                    <div class="text-xs text-slate-500">
-                        Minimal • Clean • Fast
-                    </div>
-                </div>
+
             </nav>
         </div>
     </aside>
@@ -147,10 +143,7 @@ watch(() => page.url, () => {
                         </div>
                     </nav>
 
-                    <!-- Footer -->
-                    <div class="px-6 py-4 border-t border-slate-200/70">
-                        <div class="text-xs text-slate-500">Minimal • Clean • Fast</div>
-                    </div>
+
                 </div>
             </div>
         </Transition>

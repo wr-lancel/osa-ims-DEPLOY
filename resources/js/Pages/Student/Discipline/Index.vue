@@ -37,7 +37,11 @@ const acadId = ref(props.filters.acad_id || '');
 const applyTermFilter = () => {
     router.get(route('student.discipline.index'), {
         acad_id: acadId.value || undefined,
-    }, { preserveState: true, preserveScroll: true });
+    }, { 
+        preserveState: true, 
+        preserveScroll: true,
+        showProgress: false,
+    });
 };
 
 const getStatusColor = (status) => {

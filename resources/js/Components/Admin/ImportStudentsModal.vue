@@ -7,6 +7,7 @@ import InputError from '@/Components/InputError.vue';
 import { useForm } from '@inertiajs/vue3';
 import { ref, watch, computed } from 'vue';
 import NotificationDialog from '@/Components/NotificationDialog.vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 import { useNotification } from '@/composables/useNotification';
 
 const { notification, notify, closeNotification } = useNotification();
@@ -121,6 +122,7 @@ const downloadErrorReport = () => {
 </script>
 
 <template>
+    <LoadingOverlay :show="form.processing" message="Importing records... This might take a while for large files." />
     <Modal :show="show" @close="close" max-width="2xl">
         <div class="p-6">
             <h2 class="text-xl font-semibold text-gray-900 mb-6">

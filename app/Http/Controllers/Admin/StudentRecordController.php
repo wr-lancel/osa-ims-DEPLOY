@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+
 
 class StudentRecordController extends Controller
 {
@@ -427,77 +427,7 @@ class StudentRecordController extends Controller
         }
     }
 
-    /**
-     * Export students to CSV.
-     */
-    public function export(Request $request): StreamedResponse
-    {
-        $statusFilter = $request->input('status', 'enrolled');
-        $academicCalendar = AcademicCalendar::active()->first();
-        $isActiveTermOnly = ($statusFilter === 'enrolled');
 
-        if ($isActiveTermOnly) {
-            if (!$academicCalendar) {
-                abort(404, 'No active academic calendar found.');
-            }
-            $query = EnrolledStudent::with(['student', 'course', 'section'])
-                ->where('acad_id', $academicCalendar->calendar_id);
-            $query->whereHas('student', function ($q) {
-                $q->where('status', 'enrolled');
-            });
-        } else {
-            $latestEnrollmentIds = EnrolledStudent::selectRaw('MAX(enrollment_id) as enrollment_id')
-                ->groupBy('student_number')
-                ->pluck('enrollment_id');
-            $query = EnrolledStudent::with(['student', 'course', 'section'])
-                ->whereIn('enrollment_id', $latestEnrollmentIds);
-            if ($statusFilter && $statusFilter !== 'all') {
-                $query->whereHas('student', function ($q) use ($statusFilter) {
-                    $q->where('status', $statusFilter);
-                });
-            }
-        }
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->whereHas('student', function ($q) use ($search) {
-                $q->where('student_number', 'like', "%{$search}%")
-                    ->orWhere('first_name', 'like', "%{$search}%")
-                    ->orWhere('last_name', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('course_id')) {
-            $query->where('course_id', $request->course_id);
-        }
-
-        if ($request->filled('year_level')) {
-            $query->where('year_level', $request->year_level);
-        }
-
-        $enrollments = $query->get();
-
-        $filename = 'students_export_' . date('Y-m-d_His') . '.csv';
-
-        return response()->streamDownload(function () use ($enrollments) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, ['Student ID', 'Name', 'Year Level', 'Section', 'Course', 'Status']);
-            foreach ($enrollments as $enrollment) {
-                fputcsv($file, [
-                    $enrollment->student?->student_number ?? 'N/A',
-                    $enrollment->student?->full_name ?? 'N/A',
-                    $enrollment->year_level ?? 'N/A',
-                    $enrollment->section?->section_name ?? 'N/A',
-                    $enrollment->course?->course_name ?? 'N/A',
-                    $enrollment->student?->status ?? 'N/A',
-                ]);
-            }
-            fclose($file);
-        }, $filename, [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ]);
-    }
 
     /**
      * Get student details (for edit modal).
@@ -751,6 +681,10 @@ class StudentRecordController extends Controller
      */
     public function exportPdf(Request $request)
     {
+        // Increase limits for large PDF generation (2000-3000 students)
+        ini_set('memory_limit', '2048M');
+        ini_set('max_execution_time', 600);
+
         $statusFilter = $request->input('status', 'enrolled');
         $academicCalendar = AcademicCalendar::active()->first();
         $isActiveTermOnly = ($statusFilter === 'enrolled');
@@ -762,17 +696,19 @@ class StudentRecordController extends Controller
         $query = $this->buildFilteredEnrollmentQuery($request, $statusFilter, $academicCalendar)
             ->with(['student', 'course', 'section']);
 
-        $enrollments = $query->get();
-
+        // Use cursor() to avoid loading all Eloquent models into memory at once
         $headers = ['Student ID', 'Name', 'Year Level', 'Section', 'Course', 'Status'];
-        $rows = $enrollments->map(fn($e) => [
-            $e->student?->student_number ?? 'N/A',
-            $e->student?->full_name ?? 'N/A',
-            $e->year_level ?? 'N/A',
-            $e->section?->section_name ?? 'N/A',
-            $e->course?->course_name ?? 'N/A',
-            $e->student?->status ?? 'N/A',
-        ])->toArray();
+        $rows = [];
+        foreach ($query->cursor() as $e) {
+            $rows[] = [
+                $e->student?->student_number ?? 'N/A',
+                $e->student?->full_name ?? 'N/A',
+                $e->year_level ?? 'N/A',
+                $e->section?->section_name ?? 'N/A',
+                $e->course?->course_name ?? 'N/A',
+                $e->student?->status ?? 'N/A',
+            ];
+        }
 
         $titleSuffix = $isActiveTermOnly && $academicCalendar
             ? $academicCalendar->display_label
@@ -804,11 +740,12 @@ class StudentRecordController extends Controller
                 $q->where('status', 'enrolled');
             });
         } else {
-            $latestEnrollmentIds = EnrolledStudent::selectRaw('MAX(enrollment_id) as enrollment_id')
-                ->groupBy('student_number')
-                ->pluck('enrollment_id');
             $query = EnrolledStudent::query()
-                ->whereIn('enrollment_id', $latestEnrollmentIds);
+                ->whereIn('enrollment_id', function ($sub) {
+                    $sub->selectRaw('MAX(enrollment_id)')
+                        ->from('enrolled_students')
+                        ->groupBy('student_number');
+                });
             if ($statusFilter && $statusFilter !== 'all') {
                 $query->whereHas('student', function ($q) use ($statusFilter) {
                     $q->where('status', $statusFilter);

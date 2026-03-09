@@ -87,7 +87,6 @@ Route::middleware('auth')->group(function () {
             ->middleware(['role:admin,super_admin', 'module:students'])
             ->group(function () {
                 Route::post('/import', [StudentRecordController::class, 'import'])->name('import');
-                Route::get('/export/csv', [StudentRecordController::class, 'export'])->name('export');
                 Route::get('/export/pdf', [StudentRecordController::class, 'exportPdf'])->name('export.pdf');
                 Route::get('/sections/list', [StudentRecordController::class, 'getSections'])->name('sections.list');
                 Route::get('/academic-calendars', [StudentRecordController::class, 'getAcademicCalendars'])->name('academic-calendars');

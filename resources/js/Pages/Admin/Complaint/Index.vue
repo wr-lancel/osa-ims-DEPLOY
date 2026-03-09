@@ -32,7 +32,13 @@ const applyFilters = () => {
         search: search.value || undefined,
         category: category.value || undefined,
         status: status.value || undefined,
-    }, { preserveState: true, preserveScroll: true });
+    }, { 
+        preserveState: true, 
+        preserveScroll: true,
+        replace: true,
+        showProgress: false,
+        only: ['complaints', 'filters', 'categories', 'statusOptions'],
+    });
 };
 
 let searchDebounce = null;
@@ -44,6 +50,8 @@ watch([category, status], () => applyFilters());
 
 
 
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
+
 const getStatusColor = (s) => {
     if (s === 'resolved') return 'bg-green-100 text-green-800';
     if (s === 'dismissed') return 'bg-gray-100 text-gray-800';
@@ -54,13 +62,36 @@ const getStatusColor = (s) => {
 
 const formatStatus = (s) => s ? s.replace(/_/g, ' ') : '';
 
-const exportPdf = () => {
-    const params = new URLSearchParams();
-    if (search.value) params.append('search', search.value);
-    if (category.value) params.append('category', category.value);
-    if (status.value) params.append('status', status.value);
+import { useNotification } from '@/composables/useNotification';
+const { notify } = useNotification();
+const isExporting = ref(false);
 
-    window.location.href = route('admin.discipline.complaints.export.pdf') + (params.toString() ? '?' + params.toString() : '');
+const exportPdf = async () => {
+    isExporting.value = true;
+    try {
+        const params = new URLSearchParams();
+        if (search.value) params.append('search', search.value);
+        if (category.value) params.append('category', category.value);
+        if (status.value) params.append('status', status.value);
+
+        const response = await axios.get(route('admin.discipline.complaints.export.pdf') + (params.toString() ? '?' + params.toString() : ''), {
+            responseType: 'blob',
+        });
+
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'complaints_report.pdf');
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('Failed to export PDF:', error);
+        notify('error', 'Failed to generate PDF.');
+    } finally {
+        isExporting.value = false;
+    }
 };
 </script>
 
@@ -69,7 +100,9 @@ const exportPdf = () => {
     <Head title="Complaints Inbox" />
 
     <AdminLayout>
+        <LoadingOverlay :show="isExporting" message="Generating PDF... Please wait." />
         <template #header>
+
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <h2 class="text-2xl font-semibold text-gray-900">
                     Complaints Inbox

@@ -68,11 +68,9 @@ return new class extends Migration
             DB::statement('ALTER TABLE `enrolled_students` CHANGE `status` `enrollment_status` VARCHAR(255) DEFAULT "enrolled"');
         }
 
-        // Add unique constraint on (student_id, acad_id)
-        // Note: MySQL allows multiple NULL values in unique constraints, so existing NULL acad_id records won't conflict
-        Schema::table('enrolled_students', function (Blueprint $table) {
-            $table->unique(['student_id', 'acad_id'], 'unique_student_acad');
-        });
+        // NOTE: unique constraint moved to 2026_03_08_220000 migration
+        // which creates it correctly on (student_number, acad_id)
+        // instead of (student_id, acad_id) since student_id is dropped later.
 
         // Note: Existing academic_year data will remain for reference
         // acad_id should be populated when creating new enrollments

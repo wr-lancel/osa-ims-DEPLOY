@@ -126,8 +126,11 @@ const submit = () => {
                     formErrors.value = {};
                     showSuccessMessage.value = false;
                     isProcessing.value = false;
-                    // Reload the page to refresh student list
-                    router.reload({ only: ['students'] });
+                    // Properly refresh the page state so the table updates
+                    router.visit(route('admin.students.index'), {
+                        preserveScroll: true,
+                        preserveState: false, // Force a fresh state so new students show
+                    });
                 }, 1500);
             } else {
                 isProcessing.value = false;

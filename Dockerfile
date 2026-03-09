@@ -9,7 +9,11 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
 RUN sed -i 's/Listen 80/Listen ${PORT}/g' /etc/apache2/ports.conf
 RUN sed -i 's/<VirtualHost \*:80>/<VirtualHost *:${PORT}>/g' /etc/apache2/sites-available/000-default.conf
 
-
+# Fix Apache MPM loading conflict (AH00534)
+# The php:8.4-apache image sometimes activates multiple MPMs. We force only prefork.
+RUN rm -f /etc/apache2/mods-enabled/mpm_event.conf /etc/apache2/mods-enabled/mpm_event.load \
+    && rm -f /etc/apache2/mods-enabled/mpm_worker.conf /etc/apache2/mods-enabled/mpm_worker.load \
+    && a2enmod mpm_prefork || true
 
 # 2. Enable Apache mod_rewrite for Laravel routing
 RUN a2enmod rewrite

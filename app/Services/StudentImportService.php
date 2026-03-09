@@ -18,6 +18,8 @@ class StudentImportService
     protected int $updated = 0;
     protected int $failed = 0;
     protected ?AcademicCalendar $academicCalendar = null;
+    protected array $courseCache = [];
+    protected array $sectionCache = [];
 
     /**
      * Column name aliases — maps various header names to our internal field names.
@@ -114,6 +116,21 @@ class StudentImportService
 
         try {
             $rows = $this->readFile($filePath);
+
+            // Pre-load all courses into an associative array for O(1) lookups
+            // Keys are lowercase strings (course_code or course_name) mapping to the Course object
+            $this->courseCache = [];
+            foreach (Course::all() as $course) {
+                $this->courseCache[strtolower($course->course_code)] = $course;
+                $this->courseCache[strtolower($course->course_name)] = $course;
+            }
+
+            // Pre-load all sections into a nested associative array for O(1) lookups
+            // Structure: $this->sectionCache[course_id][section_name] = section_id
+            $this->sectionCache = [];
+            foreach (Section::all() as $section) {
+                $this->sectionCache[$section->course_id][strtoupper($section->section_name)] = $section->section_id;
+            }
 
             DB::beginTransaction();
 
@@ -389,21 +406,27 @@ class StudentImportService
             throw new \Exception("Year level is required");
         }
 
-        // Resolve section (extract letter from values like "BSHM-B")
+        // Resolve section (try cache first)
         $sectionId = null;
         $sectionLetter = $this->extractSectionLetter($row['section'] ?? null);
         if ($sectionLetter) {
-            $section = Section::firstOrCreate(
-                [
-                    'section_name' => $sectionLetter,
-                    'course_id' => $course->course_id,
-                ],
-                [
-                    'section_code' => $sectionLetter,
-                    'year_level' => $yearLevel,
-                ]
-            );
-            $sectionId = $section->section_id;
+            if (isset($this->sectionCache[$course->course_id][$sectionLetter])) {
+                $sectionId = $this->sectionCache[$course->course_id][$sectionLetter];
+            } else {
+                $section = Section::firstOrCreate(
+                    [
+                        'section_name' => $sectionLetter,
+                        'course_id' => $course->course_id,
+                    ],
+                    [
+                        'section_code' => $sectionLetter,
+                        'year_level' => $yearLevel,
+                    ]
+                );
+                $sectionId = $section->section_id;
+                // Add to cache to prevent another query if the same section appears again
+                $this->sectionCache[$course->course_id][$sectionLetter] = $sectionId;
+            }
         }
 
         // Upsert student — only update name fields, leave profile fields for students
@@ -443,7 +466,7 @@ class StudentImportService
     }
 
     /**
-     * Resolve course from row data.
+     * Resolve course from row data using memory cache instead of DB queries.
      */
     protected function resolveCourse(array $row): ?Course
     {
@@ -453,22 +476,11 @@ class StudentImportService
             return null;
         }
 
-        $courseValue = trim($courseValue);
+        $courseValue = strtolower(trim($courseValue));
 
-        // Try exact match by course_code
-        $course = Course::where('course_code', $courseValue)->first();
-        if ($course)
-            return $course;
-
-        // Try exact match by course_name
-        $course = Course::where('course_name', $courseValue)->first();
-        if ($course)
-            return $course;
-
-        // Try case-insensitive match
-        $course = Course::whereRaw('LOWER(course_code) = ?', [strtolower($courseValue)])->first();
-        if ($course)
-            return $course;
+        if (isset($this->courseCache[$courseValue])) {
+            return $this->courseCache[$courseValue];
+        }
 
         return null;
     }

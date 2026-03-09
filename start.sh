@@ -28,9 +28,9 @@ php artisan migrate --force
 echo "Seeding database..."
 php artisan db:seed --force
 
-# Start the queue worker in the background
+# Start the queue worker in the background and auto-restart if it crashes
 echo "Starting queue worker..."
-php artisan queue:work &
+(while true; do php artisan queue:work; sleep 1; done) &
 
 # Configure Apache port based on Railway's injected $PORT variable
 # Default to 80 if PORT is not set (e.g. local matching)

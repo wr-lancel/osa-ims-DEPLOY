@@ -402,27 +402,27 @@ class StudentRecordController extends Controller
 
         try {
             $file = $request->file('file');
-            $filePath = $file->storeAs('imports', 'students_' . time() . '.' . $file->getClientOriginalExtension());
+            // Keep the file in storage so the background job can access it later
+            $filePath = $file->storeAs('imports', 'students_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension());
 
-            $absolutePath = \Illuminate\Support\Facades\Storage::path($filePath);
-
-            $result = $this->importService->import(
-                $absolutePath,
-                $academicCalendar->calendar_id
+            // Dispatch background job instead of running the import synchronously!
+            \App\Jobs\ImportStudentsJob::dispatch(
+                $filePath, 
+                $academicCalendar->calendar_id, 
+                $request->user()->user_id
             );
 
-            Log::info("Student import completed by user {$request->user()->user_id} for term {$academicCalendar->calendar_id}");
+            Log::info("Student import job dispatched by user {$request->user()->user_id} for term {$academicCalendar->calendar_id}");
 
-            // Clean up file
-            \Illuminate\Support\Facades\Storage::delete($filePath);
-
+            // Immediately redirect back saying it's processing in the background
             return redirect()->route('admin.students.index', ['acad_id' => $academicCalendar->calendar_id])
-                ->with('import_result', $result);
+                ->with('success', 'Import started! The students are being imported in the background. Please refresh the page in a moment to see the new students.');
+                
         } catch (\Exception $e) {
-            Log::error("Student import failed: " . $e->getMessage());
+            Log::error("Student import dispatch failed: " . $e->getMessage());
 
             return redirect()->back()->withErrors([
-                'error' => 'Import failed: ' . $e->getMessage(),
+                'error' => 'Failed to start import: ' . $e->getMessage(),
             ]);
         }
     }

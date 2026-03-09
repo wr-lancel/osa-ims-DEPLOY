@@ -40,23 +40,37 @@ Route::get('/', fn() => Inertia::render('Welcome', [
 
 // TEMPORARY DEBUG ROUTE
 Route::get('/debug-db', function () {
+    $results = [];
+
+    // Attempt to drop
     try {
-        $migrations = \Illuminate\Support\Facades\DB::table('migrations')->orderBy('id', 'desc')->take(10)->get();
-        $constraints = \Illuminate\Support\Facades\DB::select("
-            SELECT CONSTRAINT_NAME, COLUMN_NAME
-            FROM information_schema.KEY_COLUMN_USAGE
-            WHERE TABLE_SCHEMA = DATABASE() 
-            AND TABLE_NAME = 'enrolled_students'
-        ");
-        
-        return response()->json([
-            'status' => 'success',
-            'latest_migrations' => $migrations,
-            'enrolled_students_constraints' => $constraints
-        ]);
+        \Illuminate\Support\Facades\DB::statement("ALTER TABLE enrolled_students DROP INDEX `unique_student_acad`");
+        $results['drop'] = 'Success - Index dropped';
     } catch (\Exception $e) {
-        return response()->json(['error' => $e->getMessage()]);
+        $results['drop_error'] = $e->getMessage();
     }
+
+    // Attempt to add
+    try {
+        \Illuminate\Support\Facades\DB::statement("ALTER TABLE enrolled_students ADD UNIQUE `unique_student_acad` (`student_number`, `acad_id`)");
+        $results['add'] = 'Success - Index added';
+    } catch (\Exception $e) {
+        $results['add_error'] = $e->getMessage();
+    }
+    
+    // Check final constraints
+    $constraints = \Illuminate\Support\Facades\DB::select("
+        SELECT CONSTRAINT_NAME, COLUMN_NAME
+        FROM information_schema.KEY_COLUMN_USAGE
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = 'enrolled_students'
+    ");
+
+    return response()->json([
+        'status' => 'success',
+        'sql_results' => $results,
+        'final_constraints' => $constraints
+    ]);
 });
 
 // Authentication Routes

@@ -38,6 +38,27 @@ Route::get('/', fn() => Inertia::render('Welcome', [
     'canRegister' => Route::has('register'),
 ]));
 
+// TEMPORARY DEBUG ROUTE
+Route::get('/debug-db', function () {
+    try {
+        $migrations = \Illuminate\Support\Facades\DB::table('migrations')->orderBy('id', 'desc')->take(10)->get();
+        $constraints = \Illuminate\Support\Facades\DB::select("
+            SELECT CONSTRAINT_NAME, COLUMN_NAME
+            FROM information_schema.KEY_COLUMN_USAGE
+            WHERE TABLE_SCHEMA = DATABASE() 
+            AND TABLE_NAME = 'enrolled_students'
+        ");
+        
+        return response()->json([
+            'status' => 'success',
+            'latest_migrations' => $migrations,
+            'enrolled_students_constraints' => $constraints
+        ]);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()]);
+    }
+});
+
 // Authentication Routes
 require __DIR__ . '/auth.php';
 

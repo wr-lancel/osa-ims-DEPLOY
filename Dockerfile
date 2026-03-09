@@ -1,21 +1,6 @@
-FROM php:8.4-apache
+FROM php:8.4-cli
 
-# 1. Configure Apache DocumentRoot to point to Laravel's public directory
-ENV APACHE_DOCUMENT_ROOT /app/public
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
-
-
-# Fix Apache MPM loading conflict (AH00534)
-# The php:8.4-apache image sometimes activates multiple MPMs. We force only prefork.
-RUN rm -f /etc/apache2/mods-enabled/mpm_event.conf /etc/apache2/mods-enabled/mpm_event.load \
-    && rm -f /etc/apache2/mods-enabled/mpm_worker.conf /etc/apache2/mods-enabled/mpm_worker.load \
-    && a2enmod mpm_prefork || true
-
-# 2. Enable Apache mod_rewrite for Laravel routing
-RUN a2enmod rewrite
-
-# 3. Install system dependencies
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
@@ -27,30 +12,31 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     gnupg
 
-# 4. Install Node.js
+# Install Node.js
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs
 
-# 5. Install PHP extensions (including OPcache for massive speed boost)
+# Install GD extension
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql zip opcache
+    && docker-php-ext-install gd
 
-# Configure OPcache for production speed
-RUN echo "opcache.enable=1\nopcache.memory_consumption=256\nopcache.interned_strings_buffer=16\nopcache.max_accelerated_files=10000\nopcache.validate_timestamps=0" > /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini
+# Install other PHP extensions if needed
+RUN docker-php-ext-install pdo pdo_mysql zip
 
-# 6. Install Composer
+# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
 COPY . .
 
-# 7. Install dependencies and build assets
 RUN composer install --optimize-autoloader --no-interaction
-RUN npm install && npm run build
 
-# 8. Set permissions for Apache
-RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
+# Install NPM dependencies and build frontend assets
+RUN npm install
+RUN npm run build
+
+EXPOSE 8000
 
 # Make the start script executable
 RUN chmod +x start.sh

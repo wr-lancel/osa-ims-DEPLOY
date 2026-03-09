@@ -32,13 +32,6 @@ php artisan db:seed --force
 echo "Starting queue worker..."
 php artisan queue:work &
 
-# Configure Apache port based on Railway's injected $PORT variable
-# Default to 80 if PORT is not set (e.g. local matching)
-PORT="${PORT:-80}"
-echo "Configuring Apache to listen on port $PORT..."
-sed -i "s/Listen 80/Listen ${PORT}/g" /etc/apache2/ports.conf
-sed -i "s/<VirtualHost \*:80>/<VirtualHost \*:${PORT}>/g" /etc/apache2/sites-available/000-default.conf
-
-# Start the Apache server in the foreground
-echo "Starting Apache server..."
-apache2-foreground
+# Start the Laravel application
+echo "Starting server..."
+php artisan serve --host=0.0.0.0 --port=8000

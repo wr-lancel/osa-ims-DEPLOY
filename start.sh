@@ -32,6 +32,6 @@ php artisan db:seed --force
 echo "Starting queue worker..."
 php artisan queue:work &
 
-# Start the Laravel application
-echo "Starting server..."
-php artisan serve --host=0.0.0.0 --port=8000
+# Start the Apache server in the foreground
+echo "Starting Apache server..."
+apache2-foreground

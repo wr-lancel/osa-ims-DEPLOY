@@ -419,37 +419,43 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // This is a complex rollback that would require maintaining a mapping
-        // of student_id to student_number. For safety, we'll provide a basic structure
-        // but recommend using database backup for full rollback.
-        
-        // Drop foreign keys on student_number
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropForeign('fk_users_student_number');
-        });
-        
-        Schema::table('enrolled_students', function (Blueprint $table) {
-            $table->dropForeign('fk_enrolled_students_student_number');
-        });
-        
-        // ... (similar for all other tables)
-        
-        // Re-add student_id columns (would need to populate from backup)
-        Schema::table('students', function (Blueprint $table) {
-            $table->id('student_id')->first();
-        });
-        
-        // Restore primary key on student_id
-        DB::statement('ALTER TABLE students DROP PRIMARY KEY');
-        DB::statement('ALTER TABLE students ADD PRIMARY KEY (student_id)');
-        
-        // Re-add student_id columns to all tables
-        // Re-populate from backup/mapping
-        // Re-add foreign keys
-        
-        // Re-add employee_id to users table
-        Schema::table('users', function (Blueprint $table) {
-            $table->unsignedBigInteger('employee_id')->nullable()->after('user_id');
-        });
+        // Drop foreign keys on student_number (safely)
+        $this->dropForeignKeyIfExists('users', 'fk_users_student_number');
+        $this->dropForeignKeyIfExists('enrolled_students', 'fk_enrolled_students_student_number');
+        $this->dropForeignKeyIfExists('sports_borrowing', 'fk_sports_borrowing_student_number');
+        $this->dropForeignKeyIfExists('discipline', 'fk_discipline_student_number');
+        $this->dropForeignKeyIfExists('org_members', 'fk_org_members_student_number');
+        $this->dropForeignKeyIfExists('org_officers', 'fk_org_officers_student_number');
+        $this->dropForeignKeyIfExists('violation_summary', 'fk_violation_summary_student_number');
+        $this->dropForeignKeyIfExists('risk_prediction', 'fk_risk_prediction_student_number');
+        $this->dropForeignKeyIfExists('student_profiles', 'fk_student_profiles_student_number');
+        $this->dropForeignKeyIfExists('student_educational_backgrounds', 'fk_student_educational_backgrounds_student_number');
+        $this->dropForeignKeyIfExists('student_family_info', 'fk_student_family_info_student_number');
+        $this->dropForeignKeyIfExists('student_emergency_contacts', 'fk_student_emergency_contacts_student_number');
+
+        // Re-add student_id as auto-increment primary key to students table
+        if (!Schema::hasColumn('students', 'student_id')) {
+            // Drop current primary key on student_number first
+            try {
+                DB::statement('ALTER TABLE students DROP PRIMARY KEY, ADD student_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY FIRST');
+            } catch (\Exception $e) {
+                // Fallback: try adding column then setting primary key
+                try {
+                    Schema::table('students', function (Blueprint $table) {
+                        $table->id('student_id')->first();
+                    });
+                } catch (\Exception $e2) {
+                    // Continue
+                }
+            }
+        }
+
+        // Re-add employee_id to users table if it doesn't exist
+        if (!Schema::hasColumn('users', 'employee_id')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->unsignedBigInteger('employee_id')->nullable()->after('user_id');
+            });
+        }
     }
+
 };

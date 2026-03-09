@@ -67,13 +67,8 @@ const features = [
                         </Link>
 
                         <template v-else>
-                            <Link
-                                v-if="canRegister"
-                                :href="route('register')"
-                                class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                            >
-                                Register
-                            </Link>
+
+
                             <Link
                                 :href="route('login')"
                                 class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 transition-colors"

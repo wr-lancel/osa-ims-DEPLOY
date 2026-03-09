@@ -104,7 +104,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("ALTER TABLE users DROP CHECK chk_users_exactly_one_link");
+        DB::statement("ALTER TABLE users DROP CONSTRAINT chk_users_exactly_one_link");
 
         Schema::table('users', function (Blueprint $table) {
             $table->dropForeign('fk_users_employee_id');

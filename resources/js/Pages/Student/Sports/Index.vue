@@ -45,6 +45,7 @@ const filterByStatus = (status) => {
     router.get(route('student.sports.index'), { status: status || null }, {
         preserveState: true,
         preserveScroll: true,
+        showProgress: false,
     });
 };
 

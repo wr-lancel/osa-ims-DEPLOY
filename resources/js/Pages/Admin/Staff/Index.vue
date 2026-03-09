@@ -5,6 +5,7 @@ import { ref, computed, watch } from 'vue';
 import axios from 'axios';
 import StaffFormModal from '@/Components/Admin/StaffFormModal.vue';
 import RoleFormModal from '@/Components/Admin/RoleFormModal.vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import Pagination from '@/Components/Pagination.vue';
@@ -64,6 +65,9 @@ const applyFilters = () => {
     }, {
         preserveState: true,
         preserveScroll: true,
+        replace: true,
+        showProgress: false,
+        only: ['employees', 'filters', 'departments', 'positions', 'roles'],
     });
 };
 
@@ -134,15 +138,36 @@ const deleteEmployee = async (employee) => {
 
 const flash = computed(() => page.props.flash || {});
 
-const exportPdf = () => {
-    const params = new URLSearchParams();
-    if (search.value) params.append('search', search.value);
-    if (department.value) params.append('department', department.value);
-    if (position.value) params.append('position', position.value);
-    if (roleId.value) params.append('role_id', roleId.value);
-    if (status.value) params.append('status', status.value);
+const isExporting = ref(false);
 
-    window.location.href = route('admin.staff.export.pdf') + (params.toString() ? '?' + params.toString() : '');
+const exportPdf = async () => {
+    isExporting.value = true;
+    try {
+        const params = new URLSearchParams();
+        if (search.value) params.append('search', search.value);
+        if (department.value) params.append('department', department.value);
+        if (position.value) params.append('position', position.value);
+        if (roleId.value) params.append('role_id', roleId.value);
+        if (status.value) params.append('status', status.value);
+
+        const response = await axios.get(route('admin.staff.export.pdf') + (params.toString() ? '?' + params.toString() : ''), {
+            responseType: 'blob',
+        });
+
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'staff_records.pdf');
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('Failed to export PDF:', error);
+        notify('error', 'Failed to generate PDF.');
+    } finally {
+        isExporting.value = false;
+    }
 };
 </script>
 
@@ -151,7 +176,9 @@ const exportPdf = () => {
     <Head title="Manage Staff" />
 
     <AdminLayout>
+        <LoadingOverlay :show="isExporting" message="Generating PDF... Please wait." />
         <template #header>
+
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <h2 class="text-2xl font-semibold text-gray-900">
                     Manage Staff

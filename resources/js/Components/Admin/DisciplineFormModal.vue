@@ -8,6 +8,7 @@ import InputError from '@/Components/InputError.vue';
 import SearchableSelect from '@/Components/SearchableSelect.vue';
 import { useForm, router } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 
 const props = defineProps({
     show: {
@@ -186,6 +187,7 @@ const close = () => {
 </script>
 
 <template>
+    <LoadingOverlay :show="isProcessing" message="Saving violation... Please wait." />
     <Modal :show="show" @close="close" max-width="2xl">
         <div class="p-6">
             <h2 class="text-2xl font-semibold text-gray-900 mb-6">

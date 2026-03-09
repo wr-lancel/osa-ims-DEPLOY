@@ -44,6 +44,9 @@ const applyFilters = () => {
     }, {
         preserveState: true,
         preserveScroll: true,
+        replace: true,
+        showProgress: false,
+        only: ['events', 'filters', 'organizations'],
     });
 };
 

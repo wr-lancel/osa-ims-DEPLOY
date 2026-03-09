@@ -31,7 +31,11 @@ const applyFilters = () => {
     router.get(route('student.discipline.complaints.index'), {
         category: category.value || undefined,
         status: status.value || undefined,
-    }, { preserveState: true, preserveScroll: true });
+    }, { 
+        preserveState: true, 
+        preserveScroll: true,
+        showProgress: false,
+    });
 };
 
 watch([category, status], () => applyFilters());

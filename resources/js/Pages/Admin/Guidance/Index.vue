@@ -6,6 +6,7 @@ import axios from 'axios';
 import DashboardCards from '@/Components/Admin/DashboardCards.vue';
 import GuidanceCaseFormModal from '@/Components/Admin/GuidanceCaseFormModal.vue';
 import GuidanceCaseActionModal from '@/Components/Admin/GuidanceCaseActionModal.vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import Textarea from '@/Components/Textarea.vue';
@@ -88,6 +89,9 @@ const applyFilters = () => {
     }, {
         preserveState: true,
         preserveScroll: true,
+        replace: true,
+        showProgress: false,
+        only: ['cases', 'filters', 'caseTypes', 'statuses', 'employees'],
     });
 };
 
@@ -220,6 +224,7 @@ const applyAppointmentFilters = () => {
     }, {
         preserveState: true,
         preserveScroll: true,
+        showProgress: false,
     });
 };
 
@@ -266,14 +271,35 @@ const approveAppointment = () => {
     });
 };
 
-const exportPdf = () => {
-    const params = new URLSearchParams();
-    if (search.value) params.append('search', search.value);
-    if (status.value) params.append('status', status.value);
-    if (caseType.value) params.append('case_type', caseType.value);
-    if (assignedStaffId.value) params.append('assigned_staff_id', assignedStaffId.value);
+const isExporting = ref(false);
 
-    window.location.href = route('admin.guidance.export.pdf') + (params.toString() ? '?' + params.toString() : '');
+const exportPdf = async () => {
+    isExporting.value = true;
+    try {
+        const params = new URLSearchParams();
+        if (search.value) params.append('search', search.value);
+        if (status.value) params.append('status', status.value);
+        if (caseType.value) params.append('case_type', caseType.value);
+        if (assignedStaffId.value) params.append('assigned_staff_id', assignedStaffId.value);
+
+        const response = await axios.get(route('admin.guidance.export.pdf') + (params.toString() ? '?' + params.toString() : ''), {
+            responseType: 'blob',
+        });
+
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'guidance_cases.pdf');
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('Failed to export PDF:', error);
+        notify('error', 'Failed to generate PDF.');
+    } finally {
+        isExporting.value = false;
+    }
 };
 
 const rejectAppointment = () => {
@@ -294,7 +320,9 @@ const rejectAppointment = () => {
     <Head title="Guidance Cases" />
 
     <AdminLayout>
+        <LoadingOverlay :show="isExporting" message="Generating PDF... Please wait." />
         <template #header>
+
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <h2 class="text-2xl font-semibold text-gray-900">
                     Guidance Unit

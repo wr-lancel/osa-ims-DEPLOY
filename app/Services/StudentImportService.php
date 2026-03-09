@@ -482,7 +482,15 @@ class StudentImportService
             return $this->courseCache[$courseValue];
         }
 
-        return null;
+        // Auto-create the course if not found
+        $course = Course::create([
+            'course_code' => strtoupper($courseValue),
+            'course_name' => strtoupper($courseValue),
+        ]);
+
+        Log::info("Import: Auto-created course '{$courseValue}' (course_id: {$course->course_id})");
+
+        return $course;
     }
 
     /**

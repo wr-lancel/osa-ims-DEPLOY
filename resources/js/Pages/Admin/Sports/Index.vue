@@ -4,6 +4,7 @@ import { Head, router, useForm } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 import DashboardCards from '@/Components/Admin/DashboardCards.vue';
 import SportsBorrowingFormModal from '@/Components/Admin/SportsBorrowingFormModal.vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import Textarea from '@/Components/Textarea.vue';
@@ -76,6 +77,9 @@ const applyFilters = () => {
     router.get(route('admin.sports.index'), params, {
         preserveState: true,
         preserveScroll: true,
+        replace: true,
+        showProgress: false,
+        only: ['borrowings', 'filters', 'dashboardStats', 'pendingBorrowings', 'students', 'employees'],
     });
 };
 
@@ -181,12 +185,36 @@ const goToBorrowingDetail = (borrowing) => {
     router.visit(route('admin.sports.borrowings.show', borrowing.borrowing_id));
 };
 
-const exportPdf = () => {
-    const params = new URLSearchParams();
-    if (borrowingSearch.value) params.append('borrowing_search', borrowingSearch.value);
-    if (borrowingStatus.value) params.append('borrowing_status', borrowingStatus.value);
+import { useNotification } from '@/composables/useNotification';
 
-    window.location.href = route('admin.sports.borrowings.export.pdf') + (params.toString() ? '?' + params.toString() : '');
+const { notify } = useNotification();
+const isExporting = ref(false);
+
+const exportPdf = async () => {
+    isExporting.value = true;
+    try {
+        const params = new URLSearchParams();
+        if (borrowingSearch.value) params.append('borrowing_search', borrowingSearch.value);
+        if (borrowingStatus.value) params.append('borrowing_status', borrowingStatus.value);
+
+        const response = await axios.get(route('admin.sports.borrowings.export.pdf') + (params.toString() ? '?' + params.toString() : ''), {
+            responseType: 'blob',
+        });
+
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'borrowings_log.pdf');
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('Failed to export PDF:', error);
+        notify('error', 'Failed to generate PDF.');
+    } finally {
+        isExporting.value = false;
+    }
 };
 </script>
 
@@ -195,7 +223,9 @@ const exportPdf = () => {
     <Head title="Sports Unit" />
 
     <AdminLayout>
+        <LoadingOverlay :show="isExporting" message="Generating PDF... Please wait." />
         <template #header>
+
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <h2 class="text-2xl font-semibold text-gray-900">
                     Sports Unit

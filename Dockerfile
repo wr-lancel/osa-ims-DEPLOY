@@ -6,10 +6,13 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-av
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
 # Fix Apache MPM loading conflict (AH00534)
-# The php:8.4-apache image automatically activates mpm_event or mpm_worker in some environments.
-# PHP requires mpm_prefork. We disable the others and enable prefork.
-RUN a2dismod mpm_event mpm_worker \
-    && a2enmod mpm_prefork
+# Some environments activate mpm_event or mpm_worker, but php requires mpm_prefork
+# We forcefully remove all MPMs and only enable prefork.
+RUN rm -f /etc/apache2/mods-enabled/mpm_*.conf /etc/apache2/mods-enabled/mpm_*.load \
+    && rm -f /etc/apache2/mods-available/mpm_event.conf /etc/apache2/mods-available/mpm_event.load \
+    && rm -f /etc/apache2/mods-available/mpm_worker.conf /etc/apache2/mods-available/mpm_worker.load \
+    && a2dismod mpm_event mpm_worker || true \
+    && a2enmod mpm_prefork || true
 
 # 2. Enable Apache mod_rewrite for Laravel routing
 RUN a2enmod rewrite

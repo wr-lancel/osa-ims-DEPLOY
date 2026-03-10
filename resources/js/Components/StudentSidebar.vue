@@ -34,17 +34,14 @@ watch(() => page.url, () => {
 <template>
     <!-- Desktop Sidebar (unchanged) -->
     <aside class="w-72 hidden md:block">
-        <div class="w-full h-screen sticky top-0 bg-white border-r border-slate-200/70">
+        <div class="w-full h-screen sticky top-0 bg-white dark:bg-slate-900 border-r border-slate-200/70 dark:border-slate-800/70 transition-colors duration-200">
             <!-- Brand -->
             <div class="px-5 pt-6 pb-4">
                 <div class="flex items-center gap-3">
-                    <div class="h-10 w-10 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-center"
-                        aria-hidden="true">
-                        <div class="h-4 w-4 rounded bg-slate-900"></div>
-                    </div>
+                    <img src="/images/OSA-LOGO.png" alt="OSA Logo" class="h-10 w-10 rounded-xl object-contain" />
                     <div class="leading-tight">
-                        <div class="text-sm font-semibold text-slate-900">Student Portal</div>
-                        <div class="text-xs text-slate-500">OSA-IMS</div>
+                        <div class="text-sm font-semibold text-slate-900 dark:text-white transition-colors">Student Portal</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400 transition-colors">OSA-IMS</div>
                     </div>
                 </div>
             </div>
@@ -58,14 +55,14 @@ watch(() => page.url, () => {
                     <Link v-for="item in navItems" :key="item.routeName" :href="item.href"
                         class="group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition"
                         :class="isActive(item.routeName)
-                            ? 'bg-slate-900 text-white shadow-sm'
-                            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'">
+                            ? 'bg-slate-900 dark:bg-indigo-600 text-white shadow-sm'
+                            : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'">
                         <span class="h-8 w-8 rounded-lg flex items-center justify-center border transition"
                             :class="isActive(item.routeName)
-                                ? 'border-white/10 bg-white/10'
-                                : 'border-slate-200 bg-white group-hover:border-slate-300'" aria-hidden="true">
+                                ? 'border-white/10 bg-white/10 dark:border-indigo-500/30'
+                                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 group-hover:border-slate-300 dark:group-hover:border-slate-600'" aria-hidden="true">
                             <span class="h-2 w-2 rounded-full transition"
-                                :class="isActive(item.routeName) ? 'bg-white' : 'bg-slate-400 group-hover:bg-slate-700'" />
+                                :class="isActive(item.routeName) ? 'bg-white' : 'bg-slate-400 dark:bg-slate-500 group-hover:bg-slate-700 dark:group-hover:bg-slate-300'" />
                         </span>
                         <span class="font-medium">{{ item.label }}</span>
                         <span v-if="item.routeName === 'student.discipline.index' && disciplineUnread > 0"
@@ -90,22 +87,19 @@ watch(() => page.url, () => {
                 <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="emit('close')"></div>
 
                 <!-- Drawer Panel -->
-                <div class="fixed inset-y-0 left-0 w-72 bg-white shadow-xl flex flex-col">
+                <div class="fixed inset-y-0 left-0 w-72 bg-white dark:bg-slate-900 shadow-xl flex flex-col transition-colors duration-200">
                     <!-- Header -->
                     <div class="px-5 pt-6 pb-4 flex items-center justify-between">
                         <div class="flex items-center gap-3">
-                            <div
-                                class="h-10 w-10 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-center">
-                                <div class="h-4 w-4 rounded bg-slate-900"></div>
-                            </div>
+                            <img src="/images/OSA-LOGO.png" alt="OSA Logo" class="h-10 w-10 rounded-xl object-contain" />
                             <div class="leading-tight">
-                                <div class="text-sm font-semibold text-slate-900">Student Portal</div>
-                                <div class="text-xs text-slate-500">OSA-IMS</div>
+                                <div class="text-sm font-semibold text-slate-900 dark:text-white transition-colors">Student Portal</div>
+                                <div class="text-xs text-slate-500 dark:text-slate-400 transition-colors">OSA-IMS</div>
                             </div>
                         </div>
                         <!-- Close button -->
                         <button @click="emit('close')"
-                            class="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition"
+                            class="p-2 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                             aria-label="Close navigation">
                             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -122,16 +116,16 @@ watch(() => page.url, () => {
                             <Link v-for="item in navItems" :key="item.routeName" :href="item.href"
                                 class="group relative flex items-center gap-3 rounded-xl px-3 py-3 text-sm transition"
                                 :class="isActive(item.routeName)
-                                    ? 'bg-slate-900 text-white shadow-sm'
-                                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'">
+                                    ? 'bg-slate-900 dark:bg-indigo-600 text-white shadow-sm'
+                                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'">
                                 <span
                                     class="h-8 w-8 rounded-lg flex items-center justify-center border transition"
                                     :class="isActive(item.routeName)
-                                        ? 'border-white/10 bg-white/10'
-                                        : 'border-slate-200 bg-white group-hover:border-slate-300'"
+                                        ? 'border-white/10 bg-white/10 dark:border-indigo-500/30'
+                                        : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 group-hover:border-slate-300 dark:group-hover:border-slate-600'"
                                     aria-hidden="true">
                                     <span class="h-2 w-2 rounded-full transition"
-                                        :class="isActive(item.routeName) ? 'bg-white' : 'bg-slate-400 group-hover:bg-slate-700'" />
+                                        :class="isActive(item.routeName) ? 'bg-white' : 'bg-slate-400 dark:bg-slate-500 group-hover:bg-slate-700 dark:group-hover:bg-slate-300'" />
                                 </span>
                                 <span class="font-medium">{{ item.label }}</span>
                                 <span

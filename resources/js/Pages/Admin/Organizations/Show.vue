@@ -305,11 +305,19 @@ const hasAboutContent = computed(() => {
     <AdminLayout>
         <template #header>
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h2 class="text-2xl font-semibold text-gray-900">
-                        {{ organization.org_name }}
-                    </h2>
-                    <p class="text-sm text-gray-500 mt-1">{{ organization.org_code }}</p>
+                <div class="flex items-center gap-4">
+                    <div class="h-16 w-16 flex-shrink-0">
+                        <img v-if="organization.logo_url" :src="organization.logo_url" class="h-16 w-16 rounded-xl object-contain bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 transition-colors" alt="Organization Logo" />
+                        <div v-else class="h-16 w-16 rounded-xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center border border-indigo-200 dark:border-indigo-800/50 shadow-sm transition-colors">
+                            <span class="text-indigo-700 dark:text-indigo-300 font-bold text-xl transition-colors">{{ organization.org_code.substring(0, 2).toUpperCase() }}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 transition-colors">
+                            {{ organization.org_name }}
+                        </h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 transition-colors">{{ organization.org_code }}</p>
+                    </div>
                 </div>
                 <div class="flex items-center space-x-3">
                     <SecondaryButton @click="openMeetingModal">
@@ -322,7 +330,7 @@ const hasAboutContent = computed(() => {
                         Edit Organization
                     </SecondaryButton>
                     <Link :href="route('admin.organizations.index')"
-                        class="text-indigo-600 hover:text-indigo-900 text-sm">
+                        class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-sm transition-colors">
                         ← Back to Organizations
                     </Link>
                 </div>
@@ -331,50 +339,50 @@ const hasAboutContent = computed(() => {
 
         <div class="space-y-6">
             <!-- Organization Info -->
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Organization Information</h3>
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6 transition-colors">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 transition-colors">Organization Information</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-500">Type</label>
-                        <p class="mt-1 text-sm text-gray-900">{{ organization.type || '-' }}</p>
+                        <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 transition-colors">Type</label>
+                        <p class="mt-1 text-sm text-gray-900 dark:text-gray-200 transition-colors">{{ organization.type || '-' }}</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-500">Status</label>
-                        <span class="mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full" :class="{
-                            'bg-green-100 text-green-800': organization.status === 'active',
-                            'bg-gray-100 text-gray-800': organization.status === 'inactive',
+                        <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 transition-colors">Status</label>
+                        <span class="mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full transition-colors" :class="{
+                            'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400': organization.status === 'active',
+                            'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300': organization.status === 'inactive',
                         }">
                             {{ organization.status }}
                         </span>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-500">Adviser</label>
-                        <p class="mt-1 text-sm text-gray-900">{{ organization.adviser_name || '-' }}</p>
+                        <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 transition-colors">Adviser</label>
+                        <p class="mt-1 text-sm text-gray-900 dark:text-gray-200 transition-colors">{{ organization.adviser_name || '-' }}</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-500">Total Officers</label>
-                        <p class="mt-1 text-sm text-gray-900">{{ organization.officers?.length || 0 }}</p>
+                        <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 transition-colors">Total Officers</label>
+                        <p class="mt-1 text-sm text-gray-900 dark:text-gray-200 transition-colors">{{ organization.officers?.length || 0 }}</p>
                     </div>
                     <div class="md:col-span-2 lg:col-span-4">
-                        <label class="block text-sm font-medium text-gray-500">Description</label>
-                        <p class="mt-1 text-sm text-gray-900">{{ organization.description || '-' }}</p>
+                        <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 transition-colors">Description</label>
+                        <p class="mt-1 text-sm text-gray-900 dark:text-gray-200 transition-colors">{{ organization.description || '-' }}</p>
                     </div>
                 </div>
             </div>
 
             <!-- About the Organization (Mission, Vision, Goals, Constitution & By-Laws) -->
-            <div v-if="hasAboutContent" class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">About the Organization</h3>
+            <div v-if="hasAboutContent" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6 transition-colors">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 transition-colors">About the Organization</h3>
                 <div class="space-y-5">
                     <!-- Mission -->
                     <div v-if="organization.mission || organization.mission_file_url">
-                        <h4 class="text-sm font-semibold text-gray-700 mb-1">Mission</h4>
-                        <p v-if="organization.mission" class="text-sm text-gray-600 whitespace-pre-wrap">{{ organization.mission }}</p>
+                        <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1 transition-colors">Mission</h4>
+                        <p v-if="organization.mission" class="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap transition-colors">{{ organization.mission }}</p>
                         <div v-if="organization.mission_file_url" class="flex items-center gap-2 mt-1 text-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500 dark:text-indigo-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                             </svg>
-                            <a :href="organization.mission_file_url" target="_blank" class="text-indigo-600 hover:text-indigo-900 underline">
+                            <a :href="organization.mission_file_url" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 underline transition-colors">
                                 {{ organization.mission_file_name || 'Download' }}
                             </a>
                         </div>
@@ -382,13 +390,13 @@ const hasAboutContent = computed(() => {
 
                     <!-- Vision -->
                     <div v-if="organization.vision || organization.vision_file_url">
-                        <h4 class="text-sm font-semibold text-gray-700 mb-1">Vision</h4>
-                        <p v-if="organization.vision" class="text-sm text-gray-600 whitespace-pre-wrap">{{ organization.vision }}</p>
+                        <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1 transition-colors">Vision</h4>
+                        <p v-if="organization.vision" class="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap transition-colors">{{ organization.vision }}</p>
                         <div v-if="organization.vision_file_url" class="flex items-center gap-2 mt-1 text-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500 dark:text-indigo-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                             </svg>
-                            <a :href="organization.vision_file_url" target="_blank" class="text-indigo-600 hover:text-indigo-900 underline">
+                            <a :href="organization.vision_file_url" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 underline transition-colors">
                                 {{ organization.vision_file_name || 'Download' }}
                             </a>
                         </div>
@@ -396,13 +404,13 @@ const hasAboutContent = computed(() => {
 
                     <!-- Goals -->
                     <div v-if="organization.goals || organization.goals_file_url">
-                        <h4 class="text-sm font-semibold text-gray-700 mb-1">Goals</h4>
-                        <p v-if="organization.goals" class="text-sm text-gray-600 whitespace-pre-wrap">{{ organization.goals }}</p>
+                        <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1 transition-colors">Goals</h4>
+                        <p v-if="organization.goals" class="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap transition-colors">{{ organization.goals }}</p>
                         <div v-if="organization.goals_file_url" class="flex items-center gap-2 mt-1 text-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500 dark:text-indigo-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                             </svg>
-                            <a :href="organization.goals_file_url" target="_blank" class="text-indigo-600 hover:text-indigo-900 underline">
+                            <a :href="organization.goals_file_url" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 underline transition-colors">
                                 {{ organization.goals_file_name || 'Download' }}
                             </a>
                         </div>
@@ -410,13 +418,13 @@ const hasAboutContent = computed(() => {
 
                     <!-- Constitution & By-Laws -->
                     <div v-if="organization.constitution_bylaws || organization.constitution_bylaws_file_url">
-                        <h4 class="text-sm font-semibold text-gray-700 mb-1">Constitution & By-Laws</h4>
-                        <p v-if="organization.constitution_bylaws" class="text-sm text-gray-600 whitespace-pre-wrap">{{ organization.constitution_bylaws }}</p>
+                        <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1 transition-colors">Constitution & By-Laws</h4>
+                        <p v-if="organization.constitution_bylaws" class="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap transition-colors">{{ organization.constitution_bylaws }}</p>
                         <div v-if="organization.constitution_bylaws_file_url" class="flex items-center gap-2 mt-1 text-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500 dark:text-indigo-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                             </svg>
-                            <a :href="organization.constitution_bylaws_file_url" target="_blank" class="text-indigo-600 hover:text-indigo-900 underline">
+                            <a :href="organization.constitution_bylaws_file_url" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 underline transition-colors">
                                 {{ organization.constitution_bylaws_file_name || 'Download' }}
                             </a>
                         </div>
@@ -425,49 +433,49 @@ const hasAboutContent = computed(() => {
             </div>
 
             <!-- Officers Section -->
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6 transition-colors">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Officers</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 transition-colors">Officers</h3>
                     <PrimaryButton @click="openOfficerModal">
                         Add Officer
                     </PrimaryButton>
                 </div>
 
                 <div v-if="organization.officers && organization.officers.length > 0" class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 transition-colors">
+                        <thead class="bg-gray-50 dark:bg-gray-700/50 transition-colors">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Student No.
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase transition-colors">Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase transition-colors">Student No.
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Position
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase transition-colors">Position
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Start Date
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase transition-colors">Start Date
                                 </th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase transition-colors">Actions
                                 </th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 transition-colors">
                             <tr v-for="officer in organization.officers" :key="officer.officer_id"
-                                class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200 transition-colors">
                                     {{ officer.student_name }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 transition-colors">
                                     {{ officer.student_number }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span
-                                        class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-800">
+                                        class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-400 transition-colors">
                                         {{ officer.position }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 transition-colors">
                                     {{ officer.start_date }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <button @click="removeOfficer(officer)" class="text-red-600 hover:text-red-900">
+                                    <button @click="removeOfficer(officer)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 transition-colors">
                                         Remove
                                     </button>
                                 </td>
@@ -475,45 +483,45 @@ const hasAboutContent = computed(() => {
                         </tbody>
                     </table>
                 </div>
-                <p v-else class="text-sm text-gray-500">No officers assigned yet.</p>
+                <p v-else class="text-sm text-gray-500 dark:text-gray-400 transition-colors">No officers assigned yet.</p>
             </div>
 
             <!-- Members Section -->
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Members</h3>
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6 transition-colors">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 transition-colors">Members</h3>
                 <div v-if="organization.members && organization.members.length > 0" class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 transition-colors">
+                        <thead class="bg-gray-50 dark:bg-gray-700/50 transition-colors">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Student No.
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase transition-colors">Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase transition-colors">Student No.
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Join Date
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase transition-colors">Join Date
                                 </th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <tr v-for="member in organization.members" :key="member.member_id" class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 transition-colors">
+                            <tr v-for="member in organization.members" :key="member.member_id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200 transition-colors">
                                     {{ member.student_name }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 transition-colors">
                                     {{ member.student_number }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 transition-colors">
                                     {{ member.join_date }}
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-                <p v-else class="text-sm text-gray-500">No members registered.</p>
+                <p v-else class="text-sm text-gray-500 dark:text-gray-400 transition-colors">No members registered.</p>
             </div>
 
             <!-- Events Section -->
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6 transition-colors">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Events</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 transition-colors">Events</h3>
                     <Link :href="route('admin.organizations.events.index') + '?org_id=' + organization.org_id">
                         <SecondaryButton>
                             Manage Events
@@ -522,129 +530,129 @@ const hasAboutContent = computed(() => {
                 </div>
 
                 <div v-if="organization.events && organization.events.length > 0" class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 transition-colors">
+                        <thead class="bg-gray-50 dark:bg-gray-700/50 transition-colors">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Event Name
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">Event Name
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date & Time
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">Date & Time
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Venue</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created By
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">Venue</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">Created By
                                 </th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <tr v-for="event in organization.events" :key="event.event_id" class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 transition-colors">
+                            <tr v-for="event in organization.events" :key="event.event_id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-200 transition-colors">
                                     {{ event.event_name }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 transition-colors">
                                     <div>{{ event.event_date }}</div>
-                                    <div v-if="event.start_time" class="text-xs text-gray-400">
+                                    <div v-if="event.start_time" class="text-xs text-gray-400 dark:text-gray-500 transition-colors">
                                         {{ event.start_time }}
                                         <span v-if="event.end_time"> - {{ event.end_time }}</span>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 transition-colors">
                                     {{ event.venue || '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full transition-colors"
                                         :class="getStatusColor(event.status)">
                                         {{ event.status }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 transition-colors">
                                     {{ event.created_by_name || '-' }}
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-                <p v-else class="text-sm text-gray-500">No events scheduled.</p>
+                <p v-else class="text-sm text-gray-500 dark:text-gray-400 transition-colors">No events scheduled.</p>
             </div>
         </div>
 
         <!-- Meetings Section -->
-        <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6 transition-colors">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold text-gray-900">Meetings</h3>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 transition-colors">Meetings</h3>
                 <SecondaryButton @click="openMeetingModal">
                     Schedule Meeting
                 </SecondaryButton>
             </div>
 
             <div v-if="organization.meetings && organization.meetings.length > 0" class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 transition-colors">
+                    <thead class="bg-gray-50 dark:bg-gray-700/50 transition-colors">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date & Time</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Venue</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Audience</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Called By</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">Title</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">Date & Time</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">Venue</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">Audience</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">Called By</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        <tr v-for="meeting in organization.meetings" :key="meeting.meeting_id" class="hover:bg-gray-50">
+                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 transition-colors">
+                        <tr v-for="meeting in organization.meetings" :key="meeting.meeting_id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">{{ meeting.title }}</div>
-                                <div v-if="meeting.description" class="text-xs text-gray-500 mt-1 max-w-xs truncate">{{
+                                <div class="text-sm font-medium text-gray-900 dark:text-gray-200 transition-colors">{{ meeting.title }}</div>
+                                <div v-if="meeting.description" class="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-xs truncate transition-colors">{{
                                     meeting.description }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 transition-colors">
                                 <div>{{ meeting.meeting_date }}</div>
-                                <div class="text-xs text-gray-400">
+                                <div class="text-xs text-gray-400 dark:text-gray-500 transition-colors">
                                     {{ meeting.start_time }}
                                     <span v-if="meeting.end_time"> - {{ meeting.end_time }}</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 transition-colors">
                                 {{ meeting.venue || '-' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span
-                                    class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
+                                    class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400 transition-colors">
                                     {{ getAudienceLabel(meeting.target_audience) }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full transition-colors"
                                     :class="getMeetingStatusColor(meeting.status)">
                                     {{ meeting.status }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 transition-colors">
                                 {{ meeting.called_by_name }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                                 <button v-if="meeting.status === 'scheduled'"
                                     @click="updateMeetingStatus(meeting, 'completed')"
-                                    class="text-green-600 hover:text-green-900">
+                                    class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 transition-colors">
                                     Complete
                                 </button>
                                 <button v-if="meeting.status === 'scheduled'"
                                     @click="updateMeetingStatus(meeting, 'cancelled')"
-                                    class="text-red-600 hover:text-red-900">
+                                    class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 transition-colors">
                                     Cancel
                                 </button>
-                                <span v-if="meeting.status !== 'scheduled'" class="text-gray-400">—</span>
+                                <span v-if="meeting.status !== 'scheduled'" class="text-gray-400 dark:text-gray-500 transition-colors">—</span>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-            <p v-else class="text-sm text-gray-500">No meetings scheduled yet.</p>
+            <p v-else class="text-sm text-gray-500 dark:text-gray-400 transition-colors">No meetings scheduled yet.</p>
         </div>
 
         <!-- Add Officer Modal -->
         <Modal :show="showOfficerModal" @close="closeOfficerModal">
             <div class="p-6">
-                <h2 class="text-2xl font-semibold text-gray-900 mb-6">Add Officer</h2>
+                <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6 transition-colors">Add Officer</h2>
 
                 <form @submit.prevent="submitOfficer">
                     <!-- Student Selection -->
@@ -693,7 +701,7 @@ const hasAboutContent = computed(() => {
         <!-- Edit Organization Modal -->
         <Modal :show="showEditModal" @close="closeEditModal" max-width="3xl">
             <div class="p-6">
-                <h2 class="text-2xl font-semibold text-gray-900 mb-6">Edit Organization</h2>
+                <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6 transition-colors">Edit Organization</h2>
 
                 <form @submit.prevent="submitEdit">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -719,7 +727,7 @@ const hasAboutContent = computed(() => {
                         <div>
                             <InputLabel for="edit_type" value="Type" />
                             <select id="edit_type" v-model="editForm.type"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors">
                                 <option v-for="option in typeOptions" :key="option.value" :value="option.value">
                                     {{ option.label }}
                                 </option>
@@ -731,7 +739,7 @@ const hasAboutContent = computed(() => {
                         <div>
                             <InputLabel for="edit_status" value="Status" />
                             <select id="edit_status" v-model="editForm.status"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors"
                                 required>
                                 <option v-for="option in statusOptions" :key="option.value" :value="option.value">
                                     {{ option.label }}
@@ -752,15 +760,15 @@ const hasAboutContent = computed(() => {
                         <div class="md:col-span-2">
                             <InputLabel for="edit_description" value="Description" />
                             <textarea id="edit_description" v-model="editForm.description" rows="4"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors" />
                             <InputError :message="editFormErrors.description" />
                         </div>
                     </div>
 
                     <!-- Divider -->
-                    <hr class="my-6 border-gray-200" />
+                    <hr class="my-6 border-gray-200 dark:border-gray-700 transition-colors" />
 
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Mission, Vision, Goals & Constitution</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 transition-colors">Mission, Vision, Goals & Constitution</h3>
 
                     <div class="space-y-5">
                         <!-- Mission -->
@@ -840,7 +848,7 @@ const hasAboutContent = computed(() => {
         <!-- Call Meeting Modal -->
         <Modal :show="showMeetingModal" @close="closeMeetingModal" max-width="2xl">
             <div class="p-6">
-                <h2 class="text-2xl font-semibold text-gray-900 mb-6">Call Meeting</h2>
+                <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6 transition-colors">Call Meeting</h2>
 
                 <form @submit.prevent="submitMeeting">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -891,7 +899,7 @@ const hasAboutContent = computed(() => {
                         <div class="md:col-span-2">
                             <InputLabel for="target_audience" value="Who should attend?" />
                             <select id="target_audience" v-model="meetingForm.target_audience"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors"
                                 required>
                                 <option value="all">All (Officers & Members)</option>
                                 <option value="officers">Officers Only</option>
@@ -904,7 +912,7 @@ const hasAboutContent = computed(() => {
                         <div class="md:col-span-2">
                             <InputLabel for="meeting_description" value="Agenda / Description (Optional)" />
                             <textarea id="meeting_description" v-model="meetingForm.description" rows="3"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors"
                                 placeholder="Describe the purpose and agenda of the meeting..." />
                             <InputError :message="meetingForm.errors.description" />
                         </div>

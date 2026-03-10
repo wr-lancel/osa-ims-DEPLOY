@@ -130,7 +130,7 @@ const exportPdf = async () => {
         <LoadingOverlay :show="isExporting" message="Generating PDF... Please wait." />
         <template #header>
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <h2 class="text-2xl font-semibold text-gray-900">
+                <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 transition-colors">
                     Organization Unit
                 </h2>
                 <div class="flex space-x-3">
@@ -165,25 +165,25 @@ const exportPdf = async () => {
             <!-- Organizations Tab -->
             <div v-if="activeTab === 'organizations'">
                 <!-- Filters -->
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-4 transition-colors">
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <!-- Search -->
                         <div class="md:col-span-2">
-                            <label for="search" class="block text-sm font-medium text-gray-700 mb-1">
+                            <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors">
                                 Search
                             </label>
                             <input id="search" v-model="search" type="text"
                                 placeholder="Organization name, code, or president..."
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                                class="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors" />
                         </div>
 
                         <!-- Type Filter -->
                         <div>
-                            <label for="type" class="block text-sm font-medium text-gray-700 mb-1">
+                            <label for="type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors">
                                 Type
                             </label>
                             <select id="type" v-model="type"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                class="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors">
                                 <option v-for="option in typeOptions" :key="option.value" :value="option.value">
                                     {{ option.label }}
                                 </option>
@@ -192,11 +192,11 @@ const exportPdf = async () => {
 
                         <!-- Status Filter -->
                         <div>
-                            <label for="status" class="block text-sm font-medium text-gray-700 mb-1">
+                            <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors">
                                 Status
                             </label>
                             <select id="status" v-model="status"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                class="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors">
                                 <option v-for="option in statusOptions" :key="option.value" :value="option.value">
                                     {{ option.label }}
                                 </option>
@@ -208,81 +208,87 @@ const exportPdf = async () => {
                 </div>
 
                 <!-- Organizations Table -->
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden transition-colors">
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 transition-colors">
+                            <thead class="bg-gray-50 dark:bg-gray-700/50 transition-colors">
                                 <tr>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">
                                         Organization Name
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">
                                         Type
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">
                                         Leadership
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">
                                         Members
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">
                                         Established
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">
                                         Status
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">
                                         Actions
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 transition-colors">
                                 <tr v-if="organizations.data && organizations.data.length === 0">
-                                    <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
+                                    <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400 transition-colors">
                                         No organizations found.
                                     </td>
                                 </tr>
-                                <tr v-for="org in organizations.data" :key="org.org_id" class="hover:bg-gray-50">
+                                <tr v-for="org in organizations.data" :key="org.org_id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <Link :href="route('admin.organizations.show', org.org_id)"
-                                            class="block hover:bg-gray-50">
-                                            <div class="text-sm font-medium text-indigo-600 hover:text-indigo-900">{{
-                                                org.org_name
-                                            }}</div>
-                                            <div class="text-sm text-gray-500">{{ org.org_code }}</div>
+                                            class="flex items-center gap-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                            <div class="h-10 w-10 flex-shrink-0">
+                                                <img v-if="org.logo_url" :src="org.logo_url" class="h-10 w-10 rounded-full object-cover border border-gray-200 dark:border-gray-600 transition-colors" alt="Logo" />
+                                                <div v-else class="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center border border-indigo-200 dark:border-indigo-800/50 transition-colors">
+                                                    <span class="text-indigo-700 dark:text-indigo-300 font-bold text-sm transition-colors">{{ org.org_code.substring(0, 2).toUpperCase() }}</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 transition-colors">{{ org.org_name }}</div>
+                                                <div class="text-sm text-gray-500 dark:text-gray-400 transition-colors">{{ org.org_code }}</div>
+                                            </div>
                                         </Link>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 transition-colors">
                                         {{ org.type || '-' }}
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-900">
+                                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-200 transition-colors">
                                         <div v-if="org.president_name || org.adviser_name">
                                             <div v-if="org.president_name" class="font-medium">
                                                 Pres: {{ org.president_name }}
                                             </div>
-                                            <div v-if="org.adviser_name" class="text-gray-500 text-xs">
+                                            <div v-if="org.adviser_name" class="text-gray-500 dark:text-gray-400 text-xs transition-colors">
                                                 Adv: {{ org.adviser_name }}
                                             </div>
                                         </div>
-                                        <span v-else class="text-gray-400">-</span>
+                                        <span v-else class="text-gray-400 dark:text-gray-500 transition-colors">-</span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 transition-colors">
                                         {{ org.members_count }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 transition-colors">
                                         {{ org.established_date }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full" :class="{
-                                            'bg-green-100 text-green-800': org.status === 'active',
-                                            'bg-gray-100 text-gray-800': org.status === 'inactive',
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full transition-colors" :class="{
+                                            'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400': org.status === 'active',
+                                            'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300': org.status === 'inactive',
                                         }">
                                             {{ org.status }}
                                         </span>
@@ -290,11 +296,11 @@ const exportPdf = async () => {
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <div class="flex justify-end space-x-2">
                                             <Link :href="route('admin.organizations.show', org.org_id)"
-                                                class="text-indigo-600 hover:text-indigo-900">
+                                                class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 transition-colors">
                                                 View
                                             </Link>
                                             <button @click="openEditModal(org)"
-                                                class="text-indigo-600 hover:text-indigo-900">
+                                                class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 transition-colors">
                                                 Edit
                                             </button>
                                         </div>

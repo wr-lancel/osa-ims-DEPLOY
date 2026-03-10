@@ -10,7 +10,7 @@ use App\Http\Controllers\Admin\CandidacyController as AdminCandidacyController;
 use App\Http\Controllers\Admin\OrganizationController;
 use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\RoleController;
-use App\Http\Controllers\Admin\SectionController;
+
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\SportsController;
 use App\Http\Controllers\Admin\StaffController;
@@ -107,14 +107,14 @@ Route::middleware('auth')->group(function () {
             });
 
         // Resource Routes (Admin/Super Admin only)
-        Route::middleware(['role:admin,super_admin', 'module:staff,roles,courses,sections,academic-calendars'])->group(function () {
+        Route::middleware(['role:admin,super_admin', 'module:staff,roles,courses,academic-calendars'])->group(function () {
             Route::get('staff/export/pdf', [StaffController::class, 'exportPdf'])->name('staff.export.pdf');
             Route::resource('staff', StaffController::class)
                 ->except(['show', 'create', 'edit'])
                 ->parameters(['staff' => 'employee']);
             Route::resource('roles', RoleController::class)->except(['show', 'create', 'edit']);
             Route::resource('courses', CourseController::class)->except(['show', 'create', 'edit']);
-            Route::resource('sections', SectionController::class)->except(['show', 'create', 'edit']);
+
             Route::resource('academic-calendars', AcademicCalendarController::class)
                 ->except(['show', 'create', 'edit'])
                 ->parameters(['academic-calendars' => 'calendar']);

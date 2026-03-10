@@ -15,6 +15,7 @@ class StudentOrganization extends Model
 
     protected $fillable = [
         'org_name',
+        'logo_path',
         'org_code',
         'description',
         'type',

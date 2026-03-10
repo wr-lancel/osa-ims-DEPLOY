@@ -6,7 +6,7 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import AcademicCalendarFormModal from '@/Components/Admin/AcademicCalendarFormModal.vue';
 import CourseFormModal from '@/Components/Admin/CourseFormModal.vue';
-import SectionFormModal from '@/Components/Admin/SectionFormModal.vue';
+
 import RoleFormModal from '@/Components/Admin/RoleFormModal.vue';
 import Modal from '@/Components/Modal.vue';
 import StatusProgressBar from '@/Components/StatusProgressBar.vue';
@@ -27,10 +27,7 @@ const props = defineProps({
         type: Object,
         default: () => ({ data: [], links: [], meta: {} }),
     },
-    sections: {
-        type: Object,
-        default: () => ({ data: [], links: [], meta: {} }),
-    },
+
     disciplineWorkflowSteps: {
         type: Array,
         default: () => [],
@@ -55,7 +52,7 @@ const activeTab = ref('calendars');
 const tabs = [
     { id: 'calendars', label: 'Academic Calendars', count: computed(() => props.academicCalendars.total ?? props.academicCalendars.data?.length ?? 0) },
     { id: 'courses', label: 'Courses', count: computed(() => props.courses.total ?? props.courses.data?.length ?? 0) },
-    { id: 'sections', label: 'Sections', count: computed(() => props.sections.total ?? props.sections.data?.length ?? 0) },
+
     { id: 'roles', label: 'Roles', count: computed(() => props.roles.length) },
     { id: 'discipline-workflow', label: 'Discipline Workflow', count: computed(() => props.disciplineWorkflowSteps.length) },
     { id: 'violation-types', label: 'Violation Types', count: computed(() => props.disciplineViolationTypes.length) },
@@ -89,22 +86,7 @@ const openCourseModal = (course = null) => {
 const closeCourseModal = () => {
     showCourseModal.value = false;
     selectedCourse.value = null;
-    router.reload({ only: ['courses', 'sections'] });
-};
-
-// Section Modal
-const showSectionModal = ref(false);
-const selectedSection = ref(null);
-
-const openSectionModal = (section = null) => {
-    selectedSection.value = section;
-    showSectionModal.value = true;
-};
-
-const closeSectionModal = () => {
-    showSectionModal.value = false;
-    selectedSection.value = null;
-    router.reload({ only: ['sections'] });
+    router.reload({ only: ['courses'] });
 };
 
 // Status badge colors
@@ -117,23 +99,7 @@ const getStatusBadgeClass = (status) => {
     }
 };
 
-// Section filters
-const sectionCourseFilter = ref('');
-const sectionCalendarFilter = ref('');
 
-const filteredSections = computed(() => {
-    let result = props.sections.data || [];
-
-    if (sectionCourseFilter.value) {
-        result = result.filter(s => s.course_id == sectionCourseFilter.value);
-    }
-
-    if (sectionCalendarFilter.value) {
-        result = result.filter(s => s.calendar_id == sectionCalendarFilter.value);
-    }
-
-    return result;
-});
 
 // Add button action based on active tab
 const handleAddNew = () => {
@@ -143,9 +109,6 @@ const handleAddNew = () => {
             break;
         case 'courses':
             openCourseModal();
-            break;
-        case 'sections':
-            openSectionModal();
             break;
         case 'discipline-workflow':
             showAddStepForm.value = true;
@@ -752,68 +715,7 @@ const saveLookupValues = (key, values) => {
                     </div>
                 </div>
 
-                <!-- Sections Tab -->
-                <div v-if="activeTab === 'sections'" class="p-6">
-                    <div class="mb-4">
-                        <p class="text-sm text-gray-600">
-                            Manage sections. Sections with enrollments cannot be deleted.
-                        </p>
-                    </div>
 
-                    <!-- Filters -->
-                    <div class="mb-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Filter by Course</label>
-                            <select v-model="sectionCourseFilter"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                <option value="">All Courses</option>
-                                <option v-for="course in courses.data" :key="course.course_id"
-                                    :value="course.course_id">
-                                    {{ course.course_code }} - {{ course.course_name }}
-                                </option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Section
-                                        Code
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Course
-                                    </th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <tr v-if="filteredSections.length === 0">
-                                    <td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500">
-                                        No sections found. Click "Add New" to create one.
-                                    </td>
-                                </tr>
-                                <tr v-for="section in filteredSections" :key="section.section_id"
-                                    class="hover:bg-gray-50">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        {{ section.section_code }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ section.course_code || '-' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button @click="openSectionModal(section)"
-                                            class="text-indigo-600 hover:text-indigo-900">
-                                            Edit
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <Pagination :data="sections" pageName="sections_page" />
-                    </div>
-                </div>
 
                 <!-- Discipline Workflow Tab -->
                 <div v-if="activeTab === 'discipline-workflow'" class="p-6">
@@ -1306,8 +1208,7 @@ const saveLookupValues = (key, values) => {
         <CourseFormModal :show="showCourseModal" :course="selectedCourse" @close="closeCourseModal"
             @saved="closeCourseModal" />
 
-        <SectionFormModal :show="showSectionModal" :section="selectedSection" :courses="courses.data || []"
-            @close="closeSectionModal" @saved="closeSectionModal" />
+
 
         <RoleFormModal :show="showRoleModal" :role="selectedRole" @close="closeRoleModal" @saved="closeRoleModal" />
 

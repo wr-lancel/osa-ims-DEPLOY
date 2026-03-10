@@ -47,22 +47,22 @@ const quickLinks = [
 
     <StudentLayout>
         <template #header>
-            <h2 class="text-2xl font-semibold text-gray-900">
+            <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 transition-colors">
                 Student Dashboard
             </h2>
         </template>
 
         <div class="space-y-6">
             <!-- Officer Organizations Banner (if applicable) -->
-            <div v-if="officerOrganizations && officerOrganizations.length > 0" class="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+            <div v-if="officerOrganizations && officerOrganizations.length > 0" class="bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800/50 rounded-lg p-4 transition-colors">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
-                        <svg class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg class="h-6 w-6 text-indigo-600 dark:text-indigo-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                         </svg>
                     </div>
                     <div class="ml-3 flex-1">
-                        <p class="text-sm font-medium text-indigo-800">
+                        <p class="text-sm font-medium text-indigo-800 dark:text-indigo-300 transition-colors">
                             You are an officer in {{ officerOrganizations.length }} organization{{ officerOrganizations.length > 1 ? 's' : '' }}
                         </p>
                         <div class="mt-2 flex flex-wrap gap-2">
@@ -70,7 +70,7 @@ const quickLinks = [
                                 v-for="org in officerOrganizations"
                                 :key="org.org_id"
                                 :href="route('student.organizations.show', org.org_id)"
-                                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 hover:bg-indigo-200 transition-colors"
+                                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/70 transition-colors"
                             >
                                 {{ org.org_name }} ({{ org.position }})
                             </Link>
@@ -82,18 +82,18 @@ const quickLinks = [
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Quick Access -->
                 <div class="lg:col-span-2">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Access</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 transition-colors">Quick Access</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <Link
                             v-for="link in quickLinks"
                             :key="link.route"
                             :href="route(link.route)"
-                            class="group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 p-5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                            class="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md dark:shadow-none dark:hover:bg-gray-700/50 transition-all duration-200 p-5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
                         >
                             <div class="flex items-start">
                                 <div class="flex-shrink-0">
                                     <svg
-                                        class="h-6 w-6 text-gray-600 group-hover:text-indigo-600 transition-colors"
+                                        class="h-6 w-6 text-gray-600 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors"
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
@@ -107,10 +107,10 @@ const quickLinks = [
                                     </svg>
                                 </div>
                                 <div class="ml-4 flex-1">
-                                    <h3 class="text-base font-medium text-gray-900 group-hover:text-indigo-600">
+                                    <h3 class="text-base font-medium text-gray-900 dark:text-gray-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                                         {{ link.title }}
                                     </h3>
-                                    <p class="mt-1 text-sm text-gray-500">
+                                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 transition-colors">
                                         {{ link.description }}
                                     </p>
                                 </div>
@@ -121,24 +121,24 @@ const quickLinks = [
 
                 <!-- Upcoming Events -->
                 <div class="lg:col-span-1">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Upcoming Events</h3>
-                    <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
-                        <div v-if="upcomingEvents && upcomingEvents.length > 0" class="divide-y divide-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 transition-colors">Upcoming Events</h3>
+                    <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm transition-colors">
+                        <div v-if="upcomingEvents && upcomingEvents.length > 0" class="divide-y divide-gray-200 dark:divide-gray-700 transition-colors">
                             <div
                                 v-for="event in upcomingEvents"
                                 :key="event.event_id"
-                                class="p-4 hover:bg-gray-50 transition-colors"
+                                class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                             >
                                 <div class="flex items-start justify-between">
                                     <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-medium text-gray-900 truncate">
+                                        <p class="text-sm font-medium text-gray-900 dark:text-gray-200 transition-colors">
                                             {{ event.event_name }}
                                         </p>
-                                        <p class="text-xs text-gray-500 mt-1">
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 transition-colors">
                                             {{ event.organization_name }}
                                         </p>
-                                        <div class="flex items-center mt-2 text-xs text-gray-500">
-                                            <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <div class="flex items-center mt-2 text-xs text-gray-500 dark:text-gray-400 transition-colors">
+                                            <svg class="h-4 w-4 mr-1 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                             </svg>
                                             {{ event.event_date_display }}
@@ -146,8 +146,8 @@ const quickLinks = [
                                                 {{ event.start_time }}
                                             </span>
                                         </div>
-                                        <div v-if="event.venue" class="flex items-center mt-1 text-xs text-gray-500">
-                                            <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <div v-if="event.venue" class="flex items-center mt-1 text-xs text-gray-500 dark:text-gray-400 transition-colors">
+                                            <svg class="h-4 w-4 mr-1 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                             </svg>
@@ -155,7 +155,7 @@ const quickLinks = [
                                         </div>
                                     </div>
                                     <span
-                                        class="ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full whitespace-nowrap"
+                                        class="ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full whitespace-nowrap transition-colors"
                                         :class="getEventBadgeClass(event.days_until)"
                                     >
                                         {{ getEventLabel(event.days_until) }}
@@ -164,10 +164,10 @@ const quickLinks = [
                             </div>
                         </div>
                         <div v-else class="p-6 text-center">
-                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                            <p class="mt-2 text-sm text-gray-500">No upcoming events</p>
+                            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 transition-colors">No upcoming events</p>
                         </div>
                     </div>
                 </div>

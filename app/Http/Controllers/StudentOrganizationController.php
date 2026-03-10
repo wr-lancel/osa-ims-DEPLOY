@@ -10,6 +10,7 @@ use App\Models\StudentOrganization;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -44,6 +45,7 @@ class StudentOrganizationController extends Controller
 
                 return [
                     'org_id' => $org->org_id,
+                    'logo_url' => $org->logo_path ? Storage::url($org->logo_path) : null,
                     'org_name' => $org->org_name,
                     'org_code' => $org->org_code,
                     'description' => $org->description,
@@ -104,6 +106,7 @@ class StudentOrganizationController extends Controller
         return Inertia::render('Student/Organizations/Show', [
             'organization' => [
                 'org_id' => $organization->org_id,
+                'logo_url' => $organization->logo_path ? Storage::url($organization->logo_path) : null,
                 'org_name' => $organization->org_name,
                 'org_code' => $organization->org_code,
                 'description' => $organization->description,

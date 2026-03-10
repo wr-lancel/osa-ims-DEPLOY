@@ -10,7 +10,7 @@ use App\Models\DisciplineViolationType;
 use App\Models\DisciplineWorkflowStep;
 use App\Models\Role;
 use App\Models\SystemSetting;
-use App\Models\Section;
+
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -58,24 +58,7 @@ class SettingsController extends Controller
                 ];
             });
 
-        // Get all sections with course and calendar info
-        $sections = Section::with(['course', 'academicCalendar'])
-            ->orderBy('section_name')
-            ->paginate($perPage, ['*'], 'sections_page')
-            ->withQueryString()
-            ->through(function ($section) {
-                return [
-                    'section_id' => $section->section_id,
-                    'section_code' => $section->section_code,
-                    'section_name' => $section->section_name,
-                    'course_id' => $section->course_id,
-                    'course_code' => $section->course->course_code ?? null,
-                    'course_name' => $section->course->course_name ?? null,
-                    'calendar_id' => $section->calendar_id,
-                    'academic_year' => $section->academicCalendar->academic_year ?? null,
-                    'semester' => $section->academicCalendar->semester ?? null,
-                ];
-            });
+
 
         // Get discipline workflow steps
         $disciplineWorkflowSteps = DisciplineWorkflowStep::ordered()->get()->map(fn($step) => [
@@ -113,7 +96,7 @@ class SettingsController extends Controller
         return Inertia::render('Admin/Settings/Index', [
             'academicCalendars' => $academicCalendars,
             'courses' => $courses,
-            'sections' => $sections,
+
             'disciplineWorkflowSteps' => $disciplineWorkflowSteps,
             'disciplineViolationTypes' => $disciplineViolationTypes,
             'roles' => $roles,

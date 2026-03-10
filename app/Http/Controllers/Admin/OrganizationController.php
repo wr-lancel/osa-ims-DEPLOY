@@ -71,6 +71,7 @@ class OrganizationController extends Controller
         $organizations->getCollection()->transform(function ($org) {
             return [
                 'org_id' => $org->org_id,
+                'logo_url' => $org->logo_path ? Storage::url($org->logo_path) : null,
                 'org_name' => $org->org_name,
                 'org_code' => $org->org_code,
                 'type' => $org->type,
@@ -116,7 +117,13 @@ class OrganizationController extends Controller
      */
     public function store(StoreOrganizationRequest $request): RedirectResponse
     {
-        StudentOrganization::create($request->validated());
+        $data = $request->validated();
+        
+        if ($request->hasFile('logo')) {
+            $data['logo_path'] = $request->file('logo')->store('organizations/logos', 'public');
+        }
+
+        StudentOrganization::create($data);
 
         return redirect()->route('admin.organizations.index')
             ->with('success', 'Organization created successfully.');
@@ -155,6 +162,8 @@ class OrganizationController extends Controller
         return Inertia::render('Admin/Organizations/Show', [
             'organization' => [
                 'org_id' => $organization->org_id,
+                'logo_url' => $organization->logo_path ? Storage::url($organization->logo_path) : null,
+                'logo_path' => $organization->logo_path,
                 'org_name' => $organization->org_name,
                 'org_code' => $organization->org_code,
                 'description' => $organization->description,
@@ -236,8 +245,9 @@ class OrganizationController extends Controller
     {
         $data = $request->validated();
 
-        // Handle file uploads for each document type
+        // Handle file uploads for each document type and logo
         $fileFields = [
+            'logo' => 'organizations/logos',
             'mission_file' => 'organizations/documents',
             'vision_file' => 'organizations/documents',
             'goals_file' => 'organizations/documents',
@@ -246,18 +256,23 @@ class OrganizationController extends Controller
 
         foreach ($fileFields as $field => $storagePath) {
             $removeFlag = 'remove_' . $field;
+            $dbField = $field === 'logo' ? 'logo_path' : $field;
+
             if ($request->hasFile($field)) {
                 // Delete old file if exists
-                if ($organization->$field) {
-                    Storage::disk('public')->delete($organization->$field);
+                if ($organization->$dbField) {
+                    Storage::disk('public')->delete($organization->$dbField);
                 }
-                $data[$field] = $request->file($field)->store($storagePath, 'public');
-            } elseif ($request->boolean($removeFlag) && $organization->$field) {
-                Storage::disk('public')->delete($organization->$field);
-                $data[$field] = null;
+                $data[$dbField] = $request->file($field)->store($storagePath, 'public');
+            } elseif ($request->boolean($removeFlag) && $organization->$dbField) {
+                Storage::disk('public')->delete($organization->$dbField);
+                $data[$dbField] = null;
             } else {
-                unset($data[$field]);
+                unset($data[$dbField]);
             }
+            
+            // Unset form fields from data array to avoid SQL errors
+            unset($data[$field]);
             unset($data[$removeFlag]);
         }
 

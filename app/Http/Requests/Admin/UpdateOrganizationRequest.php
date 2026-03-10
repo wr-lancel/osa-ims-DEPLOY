@@ -17,6 +17,8 @@ class UpdateOrganizationRequest extends FormRequest
     {
         return [
             'org_name' => ['required', 'string', 'max:255'],
+            'logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:5120'],
+            'remove_logo' => ['nullable', 'boolean'],
             'org_code' => [
                 'required',
                 'string',

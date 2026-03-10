@@ -120,8 +120,15 @@ class OrganizationController extends Controller
         $data = $request->validated();
         
         if ($request->hasFile('logo')) {
-            $data['logo_path'] = $request->file('logo')->store('organizations/logos', 'public');
+            try {
+                $data['logo_path'] = $request->file('logo')->store('organizations/logos', 'public');
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Failed to store organization logo: ' . $e->getMessage());
+            }
         }
+
+        // Remove the file object from data - only logo_path should be saved to DB
+        unset($data['logo']);
 
         StudentOrganization::create($data);
 
@@ -259,13 +266,21 @@ class OrganizationController extends Controller
             $dbField = $field === 'logo' ? 'logo_path' : $field;
 
             if ($request->hasFile($field)) {
-                // Delete old file if exists
-                if ($organization->$dbField) {
-                    Storage::disk('public')->delete($organization->$dbField);
+                try {
+                    // Delete old file if exists
+                    if ($organization->$dbField) {
+                        Storage::disk('public')->delete($organization->$dbField);
+                    }
+                    $data[$dbField] = $request->file($field)->store($storagePath, 'public');
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::error("Failed to store {$field}: " . $e->getMessage());
                 }
-                $data[$dbField] = $request->file($field)->store($storagePath, 'public');
             } elseif ($request->boolean($removeFlag) && $organization->$dbField) {
-                Storage::disk('public')->delete($organization->$dbField);
+                try {
+                    Storage::disk('public')->delete($organization->$dbField);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::error("Failed to delete {$field}: " . $e->getMessage());
+                }
                 $data[$dbField] = null;
             } else {
                 unset($data[$dbField]);

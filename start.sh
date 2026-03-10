@@ -24,7 +24,7 @@ php artisan view:cache
 # Control via env vars:
 # - RUN_MIGRATIONS=1  -> run `php artisan migrate --force`
 # - RUN_SEED=1        -> run `php artisan db:seed --force`
-if [[ "${RUN_MIGRATIONS:-0}" == "1" ]]; then
+if [[ "${RUN_MIGRATIONS:-1}" == "1" ]]; then
   echo "Running migrations..."
   php artisan migrate --force
 else

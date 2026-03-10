@@ -48,4 +48,4 @@ RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
 # Make the start script executable
 RUN chmod +x start.sh
 
-CMD ["sh", "start.sh"]
+CMD ["bash", "/app/start.sh"]

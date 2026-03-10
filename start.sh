@@ -20,17 +20,23 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-# Run migrations
-echo "Running migrations..."
-php artisan migrate --force
+# In Railway, keep the WEB container fast-to-ready: don't run long tasks unless enabled.
+# Control via env vars:
+# - RUN_MIGRATIONS=1  -> run `php artisan migrate --force`
+# - RUN_SEED=1        -> run `php artisan db:seed --force`
+if [[ "${RUN_MIGRATIONS:-0}" == "1" ]]; then
+  echo "Running migrations..."
+  php artisan migrate --force
+else
+  echo "Skipping migrations (set RUN_MIGRATIONS=1 to enable)."
+fi
 
-# Seed the database
-echo "Seeding database..."
-php artisan db:seed --force
-
-# Start the queue worker in the background and auto-restart if it crashes
-echo "Starting queue worker..."
-(while true; do php artisan queue:work; sleep 1; done) &
+if [[ "${RUN_SEED:-0}" == "1" ]]; then
+  echo "Seeding database..."
+  php artisan db:seed --force
+else
+  echo "Skipping seeding (set RUN_SEED=1 to enable)."
+fi
 
 # Configure Apache port based on Railway's injected $PORT variable
 # Default to 80 if PORT is not set (e.g. local matching)
@@ -41,7 +47,11 @@ sed -i "s/<VirtualHost \*:80>/<VirtualHost \*:${PORT}>/g" /etc/apache2/sites-ava
 sed -i "s/Listen 80/Listen ${PORT}/g" /etc/apache2/apache2.conf || true
 
 # Suppress AH00558: Apache cannot determine FQDN in containers (Railway)
-echo "ServerName localhost" >> /etc/apache2/apache2.conf
+# Use a dedicated conf file to avoid appending duplicates on every boot.
+if [[ ! -f /etc/apache2/conf-available/servername.conf ]]; then
+  echo "ServerName localhost" > /etc/apache2/conf-available/servername.conf
+fi
+a2enconf servername >/dev/null 2>&1 || true
 
 # CRITICAL FIX for AH00534 Apache MPM conflict
 # Forcefully ensure ONLY mpm_prefork is loaded right before Apache starts
@@ -53,4 +63,5 @@ ln -sf /etc/apache2/mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/mp
 
 # Start the Apache server in the foreground
 echo "Starting Apache server..."
-apache2-foreground
+apache2ctl -t
+exec apache2-foreground

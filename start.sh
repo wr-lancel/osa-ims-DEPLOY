@@ -61,6 +61,10 @@ rm -f /etc/apache2/mods-enabled/mpm_*.conf
 ln -sf /etc/apache2/mods-available/mpm_prefork.load /etc/apache2/mods-enabled/mpm_prefork.load
 ln -sf /etc/apache2/mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/mpm_prefork.conf
 
+# Start the Laravel queue worker in the background to handle emails
+echo "Starting Laravel Queue Worker..."
+php artisan queue:work --database=mysql --sleep=3 --tries=3 &
+
 # Start the Apache server in the foreground
 echo "Starting Apache server..."
 apache2ctl -t

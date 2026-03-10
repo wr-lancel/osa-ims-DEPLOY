@@ -12,19 +12,11 @@ import { Link } from '@inertiajs/vue3';
         </div>
 
         <div>
-<<<<<<< Updated upstream
             <Link href="/" class="flex items-center gap-3">
                 <ApplicationLogo class="h-20 w-20 fill-current text-gray-500 dark:text-gray-400" />
                 <span class="max-w-[16rem] text-base font-semibold leading-tight tracking-tight text-gray-800 dark:text-gray-200">
                     Office of the Student Affairs
                 </span>
-=======
-            <Link href="/">
-                <ApplicationLogo class="h-20 w-20 fill-current text-gray-500 dark:text-gray-400" />
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
             </Link>
         </div>
 

@@ -31,6 +31,9 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
 # Configure OPcache for production speed
 RUN echo "opcache.enable=1\nopcache.memory_consumption=256\nopcache.interned_strings_buffer=16\nopcache.max_accelerated_files=10000\nopcache.validate_timestamps=0" > /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini
 
+# Configure PHP upload limits for large imports (e.g. Students CSV/Excel)
+RUN echo "upload_max_filesize=50M\npost_max_size=50M\nmemory_limit=512M" > /usr/local/etc/php/conf.d/docker-php-uploads.ini
+
 # 6. Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 

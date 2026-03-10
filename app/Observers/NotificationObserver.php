@@ -23,12 +23,21 @@ class NotificationObserver
 
         $viewInSystemUrl = url()->route('student.notifications.index');
 
-        Mail::to($user->email)->queue(
-            new NotificationMail(
-                title: $notification->title,
-                body: $notification->message,
-                viewInSystemUrl: $viewInSystemUrl
-            )
-        );
+        try {
+            Mail::to($user->email)->queue(
+                new NotificationMail(
+                    title: $notification->title,
+                    body: $notification->message,
+                    viewInSystemUrl: $viewInSystemUrl
+                )
+            );
+        } catch (\Throwable $e) {
+            // Log the error but don't crash, preventing 500 errors when email fails
+            \Illuminate\Support\Facades\Log::error('Failed to queue notification email: ' . $e->getMessage(), [
+                'user_id' => $user->user_id,
+                'email' => $user->email,
+                'notification_id' => $notification->notification_id ?? null,
+            ]);
+        }
     }
 }

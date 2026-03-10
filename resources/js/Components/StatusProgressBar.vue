@@ -119,8 +119,8 @@ const cancelChange = () => {
         <!-- Track + dots row -->
         <div class="flex items-center w-full">
             <template v-for="(step, index) in effectiveSteps" :key="index">
-                <!-- Step dot -->
-                <div class="relative">
+                <!-- Step dot container -->
+                <div class="relative flex items-center">
                     <div class="shrink-0 rounded-full flex items-center justify-center transition-all duration-200"
                         :class="[
                             sizeClasses.dot,
@@ -148,7 +148,7 @@ const cancelChange = () => {
                         enter-from-class="opacity-0 translate-y-1" enter-to-class="opacity-100 translate-y-0"
                         leave-active-class="transition ease-in duration-100"
                         leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 translate-y-1">
-                        <div v-if="confirmingIndex === index" class="absolute z-50 mt-2 -translate-x-1/2 left-1/2"
+                        <div v-if="confirmingIndex === index" class="absolute z-50 mt-2 -translate-x-1/2 left-1/2 top-4"
                             style="min-width: 200px">
                             <div class="bg-white rounded-lg shadow-lg border border-gray-200 p-3 text-center">
                                 <p class="text-sm text-gray-700 mb-2">
@@ -171,6 +171,7 @@ const cancelChange = () => {
                         </div>
                     </Transition>
                 </div>
+
                 <!-- Connector after step (except last) -->
                 <div v-if="index < effectiveSteps.length - 1" class="flex-1 rounded-full mx-0.5 min-w-[12px]"
                     :class="[sizeClasses.track, getStepState(index) === 'completed' ? 'bg-indigo-500' : 'bg-gray-200']" />

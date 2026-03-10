@@ -1,3 +1,4 @@
+<script setup>
 import { Head, Link } from '@inertiajs/vue3';
 import ThemeToggle from '@/Components/ThemeToggle.vue';
 
@@ -81,6 +82,7 @@ const features = [
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                                 </svg>
                             </Link>
+                        </template>
                         </template>
                     </nav>
                 </div>

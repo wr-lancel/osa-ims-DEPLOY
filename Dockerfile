@@ -39,6 +39,8 @@ WORKDIR /app
 COPY . .
 
 # 7. Install dependencies and build assets
+# Using require directly since composer is not available locally for the user to update the lock file
+RUN composer require symfony/resend-mailer --no-interaction
 RUN composer install --optimize-autoloader --no-interaction
 RUN npm install && npm run build
 

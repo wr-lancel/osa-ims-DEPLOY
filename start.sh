@@ -63,7 +63,7 @@ ln -sf /etc/apache2/mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/mp
 
 # Start the Laravel queue worker in the background to handle emails
 echo "Starting Laravel Queue Worker..."
-php artisan queue:work --database=mysql --sleep=3 --tries=3 &
+php artisan queue:work --sleep=3 --tries=3 &
 
 # Start the Apache server in the foreground
 echo "Starting Apache server..."

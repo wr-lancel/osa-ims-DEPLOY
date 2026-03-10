@@ -71,7 +71,7 @@ class OrganizationController extends Controller
         $organizations->getCollection()->transform(function ($org) {
             return [
                 'org_id' => $org->org_id,
-                'logo_url' => $org->logo_path ? Storage::url($org->logo_path) : null,
+                'logo_url' => $org->logo_path ? asset('storage/' . $org->logo_path) : null,
                 'org_name' => $org->org_name,
                 'org_code' => $org->org_code,
                 'type' => $org->type,
@@ -169,7 +169,7 @@ class OrganizationController extends Controller
         return Inertia::render('Admin/Organizations/Show', [
             'organization' => [
                 'org_id' => $organization->org_id,
-                'logo_url' => $organization->logo_path ? Storage::url($organization->logo_path) : null,
+                'logo_url' => $organization->logo_path ? asset('storage/' . $organization->logo_path) : null,
                 'logo_path' => $organization->logo_path,
                 'org_name' => $organization->org_name,
                 'org_code' => $organization->org_code,
@@ -179,19 +179,19 @@ class OrganizationController extends Controller
                 'adviser_name' => $organization->adviser_name,
                 'mission' => $organization->mission,
                 'mission_file' => $organization->mission_file,
-                'mission_file_url' => $organization->mission_file ? Storage::url($organization->mission_file) : null,
+                'mission_file_url' => $organization->mission_file ? asset('storage/' . $organization->mission_file) : null,
                 'mission_file_name' => $organization->mission_file ? basename($organization->mission_file) : null,
                 'vision' => $organization->vision,
                 'vision_file' => $organization->vision_file,
-                'vision_file_url' => $organization->vision_file ? Storage::url($organization->vision_file) : null,
+                'vision_file_url' => $organization->vision_file ? asset('storage/' . $organization->vision_file) : null,
                 'vision_file_name' => $organization->vision_file ? basename($organization->vision_file) : null,
                 'goals' => $organization->goals,
                 'goals_file' => $organization->goals_file,
-                'goals_file_url' => $organization->goals_file ? Storage::url($organization->goals_file) : null,
+                'goals_file_url' => $organization->goals_file ? asset('storage/' . $organization->goals_file) : null,
                 'goals_file_name' => $organization->goals_file ? basename($organization->goals_file) : null,
                 'constitution_bylaws' => $organization->constitution_bylaws,
                 'constitution_bylaws_file' => $organization->constitution_bylaws_file,
-                'constitution_bylaws_file_url' => $organization->constitution_bylaws_file ? Storage::url($organization->constitution_bylaws_file) : null,
+                'constitution_bylaws_file_url' => $organization->constitution_bylaws_file ? asset('storage/' . $organization->constitution_bylaws_file) : null,
                 'constitution_bylaws_file_name' => $organization->constitution_bylaws_file ? basename($organization->constitution_bylaws_file) : null,
                 'officers' => $organization->officers->map(function ($officer) {
                     return [

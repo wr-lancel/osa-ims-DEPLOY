@@ -45,7 +45,7 @@ class StudentOrganizationController extends Controller
 
                 return [
                     'org_id' => $org->org_id,
-                    'logo_url' => $org->logo_path ? Storage::url($org->logo_path) : null,
+                    'logo_url' => $org->logo_path ? asset('storage/' . $org->logo_path) : null,
                     'org_name' => $org->org_name,
                     'org_code' => $org->org_code,
                     'description' => $org->description,
@@ -106,7 +106,7 @@ class StudentOrganizationController extends Controller
         return Inertia::render('Student/Organizations/Show', [
             'organization' => [
                 'org_id' => $organization->org_id,
-                'logo_url' => $organization->logo_path ? Storage::url($organization->logo_path) : null,
+                'logo_url' => $organization->logo_path ? asset('storage/' . $organization->logo_path) : null,
                 'org_name' => $organization->org_name,
                 'org_code' => $organization->org_code,
                 'description' => $organization->description,

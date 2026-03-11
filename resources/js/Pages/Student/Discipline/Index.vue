@@ -68,19 +68,19 @@ const goToDetail = (v) => {
     <StudentLayout>
         <template #header>
             <div class="flex items-center justify-between">
-                <h2 class="text-2xl font-semibold text-gray-900">
+                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                     Discipline Unit
                 </h2>
                 <div class="flex items-center flex-wrap gap-4">
                     <Link
                         :href="route('student.discipline.complaints.create')"
-                        class="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                        class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-sm font-medium"
                     >
                         Submit Complaint
                     </Link>
                     <Link
                         :href="route('student.discipline.complaints.index')"
-                        class="relative inline-flex items-center text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                        class="relative inline-flex items-center text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-sm font-medium"
                     >
                         My Complaints
                         <span
@@ -92,7 +92,7 @@ const goToDetail = (v) => {
                     </Link>
                     <Link
                         :href="route('student.discipline.notifications.index')"
-                        class="relative inline-flex items-center text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                        class="relative inline-flex items-center text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-sm font-medium"
                     >
                         Notifications
                         <span
@@ -107,15 +107,15 @@ const goToDetail = (v) => {
         </template>
 
         <div class="space-y-6">
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">My Violations</h3>
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">My Violations</h3>
 
                 <div class="mb-4">
-                    <label for="term" class="block text-sm font-medium text-gray-700 mb-1">Term</label>
+                    <label for="term" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Term</label>
                     <select
                         id="term"
                         v-model="acadId"
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 max-w-xs"
+                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 max-w-xs dark:bg-gray-700 dark:text-gray-100"
                         @change="applyTermFilter"
                     >
                         <option value="">All Terms</option>
@@ -135,11 +135,11 @@ const goToDetail = (v) => {
                         <div
                             v-for="v in violations.data"
                             :key="'m-' + v.discipline_id"
-                            class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 active:bg-gray-100 transition cursor-pointer"
+                            class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:bg-gray-900 active:bg-gray-100 dark:bg-gray-800 transition cursor-pointer"
                             @click="goToDetail(v)"
                         >
                             <div class="flex items-center justify-between mb-2">
-                                <span class="text-sm font-semibold text-gray-900">#{{ v.discipline_id }}</span>
+                                <span class="text-sm font-semibold text-gray-900 dark:text-white">#{{ v.discipline_id }}</span>
                                 <span
                                     class="inline-flex px-2 py-0.5 text-xs font-semibold rounded-full"
                                     :class="getStatusColor(v.status)"
@@ -147,8 +147,8 @@ const goToDetail = (v) => {
                                     {{ v.status }}
                                 </span>
                             </div>
-                            <p class="text-sm text-gray-900 mb-1">{{ v.violation_type }}</p>
-                            <div class="flex items-center gap-3 text-xs text-gray-500">
+                            <p class="text-sm text-gray-900 dark:text-white mb-1">{{ v.violation_type }}</p>
+                            <div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                 <span>{{ v.violation_date }}</span>
                                 <span v-if="v.term_label">• {{ v.term_label }}</span>
                             </div>
@@ -164,30 +164,30 @@ const goToDetail = (v) => {
                     </div>
 
                     <!-- Desktop Table Layout -->
-                    <div class="hidden md:block overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+                    <div class="hidden md:block overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-gray-900">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Case ID</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Offense</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Term</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Severity</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Case ID</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Offense</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Term</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Severity</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Status</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                 <tr
                                     v-for="v in violations.data"
                                     :key="v.discipline_id"
-                                    class="hover:bg-gray-50 cursor-pointer"
+                                    class="hover:bg-gray-50 dark:bg-gray-900 cursor-pointer"
                                     @click="goToDetail(v)"
                                 >
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{{ v.discipline_id }}</td>
-                                    <td class="px-6 py-4 text-sm text-gray-900">{{ v.violation_type }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ v.term_label || '—' }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ v.violation_date }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">#{{ v.discipline_id }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">{{ v.violation_type }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">{{ v.term_label || '—' }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">{{ v.violation_date }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span
                                             v-if="v.severity"
@@ -196,7 +196,7 @@ const goToDetail = (v) => {
                                         >
                                             {{ v.severity }}
                                         </span>
-                                        <span v-else class="text-gray-400 text-xs">—</span>
+                                        <span v-else class="text-gray-400 dark:text-gray-500 dark:text-gray-400 text-xs">—</span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap" @click.stop>
                                         <span
@@ -209,7 +209,7 @@ const goToDetail = (v) => {
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm" @click.stop>
                                         <Link
                                             :href="route('student.discipline.show', v.discipline_id)"
-                                            class="text-indigo-600 hover:text-indigo-900"
+                                            class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300"
                                         >
                                             View
                                         </Link>
@@ -222,33 +222,33 @@ const goToDetail = (v) => {
                 </div>
 
                 <div v-else class="text-center py-8">
-                    <p class="text-sm text-gray-500">You have no violation records.</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">You have no violation records.</p>
                 </div>
             </div>
 
             <!-- Student Code of Conduct -->
             <div class="space-y-4">
-                <h3 class="text-lg font-semibold text-gray-900">Student Code of Conduct</h3>
-                <p class="text-sm text-gray-600">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Student Code of Conduct</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-300">
                     Review the categories and topics below. Each item links to more detail.
                 </p>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div
                         v-for="section in codeOfConductSections"
                         :key="section.id"
-                        class="bg-white rounded-lg border border-gray-200 shadow-sm p-6"
+                        class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
                     >
-                        <h4 class="text-base font-semibold text-gray-900 mb-4">{{ section.title }}</h4>
+                        <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-4">{{ section.title }}</h4>
                         <ul class="space-y-2">
                             <li
                                 v-for="item in section.items"
                                 :key="item.slug"
                                 class="flex items-center"
                             >
-                                <span class="text-gray-400 mr-2">•</span>
+                                <span class="text-gray-400 dark:text-gray-500 dark:text-gray-400 mr-2">•</span>
                                 <Link
                                     :href="route('student.discipline.code-of-conduct.show', item.slug)"
-                                    class="text-indigo-600 hover:text-indigo-900 text-sm"
+                                    class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-sm"
                                 >
                                     {{ item.title }}
                                 </Link>

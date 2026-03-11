@@ -46,9 +46,10 @@ class OrganizationController extends Controller
                 $q->where('org_name', 'like', "%{$search}%")
                     ->orWhere('org_code', 'like', "%{$search}%")
                     ->orWhereHas('president.student', function ($studentQuery) use ($search) {
-                        $studentQuery->where('first_name', 'like', "%{$search}%")
-                            ->orWhere('last_name', 'like', "%{$search}%");
-                    });
+                    $studentQuery->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%");
+                }
+                );
             });
         }
 
@@ -70,16 +71,16 @@ class OrganizationController extends Controller
         // Transform data for frontend
         $organizations->getCollection()->transform(function ($org) {
             return [
-                'org_id' => $org->org_id,
-                'logo_url' => $org->logo_path ? asset('storage/' . $org->logo_path) : null,
-                'org_name' => $org->org_name,
-                'org_code' => $org->org_code,
-                'type' => $org->type,
-                'status' => $org->status,
-                'president_name' => $org->president_name,
-                'adviser_name' => $org->adviser_display_name,
-                'members_count' => $org->members_count,
-                'established_date' => $org->created_at->format('Y-m-d'),
+            'org_id' => $org->org_id,
+            'logo_url' => $org->logo_path ? asset('storage/' . $org->logo_path) : null,
+            'org_name' => $org->org_name,
+            'org_code' => $org->org_code,
+            'type' => $org->type,
+            'status' => $org->status,
+            'president_name' => $org->president_name,
+            'adviser_name' => $org->adviser_display_name,
+            'members_count' => $org->members_count,
+            'established_date' => $org->created_at->format('Y-m-d'),
             ];
         });
 
@@ -118,11 +119,12 @@ class OrganizationController extends Controller
     public function store(StoreOrganizationRequest $request): RedirectResponse
     {
         $data = $request->validated();
-        
+
         if ($request->hasFile('logo')) {
             try {
                 $data['logo_path'] = $request->file('logo')->store('organizations/logos', 'public');
-            } catch (\Throwable $e) {
+            }
+            catch (\Throwable $e) {
                 \Illuminate\Support\Facades\Log::error('Failed to store organization logo: ' . $e->getMessage());
             }
         }
@@ -156,13 +158,13 @@ class OrganizationController extends Controller
             ->when($activeCalendar, fn($q) => $q->where('acad_id', $activeCalendar->calendar_id))
             ->get()
             ->map(function ($enrollment) {
-                return [
-                    'student_number' => $enrollment->student_number,
-                    'full_name' => $enrollment->student->full_name ?? '',
-                    'course_code' => $enrollment->course->course_code ?? '',
-                    'year_level' => $enrollment->year_level,
-                ];
-            })
+            return [
+            'student_number' => $enrollment->student_number,
+            'full_name' => $enrollment->student->full_name ?? '',
+            'course_code' => $enrollment->course->course_code ?? '',
+            'year_level' => $enrollment->year_level,
+            ];
+        })
             ->unique('student_number')
             ->values();
 
@@ -194,24 +196,24 @@ class OrganizationController extends Controller
                 'constitution_bylaws_file_url' => $organization->constitution_bylaws_file ? asset('storage/' . $organization->constitution_bylaws_file) : null,
                 'constitution_bylaws_file_name' => $organization->constitution_bylaws_file ? basename($organization->constitution_bylaws_file) : null,
                 'officers' => $organization->officers->map(function ($officer) {
-                    return [
+            return [
                         'officer_id' => $officer->officer_id,
                         'student_number' => $officer->student->student_number ?? '',
                         'student_name' => $officer->student->full_name ?? '',
                         'position' => $officer->position,
                         'start_date' => $officer->start_date->format('Y-m-d'),
                     ];
-                }),
+        }),
                 'members' => $organization->members->map(function ($member) {
-                    return [
+            return [
                         'member_id' => $member->member_id,
                         'student_number' => $member->student->student_number ?? '',
                         'student_name' => $member->student->full_name ?? '',
                         'join_date' => $member->join_date->format('Y-m-d'),
                     ];
-                }),
+        }),
                 'events' => $organization->events->map(function ($event) {
-                    return [
+            return [
                         'event_id' => $event->event_id,
                         'event_name' => $event->event_name,
                         'description' => $event->description,
@@ -223,9 +225,9 @@ class OrganizationController extends Controller
                         'status_color' => $event->status_color,
                         'created_by_name' => $event->creator->display_name ?? null,
                     ];
-                }),
+        }),
                 'meetings' => $organization->meetings->sortByDesc('meeting_date')->values()->map(function ($meeting) {
-                    return [
+            return [
                         'meeting_id' => $meeting->meeting_id,
                         'title' => $meeting->title,
                         'description' => $meeting->description,
@@ -238,7 +240,7 @@ class OrganizationController extends Controller
                         'called_by_name' => $meeting->caller->display_name ?? 'Unknown',
                         'created_at' => $meeting->created_at->format('Y-m-d H:i'),
                     ];
-                }),
+        }),
             ],
             'enrolledStudents' => $enrolledStudents,
             'organizationTypes' => SystemSetting::getList('organization_types'),
@@ -272,20 +274,24 @@ class OrganizationController extends Controller
                         Storage::disk('public')->delete($organization->$dbField);
                     }
                     $data[$dbField] = $request->file($field)->store($storagePath, 'public');
-                } catch (\Throwable $e) {
+                }
+                catch (\Throwable $e) {
                     \Illuminate\Support\Facades\Log::error("Failed to store {$field}: " . $e->getMessage());
                 }
-            } elseif ($request->boolean($removeFlag) && $organization->$dbField) {
+            }
+            elseif ($request->boolean($removeFlag) && $organization->$dbField) {
                 try {
                     Storage::disk('public')->delete($organization->$dbField);
-                } catch (\Throwable $e) {
+                }
+                catch (\Throwable $e) {
                     \Illuminate\Support\Facades\Log::error("Failed to delete {$field}: " . $e->getMessage());
                 }
                 $data[$dbField] = null;
-            } else {
+            }
+            else {
                 unset($data[$dbField]);
             }
-            
+
             // Unset form fields from data array to avoid SQL errors
             unset($data[$field]);
             unset($data[$removeFlag]);
@@ -469,9 +475,10 @@ class OrganizationController extends Controller
                 $q->where('org_name', 'like', "%{$search}%")
                     ->orWhere('org_code', 'like', "%{$search}%")
                     ->orWhereHas('president.student', function ($studentQuery) use ($search) {
-                        $studentQuery->where('first_name', 'like', "%{$search}%")
-                            ->orWhere('last_name', 'like', "%{$search}%");
-                    });
+                    $studentQuery->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%");
+                }
+                );
             });
         }
 
@@ -487,13 +494,13 @@ class OrganizationController extends Controller
 
         $headers = ['Name', 'Code', 'Type', 'Status', 'President', 'Adviser', 'Members'];
         $rows = $organizations->map(fn($org) => [
-            $org->org_name,
-            $org->org_code,
-            $org->type,
-            $org->status,
-            $org->president_name,
-            $org->adviser_display_name,
-            $org->members_count,
+        $org->org_name,
+        $org->org_code,
+        $org->type,
+        $org->status,
+        $org->president_name,
+        $org->adviser_display_name,
+        $org->members_count,
         ])->toArray();
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.pdf-table', [
@@ -501,7 +508,11 @@ class OrganizationController extends Controller
             'date' => now()->format('F j, Y g:i A'),
             'headers' => $headers,
             'rows' => $rows,
-            'filters' => $request->only(['search', 'type', 'status']),
+            'filters' => array_filter([
+                'Search' => $request->input('search'),
+                'Type' => $request->filled('type') ? ucfirst($request->type) : null,
+                'Status' => $request->filled('status') ? ucfirst($request->status) : null,
+            ]),
         ])->setPaper('a4', 'landscape');
 
         return $pdf->download('organizations_export_' . date('Y-m-d_His') . '.pdf');

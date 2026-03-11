@@ -70,7 +70,7 @@ const goToDetail = (borrowing) => {
 
     <StudentLayout>
         <template #header>
-            <h2 class="text-2xl font-semibold text-gray-900">
+            <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                 Sports Unit - Equipment Borrowing
             </h2>
         </template>
@@ -82,9 +82,9 @@ const goToDetail = (borrowing) => {
             </div>
 
             <!-- Borrowing Form -->
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                 <div class="p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Request Equipment Borrowing</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Request Equipment Borrowing</h3>
                     
                     <form @submit.prevent="submitForm" class="space-y-4">
                         <div>
@@ -159,19 +159,19 @@ const goToDetail = (borrowing) => {
             </div>
 
             <!-- Borrowing History -->
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                 <div class="p-6">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-                        <h3 class="text-lg font-semibold text-gray-900">My Borrowing History</h3>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">My Borrowing History</h3>
                         
                         <!-- Status Filter -->
                         <div class="flex items-center gap-2">
-                            <label for="status_filter" class="text-sm text-gray-700">Filter:</label>
+                            <label for="status_filter" class="text-sm text-gray-700 dark:text-gray-200">Filter:</label>
                             <select
                                 id="status_filter"
                                 v-model="statusFilter"
                                 @change="filterByStatus(statusFilter)"
-                                class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                class="rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm dark:bg-gray-700 dark:text-gray-100"
                             >
                                 <option value="">All Status</option>
                                 <option value="pending">Pending</option>
@@ -191,11 +191,11 @@ const goToDetail = (borrowing) => {
                             <div
                                 v-for="borrowing in borrowings.data"
                                 :key="'m-' + borrowing.borrowing_id"
-                                class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 active:bg-gray-100 transition cursor-pointer"
+                                class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:bg-gray-900 active:bg-gray-100 dark:bg-gray-800 transition cursor-pointer"
                                 @click="goToDetail(borrowing)"
                             >
                                 <div class="flex items-center justify-between mb-2">
-                                    <span class="text-sm font-semibold text-gray-900">{{ borrowing.item_name }}</span>
+                                    <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ borrowing.item_name }}</span>
                                     <span
                                         class="inline-flex px-2 py-0.5 text-xs font-semibold rounded-full"
                                         :class="getStatusBadgeClass(borrowing.status, borrowing.status_color)"
@@ -203,8 +203,8 @@ const goToDetail = (borrowing) => {
                                         {{ borrowing.status }}
                                     </span>
                                 </div>
-                                <p v-if="borrowing.description" class="text-sm text-gray-500 mb-2 line-clamp-1">{{ borrowing.description }}</p>
-                                <div class="flex items-center gap-3 text-xs text-gray-500">
+                                <p v-if="borrowing.description" class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 mb-2 line-clamp-1">{{ borrowing.description }}</p>
+                                <div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                     <span>Borrow: {{ borrowing.borrow_date }}</span>
                                     <span>Return: {{ borrowing.expected_return_date }}</span>
                                 </div>
@@ -212,44 +212,44 @@ const goToDetail = (borrowing) => {
                         </div>
 
                         <!-- Desktop Table Layout -->
-                        <div class="hidden md:block overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
+                        <div class="hidden md:block overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead class="bg-gray-50 dark:bg-gray-900">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                             Item Name
                                         </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                             Borrow Date
                                         </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                             Expected Return
                                         </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                             Status
                                         </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                             Actions
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
+                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                     <tr
                                         v-for="borrowing in borrowings.data"
                                         :key="borrowing.borrowing_id"
-                                        class="hover:bg-gray-50 cursor-pointer"
+                                        class="hover:bg-gray-50 dark:bg-gray-900 cursor-pointer"
                                         @click="goToDetail(borrowing)"
                                     >
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm font-medium text-gray-900">{{ borrowing.item_name }}</div>
-                                            <div v-if="borrowing.description" class="text-sm text-gray-500 truncate max-w-xs">
+                                            <div class="text-sm font-medium text-gray-900 dark:text-white">{{ borrowing.item_name }}</div>
+                                            <div v-if="borrowing.description" class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 truncate max-w-xs">
                                                 {{ borrowing.description }}
                                             </div>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                             {{ borrowing.borrow_date }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                             {{ borrowing.expected_return_date }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap" @click.stop>
@@ -263,7 +263,7 @@ const goToDetail = (borrowing) => {
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" @click.stop>
                                             <Link
                                                 :href="route('student.sports.borrowings.show', borrowing.borrowing_id)"
-                                                class="text-indigo-600 hover:text-indigo-900"
+                                                class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300"
                                             >
                                                 View Details
                                             </Link>
@@ -279,11 +279,11 @@ const goToDetail = (borrowing) => {
 
                     <!-- Empty State -->
                     <div v-else class="text-center py-12">
-                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                         </svg>
-                        <h3 class="mt-2 text-sm font-medium text-gray-900">No borrowings found</h3>
-                        <p class="mt-1 text-sm text-gray-500">Get started by submitting a borrowing request above.</p>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No borrowings found</h3>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">Get started by submitting a borrowing request above.</p>
                     </div>
                 </div>
             </div>

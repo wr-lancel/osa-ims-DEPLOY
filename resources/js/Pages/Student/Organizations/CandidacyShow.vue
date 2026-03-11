@@ -45,20 +45,20 @@ const withdraw = () => {
     <StudentLayout>
         <template #header>
             <div class="flex items-center justify-between">
-                <h2 class="text-2xl font-semibold text-gray-900">
+                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                     Candidacy Details
                 </h2>
                 <div class="flex items-center space-x-3">
                     <Link
                         :href="route('student.organizations.candidacies.index')"
-                        class="text-indigo-600 hover:text-indigo-900 text-sm"
+                        class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-sm"
                     >
                         ← My Candidacies
                     </Link>
                     <button
                         v-if="canWithdraw()"
                         type="button"
-                        class="text-red-600 hover:text-red-900 text-sm font-medium"
+                        class="text-red-600 dark:text-red-400 hover:text-red-900 text-sm font-medium"
                         @click="withdraw"
                     >
                         Withdraw
@@ -68,24 +68,24 @@ const withdraw = () => {
         </template>
 
         <div class="space-y-6">
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Application Information</h3>
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Application Information</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-500">Organization</label>
-                        <p class="mt-1 text-sm text-gray-900">{{ application.org_name }}</p>
-                        <p class="text-xs text-gray-500">{{ application.org_code }}</p>
+                        <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Organization</label>
+                        <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ application.org_name }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">{{ application.org_code }}</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-500">Position</label>
-                        <p class="mt-1 text-sm text-gray-900">{{ application.position_name }}</p>
+                        <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Position</label>
+                        <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ application.position_name }}</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-500">Term</label>
-                        <p class="mt-1 text-sm text-gray-900">{{ application.term_label || '—' }}</p>
+                        <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Term</label>
+                        <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ application.term_label || '—' }}</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-500">Status</label>
+                        <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Status</label>
                         <span
                             class="mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full"
                             :class="getStatusColor(application.status)"
@@ -94,29 +94,29 @@ const withdraw = () => {
                         </span>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-500">Submitted</label>
-                        <p class="mt-1 text-sm text-gray-900">{{ application.submitted_at || '—' }}</p>
+                        <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Submitted</label>
+                        <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ application.submitted_at || '—' }}</p>
                     </div>
                     <div v-if="application.reviewed_at">
-                        <label class="block text-sm font-medium text-gray-500">Reviewed</label>
-                        <p class="mt-1 text-sm text-gray-900">{{ application.reviewed_at }}</p>
+                        <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Reviewed</label>
+                        <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ application.reviewed_at }}</p>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Platform Statement</h3>
-                <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ application.platform_statement || '—' }}</p>
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Platform Statement</h3>
+                <p class="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{{ application.platform_statement || '—' }}</p>
             </div>
 
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Motivation</h3>
-                <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ application.motivation || '—' }}</p>
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Motivation</h3>
+                <p class="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{{ application.motivation || '—' }}</p>
             </div>
 
-            <div v-if="application.review_remarks" class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Review Remarks</h3>
-                <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ application.review_remarks }}</p>
+            <div v-if="application.review_remarks" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Review Remarks</h3>
+                <p class="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{{ application.review_remarks }}</p>
             </div>
         </div>
     </StudentLayout>

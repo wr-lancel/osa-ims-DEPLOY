@@ -83,7 +83,7 @@ const clearSelectedFile = () => {
 <template>
     <div class="space-y-2">
         <InputLabel :value="label" />
-        <p v-if="helpText" class="text-xs text-gray-400">{{ helpText }}</p>
+        <p v-if="helpText" class="text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400">{{ helpText }}</p>
 
         <!-- Text area -->
         <textarea
@@ -91,16 +91,16 @@ const clearSelectedFile = () => {
             @input="onTextInput"
             :rows="rows"
             :placeholder="placeholder"
-            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+            class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm dark:bg-gray-700 dark:text-gray-100"
         />
         <InputError :message="textError" />
 
         <!-- File upload -->
         <div class="flex items-center gap-3">
             <label
-                class="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-300 rounded-md text-sm text-gray-700 cursor-pointer hover:bg-gray-50 transition"
+                class="inline-flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-gray-50 dark:bg-gray-900 transition"
             >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 dark:text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                 </svg>
                 {{ selectedFileName || 'Attach file' }}
@@ -126,10 +126,10 @@ const clearSelectedFile = () => {
 
         <!-- Existing file display -->
         <div v-if="existingFileUrl && !selectedFileName" class="flex items-center gap-2 mt-1 text-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
             </svg>
-            <a :href="existingFileUrl" target="_blank" class="text-indigo-600 hover:text-indigo-900 underline">
+            <a :href="existingFileUrl" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 underline">
                 {{ existingFileName || 'Download current file' }}
             </a>
             <button

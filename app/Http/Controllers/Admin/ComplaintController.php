@@ -237,12 +237,24 @@ class ComplaintController extends Controller
             ];
         })->toArray();
 
+        // Build human-readable filter labels
+        $filterLabels = [];
+        if ($request->filled('search')) {
+            $filterLabels['Search'] = $request->search;
+        }
+        if ($request->filled('category')) {
+            $filterLabels['Category'] = $request->category;
+        }
+        if ($request->filled('status')) {
+            $filterLabels['Status'] = ucfirst(str_replace('_', ' ', $request->status));
+        }
+
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.pdf-table', [
             'title' => 'Complaints Report',
             'date' => now()->format('F j, Y g:i A'),
             'headers' => $headers,
             'rows' => $rows,
-            'filters' => $request->only(['search', 'category', 'status']),
+            'filters' => $filterLabels,
         ])->setPaper('a4', 'landscape');
 
         return $pdf->download('complaints_export_' . date('Y-m-d_His') . '.pdf');

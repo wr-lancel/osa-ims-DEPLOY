@@ -634,12 +634,21 @@ class SportsController extends Controller
             ];
         })->toArray();
 
+        // Build human-readable filter labels
+        $filterLabels = [];
+        if ($request->filled('borrowing_search')) {
+            $filterLabels['Search'] = $request->borrowing_search;
+        }
+        if ($request->filled('borrowing_status')) {
+            $filterLabels['Status'] = ucfirst($request->borrowing_status);
+        }
+
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.pdf-table', [
             'title' => 'Sports Equipment Borrowings Report',
             'date' => now()->format('F j, Y g:i A'),
             'headers' => $headers,
             'rows' => $rows,
-            'filters' => $request->only(['borrowing_search', 'borrowing_status']),
+            'filters' => $filterLabels,
         ])->setPaper('a4', 'landscape');
 
         return $pdf->download('sports_borrowings_export_' . date('Y-m-d_His') . '.pdf');

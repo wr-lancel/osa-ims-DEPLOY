@@ -683,7 +683,7 @@ class StudentRecordController extends Controller
     {
         // Increase limits for large PDF generation (2000-3000 students)
         ini_set('memory_limit', '2048M');
-        ini_set('max_execution_time', 600);
+        ini_set('max_execution_time', 900);
 
         $statusFilter = $request->input('status', 'enrolled');
         $academicCalendar = AcademicCalendar::active()->first();
@@ -693,13 +693,33 @@ class StudentRecordController extends Controller
             abort(404, 'No active academic calendar found.');
         }
 
-        $query = $this->buildFilteredEnrollmentQuery($request, $statusFilter, $academicCalendar)
-            ->with(['student', 'course', 'section']);
+        $query = $this->buildFilteredEnrollmentQuery($request, $statusFilter, $academicCalendar);
 
-        // Use cursor() to avoid loading all Eloquent models into memory at once
+        // Build filter label map for human-readable display in PDF
+        $filterLabels = [];
+        if ($request->filled('status')) {
+            $filterLabels['Status'] = ucfirst($request->status);
+        }
+        if ($request->filled('year_level')) {
+            $filterLabels['Year Level'] = 'Year ' . $request->year_level;
+        }
+        if ($request->filled('course_id')) {
+            $course = \App\Models\Course::find($request->course_id);
+            $filterLabels['Course'] = $course ? ($course->course_code . ' — ' . $course->course_name) : $request->course_id;
+        }
+        if ($request->filled('search')) {
+            $filterLabels['Search'] = $request->search;
+        }
+
         $headers = ['Student ID', 'Name', 'Year Level', 'Section', 'Course', 'Status'];
         $rows = [];
-        foreach ($query->cursor() as $e) {
+
+        // Use cursor() to iterate through database records without loading all into memory
+        foreach ($query->with([
+            'student:student_id,student_number,first_name,last_name,middle_name,status',
+            'course:course_id,course_code,course_name',
+            'section:section_id,section_name',
+        ])->cursor() as $e) {
             $rows[] = [
                 $e->student?->student_number ?? 'N/A',
                 $e->student?->full_name ?? 'N/A',
@@ -719,7 +739,7 @@ class StudentRecordController extends Controller
             'date' => now()->format('F j, Y g:i A'),
             'headers' => $headers,
             'rows' => $rows,
-            'filters' => $request->only(['search', 'course_id', 'status', 'year_level']),
+            'filters' => $filterLabels,
         ])->setPaper('a4', 'landscape');
 
         return $pdf->download('students_export_' . date('Y-m-d_His') . '.pdf');

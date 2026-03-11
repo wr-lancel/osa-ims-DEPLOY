@@ -321,12 +321,31 @@ class StaffController extends Controller
             $e->user?->status ?? '—',
         ])->toArray();
 
+        // Build human-readable filter labels
+        $filterLabels = [];
+        if ($request->filled('search')) {
+            $filterLabels['Search'] = $request->search;
+        }
+        if ($request->filled('department')) {
+            $filterLabels['Department'] = $request->department;
+        }
+        if ($request->filled('position')) {
+            $filterLabels['Position'] = $request->position;
+        }
+        if ($request->filled('role_id')) {
+            $role = Role::find($request->role_id);
+            $filterLabels['Role'] = $role ? $role->role_name : $request->role_id;
+        }
+        if ($request->filled('status')) {
+            $filterLabels['Status'] = ucfirst($request->status);
+        }
+
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.pdf-table', [
             'title' => 'Staff Members Report',
             'date' => now()->format('F j, Y g:i A'),
             'headers' => $headers,
             'rows' => $rows,
-            'filters' => $request->only(['search', 'department', 'position', 'role_id', 'status']),
+            'filters' => $filterLabels,
         ])->setPaper('a4', 'landscape');
 
         return $pdf->download('staff_export_' . date('Y-m-d_His') . '.pdf');

@@ -552,7 +552,7 @@ const saveLookupValues = (key, values) => {
     <AdminLayout>
         <template #header>
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <h2 class="text-2xl font-semibold text-gray-900">
+                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                     Settings
                 </h2>
                 <PrimaryButton @click="handleAddNew">
@@ -566,21 +566,21 @@ const saveLookupValues = (key, values) => {
 
         <div class="space-y-6">
             <!-- Tabs -->
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
-                <div class="border-b border-gray-200">
-                    <nav class="flex -mb-px overflow-x-auto" aria-label="Tabs">
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                <div class="border-b border-gray-200 dark:border-gray-700">
+                    <nav class="flex -mb-px overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600" aria-label="Tabs">
                         <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id" :class="[
                             'px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap',
                             activeTab === tab.id
-                                ? 'border-indigo-500 text-indigo-600'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                                : 'border-transparent text-gray-500 dark:text-gray-400 dark:text-gray-400 hover:text-gray-700 dark:text-gray-200 hover:border-gray-300 dark:border-gray-600'
                         ]">
                             {{ tab.label }}
                             <span :class="[
                                 'ml-2 px-2 py-0.5 text-xs rounded-full',
                                 activeTab === tab.id
-                                    ? 'bg-indigo-100 text-indigo-600'
-                                    : 'bg-gray-100 text-gray-600'
+                                    ? 'bg-indigo-100 text-indigo-600 dark:text-indigo-400'
+                                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300'
                             ]">
                                 {{ tab.count.value }}
                             </span>
@@ -591,50 +591,50 @@ const saveLookupValues = (key, values) => {
                 <!-- Academic Calendars Tab -->
                 <div v-if="activeTab === 'calendars'" class="p-6">
                     <div class="mb-4">
-                        <p class="text-sm text-gray-600">
+                        <p class="text-sm text-gray-600 dark:text-gray-300">
                             Manage academic terms/semesters. Only one term can be <strong>Active</strong> at a time.
                             Setting a term as active will automatically mark other active terms as completed.
                         </p>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+                    <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-gray-900">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Academic
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Academic
                                         Year
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Semester
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Semester
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Start
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Start
                                         Date</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">End Date
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">End Date
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Status
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">
                                         Enrollments</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Actions
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                 <tr v-if="!academicCalendars.data || academicCalendars.data.length === 0">
-                                    <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
+                                    <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                         No academic calendars found. Click "Add New" to create one.
                                     </td>
                                 </tr>
                                 <tr v-for="calendar in academicCalendars.data" :key="calendar.calendar_id"
-                                    class="hover:bg-gray-50">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    class="hover:bg-gray-50 dark:bg-gray-900">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                                         {{ calendar.academic_year }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                         {{ calendar.semester || '-' }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                         {{ calendar.start_date }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                         {{ calendar.end_date }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
@@ -644,12 +644,12 @@ const saveLookupValues = (key, values) => {
                                             {{ calendar.status }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                         {{ calendar.enrollments_count }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <button @click="openCalendarModal(calendar)"
-                                            class="text-indigo-600 hover:text-indigo-900">
+                                            class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
                                             Edit
                                         </button>
                                     </td>
@@ -663,48 +663,48 @@ const saveLookupValues = (key, values) => {
                 <!-- Courses Tab -->
                 <div v-if="activeTab === 'courses'" class="p-6">
                     <div class="mb-4">
-                        <p class="text-sm text-gray-600">
+                        <p class="text-sm text-gray-600 dark:text-gray-300">
                             Manage courses/programs. Courses with sections or enrollments cannot be deleted.
                         </p>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+                    <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-gray-900">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Course
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Course
                                         Code</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Course
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Course
                                         Name</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">
                                         Description</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sections
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Sections
                                     </th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Actions
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                 <tr v-if="!courses.data || courses.data.length === 0">
-                                    <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
+                                    <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                         No courses found. Click "Add New" to create one.
                                     </td>
                                 </tr>
-                                <tr v-for="course in courses.data" :key="course.course_id" class="hover:bg-gray-50">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                <tr v-for="course in courses.data" :key="course.course_id" class="hover:bg-gray-50 dark:bg-gray-900">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                                         {{ course.course_code }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                                         {{ course.course_name }}
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
+                                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 max-w-xs truncate">
                                         {{ course.description || '-' }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                         {{ course.sections_count }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <button @click="openCourseModal(course)"
-                                            class="text-indigo-600 hover:text-indigo-900">
+                                            class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
                                             Edit
                                         </button>
                                     </td>
@@ -720,7 +720,7 @@ const saveLookupValues = (key, values) => {
                 <!-- Discipline Workflow Tab -->
                 <div v-if="activeTab === 'discipline-workflow'" class="p-6">
                     <div class="mb-4">
-                        <p class="text-sm text-gray-600">
+                        <p class="text-sm text-gray-600 dark:text-gray-300">
                             Configure the workflow steps for discipline violation cases. These steps define the progress
                             bar
                             shown on each case.
@@ -734,54 +734,54 @@ const saveLookupValues = (key, values) => {
                     </div>
 
                     <!-- Live preview of current workflow -->
-                    <div class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Progress Bar Preview
+                    <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wide mb-3">Progress Bar Preview
                         </p>
                         <StatusProgressBar :steps="previewSteps" :terminal-statuses="previewTerminal" current-status=""
                             size="sm" />
                     </div>
 
                     <!-- Workflow steps table -->
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+                    <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-gray-900">
                                 <tr>
                                     <th class="w-10 px-3 py-3"></th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Order
                                     </th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Step
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Step
                                         Name</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">
                                         Description</th>
-                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">
                                         Terminal</th>
-                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Cases
+                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Cases
                                     </th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Actions
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                 <tr v-if="disciplineWorkflowSteps.length === 0">
-                                    <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
+                                    <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                         No workflow steps defined. Click "Add New" to create one.
                                     </td>
                                 </tr>
                                 <tr v-for="(step, index) in disciplineWorkflowSteps" :key="step.id" draggable="true"
                                     @dragstart="onDragStart(index)" @dragover="onDragOver($event, index)"
                                     @dragend="onDragEnd" :class="[
-                                        'hover:bg-gray-50 transition-colors cursor-grab active:cursor-grabbing',
+                                        'hover:bg-gray-50 dark:bg-gray-900 transition-colors cursor-grab active:cursor-grabbing',
                                         dragOverIndex === index ? 'bg-indigo-50 border-t-2 border-indigo-400' : '',
                                     ]">
                                     <!-- Drag handle -->
-                                    <td class="px-3 py-4 text-gray-400">
+                                    <td class="px-3 py-4 text-gray-400 dark:text-gray-500 dark:text-gray-400">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M4 8h16M4 16h16" />
                                         </svg>
                                     </td>
                                     <!-- Order -->
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 font-mono">
                                         {{ step.sort_order }}
                                     </td>
 
@@ -789,19 +789,19 @@ const saveLookupValues = (key, values) => {
                                     <td class="px-4 py-4 whitespace-nowrap text-sm">
                                         <template v-if="editingStepId === step.id">
                                             <input v-model="editForm.name" type="text"
-                                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm dark:bg-gray-700 dark:text-gray-100"
                                                 @keyup.enter="saveEdit(step.id)" @keyup.escape="cancelEdit" />
-                                            <p v-if="stepErrors.name" class="mt-1 text-xs text-red-600">{{
+                                            <p v-if="stepErrors.name" class="mt-1 text-xs text-red-600 dark:text-red-400">{{
                                                 stepErrors.name }}</p>
                                         </template>
-                                        <span v-else class="font-medium text-gray-900">{{ step.name }}</span>
+                                        <span v-else class="font-medium text-gray-900 dark:text-white">{{ step.name }}</span>
                                     </td>
 
                                     <!-- Description (editable) -->
-                                    <td class="px-4 py-4 text-sm text-gray-500 max-w-xs">
+                                    <td class="px-4 py-4 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 max-w-xs">
                                         <template v-if="editingStepId === step.id">
                                             <input v-model="editForm.description" type="text"
-                                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm dark:bg-gray-700 dark:text-gray-100"
                                                 placeholder="Optional description..." @keyup.enter="saveEdit(step.id)"
                                                 @keyup.escape="cancelEdit" />
                                         </template>
@@ -812,7 +812,7 @@ const saveLookupValues = (key, values) => {
                                     <td class="px-4 py-4 text-center">
                                         <template v-if="editingStepId === step.id">
                                             <input type="checkbox" v-model="editForm.is_terminal"
-                                                class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                                                class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 dark:text-indigo-400 focus:ring-indigo-500" />
                                         </template>
                                         <template v-else>
                                             <span v-if="step.is_terminal"
@@ -823,7 +823,7 @@ const saveLookupValues = (key, values) => {
                                     </td>
 
                                     <!-- Cases count -->
-                                    <td class="px-4 py-4 text-center text-sm text-gray-500">
+                                    <td class="px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                         {{ step.cases_count }}
                                     </td>
 
@@ -833,18 +833,18 @@ const saveLookupValues = (key, values) => {
                                             <button @click="saveEdit(step.id)" :disabled="stepProcessing"
                                                 class="text-green-600 hover:text-green-900">Save</button>
                                             <button @click="cancelEdit"
-                                                class="text-gray-500 hover:text-gray-700">Cancel</button>
+                                                class="text-gray-500 dark:text-gray-400 dark:text-gray-400 hover:text-gray-700 dark:text-gray-200">Cancel</button>
                                         </template>
                                         <template v-else-if="confirmingDeleteId === step.id">
-                                            <span class="text-sm text-red-600 mr-2">Delete?</span>
+                                            <span class="text-sm text-red-600 dark:text-red-400 mr-2">Delete?</span>
                                             <button @click="deleteStep(step.id)" :disabled="stepProcessing"
-                                                class="text-red-600 hover:text-red-900 font-semibold">Yes</button>
+                                                class="text-red-600 dark:text-red-400 hover:text-red-900 font-semibold">Yes</button>
                                             <button @click="cancelDelete"
-                                                class="text-gray-500 hover:text-gray-700">No</button>
+                                                class="text-gray-500 dark:text-gray-400 dark:text-gray-400 hover:text-gray-700 dark:text-gray-200">No</button>
                                         </template>
                                         <template v-else>
                                             <button @click="startEdit(step)"
-                                                class="text-indigo-600 hover:text-indigo-900">Edit</button>
+                                                class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">Edit</button>
                                             <button @click="confirmDelete(step)"
                                                 class="text-red-500 hover:text-red-700">Delete</button>
                                         </template>
@@ -854,30 +854,30 @@ const saveLookupValues = (key, values) => {
                                 <!-- Add new step row -->
                                 <tr v-if="showAddStepForm" class="bg-indigo-50">
                                     <td class="px-3 py-4"></td>
-                                    <td class="px-4 py-4 text-sm text-gray-400 font-mono">New</td>
+                                    <td class="px-4 py-4 text-sm text-gray-400 dark:text-gray-500 dark:text-gray-400 font-mono">New</td>
                                     <td class="px-4 py-4">
                                         <input v-model="newStep.name" type="text" placeholder="Step name..."
-                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm dark:bg-gray-700 dark:text-gray-100"
                                             @keyup.enter="addStep" @keyup.escape="showAddStepForm = false" />
-                                        <p v-if="stepErrors.name" class="mt-1 text-xs text-red-600">{{ stepErrors.name
+                                        <p v-if="stepErrors.name" class="mt-1 text-xs text-red-600 dark:text-red-400">{{ stepErrors.name
                                             }}</p>
                                     </td>
                                     <td class="px-4 py-4">
                                         <input v-model="newStep.description" type="text"
                                             placeholder="Optional description..."
-                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm dark:bg-gray-700 dark:text-gray-100"
                                             @keyup.enter="addStep" />
                                     </td>
                                     <td class="px-4 py-4 text-center">
                                         <input type="checkbox" v-model="newStep.is_terminal"
-                                            class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                                            class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 dark:text-indigo-400 focus:ring-indigo-500" />
                                     </td>
-                                    <td class="px-4 py-4 text-center text-sm text-gray-400">—</td>
+                                    <td class="px-4 py-4 text-center text-sm text-gray-400 dark:text-gray-500 dark:text-gray-400">—</td>
                                     <td class="px-4 py-4 text-right text-sm font-medium space-x-2">
                                         <button @click="addStep" :disabled="stepProcessing"
                                             class="text-green-600 hover:text-green-900">Add</button>
                                         <button @click="showAddStepForm = false"
-                                            class="text-gray-500 hover:text-gray-700">Cancel</button>
+                                            class="text-gray-500 dark:text-gray-400 dark:text-gray-400 hover:text-gray-700 dark:text-gray-200">Cancel</button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -904,54 +904,54 @@ const saveLookupValues = (key, values) => {
                                     class="inline-flex px-2.5 py-0.5 text-xs font-semibold rounded-full">
                                     {{ sev }}
                                 </span>
-                                <span class="text-sm font-medium text-gray-700">
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-200">
                                     {{ typesBySeverity[sev].length }} type(s)
                                 </span>
                             </div>
                         </div>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
+                        <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead class="bg-gray-50 dark:bg-gray-900">
                                     <tr>
-                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Name
                                         </th>
-                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">
                                             Description
                                         </th>
-                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">
                                             Default
                                             Sanction</th>
-                                        <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">
+                                        <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">
                                             Cases</th>
-                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">
                                             Actions
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
+                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                     <tr v-if="typesBySeverity[sev].length === 0">
-                                        <td colspan="5" class="px-4 py-3 text-center text-sm text-gray-400">No violation
+                                        <td colspan="5" class="px-4 py-3 text-center text-sm text-gray-400 dark:text-gray-500 dark:text-gray-400">No violation
                                             types
                                             for {{ sev }} offenses yet.</td>
                                     </tr>
-                                    <tr v-for="type in typesBySeverity[sev]" :key="type.id" class="hover:bg-gray-50">
+                                    <tr v-for="type in typesBySeverity[sev]" :key="type.id" class="hover:bg-gray-50 dark:bg-gray-900">
                                         <!-- View mode -->
                                         <template v-if="editingTypeId !== type.id">
-                                            <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ type.name }}</td>
-                                            <td class="px-4 py-3 text-sm text-gray-500">{{ type.description || '—' }}
+                                            <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">{{ type.name }}</td>
+                                            <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">{{ type.description || '—' }}
                                             </td>
-                                            <td class="px-4 py-3 text-sm text-gray-500">{{ type.default_sanction || '—'
+                                            <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">{{ type.default_sanction || '—'
                                                 }}</td>
-                                            <td class="px-4 py-3 text-center text-sm text-gray-500">{{ type.cases_count
+                                            <td class="px-4 py-3 text-center text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">{{ type.cases_count
                                                 }}</td>
                                             <td class="px-4 py-3 text-right text-sm font-medium space-x-2">
                                                 <button @click="startTypeEdit(type)"
-                                                    class="text-indigo-600 hover:text-indigo-900">Edit</button>
+                                                    class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">Edit</button>
                                                 <template v-if="confirmingDeleteTypeId === type.id">
                                                     <button @click="deleteType(type.id)" :disabled="typeProcessing"
-                                                        class="text-red-600 hover:text-red-900 font-semibold">Confirm</button>
+                                                        class="text-red-600 dark:text-red-400 hover:text-red-900 font-semibold">Confirm</button>
                                                     <button @click="confirmingDeleteTypeId = null"
-                                                        class="text-gray-500 hover:text-gray-700">No</button>
+                                                        class="text-gray-500 dark:text-gray-400 dark:text-gray-400 hover:text-gray-700 dark:text-gray-200">No</button>
                                                 </template>
                                                 <button v-else @click="confirmingDeleteTypeId = type.id"
                                                     class="text-red-500 hover:text-red-700">Delete</button>
@@ -961,23 +961,23 @@ const saveLookupValues = (key, values) => {
                                         <template v-else>
                                             <td class="px-4 py-3">
                                                 <input v-model="editTypeForm.name" type="text"
-                                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm" />
+                                                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm dark:bg-gray-700 dark:text-gray-100" />
                                             </td>
                                             <td class="px-4 py-3">
                                                 <input v-model="editTypeForm.description" type="text"
-                                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm" />
+                                                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm dark:bg-gray-700 dark:text-gray-100" />
                                             </td>
                                             <td class="px-4 py-3">
                                                 <input v-model="editTypeForm.default_sanction" type="text"
-                                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm" />
+                                                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm dark:bg-gray-700 dark:text-gray-100" />
                                             </td>
-                                            <td class="px-4 py-3 text-center text-sm text-gray-400">{{ type.cases_count
+                                            <td class="px-4 py-3 text-center text-sm text-gray-400 dark:text-gray-500 dark:text-gray-400">{{ type.cases_count
                                                 }}</td>
                                             <td class="px-4 py-3 text-right text-sm font-medium space-x-2">
                                                 <button @click="saveTypeEdit(type.id)" :disabled="typeProcessing"
                                                     class="text-green-600 hover:text-green-900">Save</button>
                                                 <button @click="cancelTypeEdit"
-                                                    class="text-gray-500 hover:text-gray-700">Cancel</button>
+                                                    class="text-gray-500 dark:text-gray-400 dark:text-gray-400 hover:text-gray-700 dark:text-gray-200">Cancel</button>
                                             </td>
                                         </template>
                                     </tr>
@@ -990,35 +990,35 @@ const saveLookupValues = (key, values) => {
                 <!-- Add new type form -->
                 <Modal :show="showAddTypeForm" @close="closeTypeModal" max-width="2xl">
                     <div class="p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Add New Violation Type</h3>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Add New Violation Type</h3>
                         <div v-if="typeErrors.violation_type"
-                            class="mb-3 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-600">{{
+                            class="mb-3 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-600 dark:text-red-400">{{
                                 typeErrors.violation_type }}</div>
                         <div class="space-y-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Severity</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Severity</label>
                                 <select v-model="addTypeSeverity"
-                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100">
                                     <option v-for="s in severities" :key="s" :value="s">{{ s }}</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Name *</label>
                                 <input v-model="newType.name" type="text" placeholder="e.g. Tardiness"
-                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                                <p v-if="typeErrors.name" class="mt-1 text-xs text-red-600">{{ typeErrors.name }}</p>
+                                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100" />
+                                <p v-if="typeErrors.name" class="mt-1 text-xs text-red-600 dark:text-red-400">{{ typeErrors.name }}</p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Description
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Description
                                     (optional)</label>
                                 <input v-model="newType.description" type="text" placeholder="Short description..."
-                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100" />
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Default Sanction
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Default Sanction
                                     (optional)</label>
                                 <input v-model="newType.default_sanction" type="text" placeholder="e.g. Verbal Warning"
-                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100" />
                             </div>
                         </div>
                         <div class="flex justify-end gap-3 mt-6">
@@ -1033,48 +1033,48 @@ const saveLookupValues = (key, values) => {
 
             <!-- ── Roles Tab ─────────────────────────────── -->
             <div v-if="activeTab === 'roles'">
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-                    <div class="p-4 border-b border-gray-200">
-                        <p class="text-sm text-gray-600">
+                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                        <p class="text-sm text-gray-600 dark:text-gray-300">
                             Manage user roles. Roles assigned to active users cannot be deleted.
                         </p>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+                    <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-gray-900">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Role
                                         Name</th>
-                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Users
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Users
                                     </th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Actions
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                 <tr v-if="roles.length === 0">
-                                    <td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500">
+                                    <td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                         No roles found. Click "Add New" to create one.
                                     </td>
                                 </tr>
-                                <tr v-for="role in roles" :key="role.role_id" class="hover:bg-gray-50">
+                                <tr v-for="role in roles" :key="role.role_id" class="hover:bg-gray-50 dark:bg-gray-900">
                                     <!-- Name -->
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                                         <template v-if="editingRoleId === role.role_id">
                                             <input v-model="editRoleForm.role_name" type="text"
-                                                class="block w-full max-w-xs rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                                class="block w-full max-w-xs rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm dark:bg-gray-700 dark:text-gray-100"
                                                 @keyup.enter="saveRoleEdit(role.role_id)"
                                                 @keyup.escape="cancelRoleEdit" />
-                                            <p v-if="roleErrors.role_name" class="mt-1 text-xs text-red-600">{{
+                                            <p v-if="roleErrors.role_name" class="mt-1 text-xs text-red-600 dark:text-red-400">{{
                                                 roleErrors.role_name[0] }}</p>
                                         </template>
-                                        <span v-else class="font-medium text-gray-900">{{ formatLabel(role.role_name)
+                                        <span v-else class="font-medium text-gray-900 dark:text-white">{{ formatLabel(role.role_name)
                                             }}</span>
                                     </td>
                                     <!-- Users Count -->
-                                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                         <span class="inline-flex px-2 py-0.5 text-xs font-semibold rounded-full"
-                                            :class="role.users_count > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'">
+                                            :class="role.users_count > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300'">
                                             {{ role.users_count }}
                                         </span>
                                     </td>
@@ -1084,11 +1084,11 @@ const saveLookupValues = (key, values) => {
                                             <button @click="saveRoleEdit(role.role_id)" :disabled="roleProcessing"
                                                 class="text-green-600 hover:text-green-900">Save</button>
                                             <button @click="cancelRoleEdit"
-                                                class="text-gray-500 hover:text-gray-700">Cancel</button>
+                                                class="text-gray-500 dark:text-gray-400 dark:text-gray-400 hover:text-gray-700 dark:text-gray-200">Cancel</button>
                                         </template>
                                         <template v-else>
                                             <button @click="startRoleEdit(role)"
-                                                class="text-indigo-600 hover:text-indigo-900">Edit</button>
+                                                class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">Edit</button>
                                             <button @click="deleteRole(role)"
                                                 class="text-red-500 hover:text-red-700">Delete</button>
                                         </template>
@@ -1103,7 +1103,7 @@ const saveLookupValues = (key, values) => {
             <!-- Lookup Values Tab -->
             <div v-if="activeTab === 'lookup-values'" class="p-6">
                 <div class="mb-4">
-                    <p class="text-sm text-gray-600">
+                    <p class="text-sm text-gray-600 dark:text-gray-300">
                         Manage configurable lookup values used across the system. Add, edit, or remove values as
                         needed.
                         Changes take effect immediately in forms and filters.
@@ -1112,15 +1112,15 @@ const saveLookupValues = (key, values) => {
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div v-for="(values, key) in lookupValues" :key="key"
-                        class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                        class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden">
                         <!-- Card Header -->
-                        <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
+                        <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
                             <div class="flex items-center gap-2">
                                 <span class="text-lg">{{ lookupIcons[key] || '📝' }}</span>
                                 <div>
-                                    <h3 class="text-sm font-semibold text-gray-900">{{ lookupLabels[key] || key }}
+                                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ lookupLabels[key] || key }}
                                     </h3>
-                                    <p class="text-xs text-gray-500 mt-0.5">{{ lookupDescriptions[key] || '' }}</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 mt-0.5">{{ lookupDescriptions[key] || '' }}</p>
                                 </div>
                                 <span
                                     class="ml-auto px-2 py-0.5 text-xs font-medium rounded-full bg-indigo-100 text-indigo-700">
@@ -1130,13 +1130,13 @@ const saveLookupValues = (key, values) => {
                         </div>
 
                         <!-- Values List -->
-                        <div class="divide-y divide-gray-100 max-h-64 overflow-y-auto">
+                        <div class="divide-y divide-gray-100 dark:divide-gray-700 max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
                             <div v-for="(item, index) in values" :key="index"
-                                class="flex items-center gap-2 px-4 py-2 hover:bg-gray-50 transition-colors group">
+                                class="flex items-center gap-2 px-4 py-2 hover:bg-gray-50 dark:bg-gray-900 transition-colors group">
                                 <!-- Editing mode -->
                                 <template v-if="editingLookupKey === key && editingLookupIndex === index">
                                     <input v-model="editingLookupValue" type="text"
-                                        class="flex-1 text-sm rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        class="flex-1 text-sm rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                                         @keyup.enter="saveLookupEdit(key, index)" @keyup.escape="cancelLookupEdit" />
                                     <button @click="saveLookupEdit(key, index)"
                                         class="text-green-600 hover:text-green-800" :disabled="lookupProcessing">
@@ -1145,7 +1145,7 @@ const saveLookupValues = (key, values) => {
                                                 d="M5 13l4 4L19 7" />
                                         </svg>
                                     </button>
-                                    <button @click="cancelLookupEdit" class="text-gray-400 hover:text-gray-600">
+                                    <button @click="cancelLookupEdit" class="text-gray-400 dark:text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:text-gray-300">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M6 18L18 6M6 6l12 12" />
@@ -1155,16 +1155,16 @@ const saveLookupValues = (key, values) => {
 
                                 <!-- Display mode -->
                                 <template v-else>
-                                    <span class="flex-1 text-sm text-gray-700">{{ item }}</span>
+                                    <span class="flex-1 text-sm text-gray-700 dark:text-gray-200">{{ item }}</span>
                                     <button @click="startLookupEdit(key, index)"
-                                        class="opacity-0 group-hover:opacity-100 text-indigo-500 hover:text-indigo-700 transition-opacity">
+                                        class="opacity-0 group-hover:opacity-100 text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 transition-opacity">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                         </svg>
                                     </button>
                                     <button @click="removeLookupItem(key, index)"
-                                        class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity">
+                                        class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 dark:text-red-400 transition-opacity">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -1174,16 +1174,16 @@ const saveLookupValues = (key, values) => {
                             </div>
 
                             <div v-if="!values || values.length === 0"
-                                class="px-4 py-3 text-center text-sm text-gray-400">
+                                class="px-4 py-3 text-center text-sm text-gray-400 dark:text-gray-500 dark:text-gray-400">
                                 No values configured.
                             </div>
                         </div>
 
                         <!-- Add New Value -->
-                        <div class="px-4 py-3 bg-gray-50 border-t border-gray-200">
+                        <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
                             <div class="flex items-center gap-2">
                                 <input v-model="newLookupItem[key]" type="text" placeholder="Add new value..."
-                                    class="flex-1 text-sm rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    class="flex-1 text-sm rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                                     @keyup.enter="addLookupItem(key)" />
                                 <button @click="addLookupItem(key)"
                                     :disabled="lookupProcessing || !(newLookupItem[key] || '').trim()"

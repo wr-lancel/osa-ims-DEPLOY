@@ -757,12 +757,28 @@ class GuidanceController extends Controller
             $c->created_at->format('Y-m-d'),
         ])->toArray();
 
+        // Build human-readable filter labels
+        $filterLabels = [];
+        if ($request->filled('search')) {
+            $filterLabels['Search'] = $request->search;
+        }
+        if ($request->filled('status')) {
+            $filterLabels['Status'] = ucfirst($request->status);
+        }
+        if ($request->filled('case_type')) {
+            $filterLabels['Case Type'] = ucfirst($request->case_type);
+        }
+        if ($request->filled('assigned_staff_id')) {
+            $staff = Employee::find($request->assigned_staff_id);
+            $filterLabels['Assigned Staff'] = $staff ? $staff->full_name : $request->assigned_staff_id;
+        }
+
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.pdf-table', [
             'title' => 'Guidance Cases Report',
             'date' => now()->format('F j, Y g:i A'),
             'headers' => $headers,
             'rows' => $rows,
-            'filters' => $request->only(['search', 'status', 'case_type', 'assigned_staff_id']),
+            'filters' => $filterLabels,
         ])->setPaper('a4', 'landscape');
 
         return $pdf->download('guidance_cases_export_' . date('Y-m-d_His') . '.pdf');

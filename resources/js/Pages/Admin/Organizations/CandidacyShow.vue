@@ -64,10 +64,10 @@ const getStatusColor = (status) => {
         <template #header>
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h2 class="text-2xl font-semibold text-gray-900">
+                    <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                         Candidacy Application
                     </h2>
-                    <p class="text-sm text-gray-500 mt-1">{{ application.org_name }} ({{ application.org_code }})</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 mt-1">{{ application.org_name }} ({{ application.org_code }})</p>
                 </div>
                 <Link :href="route('admin.organizations.candidacies.index')">
                     <SecondaryButton type="button">← Back to Applications</SecondaryButton>
@@ -76,41 +76,41 @@ const getStatusColor = (status) => {
         </template>
 
         <div class="space-y-6">
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Applicant & Status</h3>
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Applicant & Status</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-500">Applicant</label>
-                        <p class="mt-1 text-sm text-gray-900">{{ application.applicant_name }}</p>
-                        <p class="text-xs text-gray-500">{{ application.student_number }}</p>
+                        <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Applicant</label>
+                        <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ application.applicant_name }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">{{ application.student_number }}</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-500">Position</label>
-                        <p class="mt-1 text-sm text-gray-900">{{ application.position_name }}</p>
+                        <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Position</label>
+                        <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ application.position_name }}</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-500">Term</label>
-                        <p class="mt-1 text-sm text-gray-900">{{ application.term_label || '—' }}</p>
+                        <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Term</label>
+                        <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ application.term_label || '—' }}</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-500">Status</label>
+                        <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Status</label>
                         <span class="mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full"
                             :class="getStatusColor(application.status)">
                             {{ application.status.replace('_', ' ') }}
                         </span>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-500">Submitted</label>
-                        <p class="mt-1 text-sm text-gray-900">{{ application.submitted_at || '—' }}</p>
+                        <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Submitted</label>
+                        <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ application.submitted_at || '—' }}</p>
                     </div>
                     <div v-if="application.reviewed_at">
-                        <label class="block text-sm font-medium text-gray-500">Reviewed</label>
-                        <p class="mt-1 text-sm text-gray-900">{{ application.reviewed_at }}</p>
+                        <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Reviewed</label>
+                        <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ application.reviewed_at }}</p>
                     </div>
                 </div>
 
                 <div v-if="['submitted', 'under_review'].includes(application.status)"
-                    class="mt-6 pt-4 border-t border-gray-200 flex flex-wrap gap-2">
+                    class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex flex-wrap gap-2">
                     <PrimaryButton type="button" @click="openStatusModal('under_review')">
                         Set Under Review
                     </PrimaryButton>
@@ -124,26 +124,26 @@ const getStatusColor = (status) => {
                 </div>
             </div>
 
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Platform Statement</h3>
-                <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ application.platform_statement || '—' }}</p>
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Platform Statement</h3>
+                <p class="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{{ application.platform_statement || '—' }}</p>
             </div>
 
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Motivation</h3>
-                <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ application.motivation || '—' }}</p>
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Motivation</h3>
+                <p class="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{{ application.motivation || '—' }}</p>
             </div>
 
-            <div v-if="application.review_remarks" class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Review Remarks</h3>
-                <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ application.review_remarks }}</p>
+            <div v-if="application.review_remarks" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Review Remarks</h3>
+                <p class="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{{ application.review_remarks }}</p>
             </div>
         </div>
 
         <!-- Status update modal -->
         <Modal :show="showStatusModal" @close="closeStatusModal">
             <div class="p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4">
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
                     <template v-if="statusForm.status === 'approved'">Approve</template>
                     <template v-else-if="statusForm.status === 'rejected'">Reject</template>
                     <template v-else>Set Under Review</template>
@@ -154,7 +154,7 @@ const getStatusColor = (status) => {
                     <div>
                         <InputLabel for="review_remarks" value="Remarks (optional)" />
                         <textarea id="review_remarks" v-model="statusForm.review_remarks" rows="3"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                             placeholder="Add any remarks for the applicant..." />
                         <InputError :message="statusForm.errors.review_remarks" />
                     </div>

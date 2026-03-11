@@ -24,12 +24,12 @@ const props = defineProps({
     <StudentLayout>
         <template #header>
             <div class="flex items-center justify-between">
-                <h2 class="text-2xl font-semibold text-gray-900">
+                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                     {{ title }}
                 </h2>
                 <Link
                     :href="route('student.discipline.index')"
-                    class="text-indigo-600 hover:text-indigo-900 text-sm"
+                    class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-sm"
                 >
                     ← Discipline Unit
                 </Link>
@@ -37,8 +37,8 @@ const props = defineProps({
         </template>
 
         <div class="space-y-6">
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-                <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ content }}</p>
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+                <p class="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{{ content }}</p>
             </div>
         </div>
     </StudentLayout>

@@ -91,9 +91,9 @@ const confirmButtonClass = computed(() => {
             leave-from-class="opacity-100"
             leave-to-class="opacity-0"
         >
-            <div v-if="show" class="fixed inset-0 z-[60] overflow-y-auto">
+            <div v-if="show" class="fixed inset-0 z-[60] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
                 <!-- Backdrop -->
-                <div class="fixed inset-0 bg-gray-500/75 transition-opacity" @click="$emit('close')" />
+                <div class="fixed inset-0 bg-gray-500/75 dark:bg-gray-900/80 transition-opacity" @click="$emit('close')" />
 
                 <!-- Dialog -->
                 <div class="flex min-h-full items-center justify-center p-4">
@@ -107,7 +107,7 @@ const confirmButtonClass = computed(() => {
                     >
                         <div
                             v-if="show"
-                            class="relative w-full max-w-md transform overflow-hidden rounded-xl bg-white shadow-2xl transition-all"
+                            class="relative w-full max-w-md transform overflow-hidden rounded-xl bg-white dark:bg-gray-800 shadow-2xl transition-all"
                         >
                             <!-- Content -->
                             <div class="p-6">
@@ -141,7 +141,7 @@ const confirmButtonClass = computed(() => {
                                         >
                                             {{ title }}
                                         </h3>
-                                        <p class="mt-2 text-sm text-gray-600 whitespace-pre-line">
+                                        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300 whitespace-pre-line">
                                             {{ message }}
                                         </p>
                                     </div>
@@ -151,7 +151,7 @@ const confirmButtonClass = computed(() => {
                                         v-if="type !== 'confirm'"
                                         type="button"
                                         @click="$emit('close')"
-                                        class="flex-shrink-0 rounded-md p-1.5 text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                                        class="flex-shrink-0 rounded-md p-1.5 text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
                                     >
                                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -163,12 +163,12 @@ const confirmButtonClass = computed(() => {
                             <!-- Actions -->
                             <div
                                 v-if="type === 'confirm'"
-                                class="bg-gray-50 px-6 py-4 flex justify-end gap-3"
+                                class="bg-gray-50 dark:bg-gray-700/50 px-6 py-4 flex justify-end gap-3"
                             >
                                 <button
                                     type="button"
                                     @click="$emit('close')"
-                                    class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors"
+                                    class="inline-flex items-center rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors"
                                 >
                                     {{ cancelLabel }}
                                 </button>
@@ -183,7 +183,7 @@ const confirmButtonClass = computed(() => {
                             </div>
 
                             <!-- Progress bar for auto-close -->
-                            <div v-if="type !== 'confirm' && autoClose" class="h-1 w-full bg-gray-100 overflow-hidden">
+                            <div v-if="type !== 'confirm' && autoClose" class="h-1 w-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
                                 <div
                                     class="h-full transition-all ease-linear"
                                     :class="{

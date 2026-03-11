@@ -449,12 +449,28 @@ class DisciplineController extends Controller
             $v->status,
         ])->toArray();
 
+        // Build human-readable filter labels
+        $filterLabels = [];
+        if ($request->filled('search')) {
+            $filterLabels['Search'] = $request->search;
+        }
+        if ($request->filled('severity')) {
+            $filterLabels['Severity'] = $request->severity;
+        }
+        if ($request->filled('status')) {
+            $filterLabels['Status'] = $request->status;
+        }
+        if ($request->filled('acad_id')) {
+            $term = AcademicCalendar::find($request->acad_id);
+            $filterLabels['Term'] = $term ? $term->display_label : $request->acad_id;
+        }
+
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.pdf-table', [
             'title' => 'Discipline Violations Report',
             'date' => now()->format('F j, Y g:i A'),
             'headers' => $headers,
             'rows' => $rows,
-            'filters' => $request->only(['search', 'severity', 'status', 'acad_id']),
+            'filters' => $filterLabels,
         ])->setPaper('a4', 'landscape');
 
         return $pdf->download('discipline_export_' . date('Y-m-d_His') . '.pdf');

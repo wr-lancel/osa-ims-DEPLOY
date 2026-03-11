@@ -8,11 +8,11 @@ const props = defineProps({
 });
 
 const colorClasses = {
-    blue: 'bg-blue-50 border-blue-200 text-blue-900',
-    yellow: 'bg-yellow-50 border-yellow-200 text-yellow-900',
-    green: 'bg-green-50 border-green-200 text-green-900',
-    red: 'bg-red-50 border-red-200 text-red-900',
-    gray: 'bg-gray-50 border-gray-200 text-gray-900',
+    blue: 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800 text-blue-900 dark:text-blue-100',
+    yellow: 'bg-yellow-50 dark:bg-yellow-900/30 border-yellow-200 dark:border-yellow-800 text-yellow-900 dark:text-yellow-100',
+    green: 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800 text-green-900 dark:text-green-100',
+    red: 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-800 text-red-900 dark:text-red-100',
+    gray: 'bg-gray-50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100',
 };
 </script>
 
@@ -21,7 +21,7 @@ const colorClasses = {
         <div
             v-for="(card, index) in cards"
             :key="index"
-            class="bg-white rounded-lg border border-gray-200 shadow-sm p-6"
+            class="rounded-lg border shadow-sm p-6"
             :class="colorClasses[card.color] || colorClasses.gray"
         >
             <div class="flex items-center justify-between">

@@ -49,7 +49,7 @@ const withdraw = (application) => {
     <StudentLayout>
         <template #header>
             <div class="flex items-center justify-between">
-                <h2 class="text-2xl font-semibold text-gray-900">
+                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                     My Candidacies
                 </h2>
                 <Link :href="route('student.organizations.candidacy.create')">
@@ -73,31 +73,31 @@ const withdraw = (application) => {
                     </div>
                 </div>
             </div>
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Certificate of Candidacy Applications</h3>
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Certificate of Candidacy Applications</h3>
 
-                <div v-if="candidacies.length > 0" class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                <div v-if="candidacies.length > 0" class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-900">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Organization</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Position</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Term</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Submitted</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Organization</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Position</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Term</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Submitted</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Actions</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <tr v-for="app in candidacies" :key="app.application_id" class="hover:bg-gray-50">
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            <tr v-for="app in candidacies" :key="app.application_id" class="hover:bg-gray-50 dark:bg-gray-900">
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900">{{ app.org_name }}</div>
-                                    <div class="text-xs text-gray-500">{{ app.org_code }}</div>
+                                    <div class="text-sm font-medium text-gray-900 dark:text-white">{{ app.org_name }}</div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">{{ app.org_code }}</div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                                     {{ app.position_name }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                     {{ app.term_label || '—' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -108,20 +108,20 @@ const withdraw = (application) => {
                                         {{ app.status.replace('_', ' ') }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                     {{ app.submitted_at || '—' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
                                     <Link
                                         :href="route('student.organizations.candidacy.show', app.application_id)"
-                                        class="text-indigo-600 hover:text-indigo-900"
+                                        class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300"
                                     >
                                         View
                                     </Link>
                                     <button
                                         v-if="canWithdraw(app.status)"
                                         type="button"
-                                        class="text-red-600 hover:text-red-900"
+                                        class="text-red-600 dark:text-red-400 hover:text-red-900"
                                         @click="withdraw(app)"
                                     >
                                         Withdraw
@@ -133,10 +133,10 @@ const withdraw = (application) => {
                 </div>
 
                 <div v-else class="text-center py-8">
-                    <p class="text-sm text-gray-500">You have not submitted any candidacies yet.</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">You have not submitted any candidacies yet.</p>
                     <Link
                         :href="route('student.organizations.candidacy.create')"
-                        class="mt-3 inline-flex text-indigo-600 hover:text-indigo-900 text-sm"
+                        class="mt-3 inline-flex text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-sm"
                     >
                         Submit your first candidacy
                     </Link>

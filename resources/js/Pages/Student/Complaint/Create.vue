@@ -39,12 +39,12 @@ const submit = () => {
     <StudentLayout>
         <template #header>
             <div class="flex items-center justify-between">
-                <h2 class="text-2xl font-semibold text-gray-900">
+                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                     Submit Complaint
                 </h2>
                 <Link
                     :href="route('student.discipline.complaints.index')"
-                    class="text-indigo-600 hover:text-indigo-900 text-sm"
+                    class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-sm"
                 >
                     ← My Complaints
                 </Link>
@@ -56,14 +56,14 @@ const submit = () => {
                 <p class="text-sm text-green-800">{{ $page.props.flash.success }}</p>
             </div>
 
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
                 <form @submit.prevent="submit" class="space-y-4">
                     <div>
                         <InputLabel for="category" value="Complaint Category *" />
                         <select
                             id="category"
                             v-model="form.category"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                             required
                         >
                             <option value="">Select category</option>
@@ -146,8 +146,8 @@ const submit = () => {
                         <InputLabel for="anonymous" value="Submit anonymously (placeholder)" class="ml-2" />
                     </div>
 
-                    <div class="border border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
-                        <p class="text-sm text-gray-500">Attachments (placeholder — uploads not yet supported)</p>
+                    <div class="border border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">Attachments (placeholder — uploads not yet supported)</p>
                     </div>
 
                     <div class="flex gap-3 pt-2">
@@ -156,7 +156,7 @@ const submit = () => {
                         </PrimaryButton>
                         <Link
                             :href="route('student.discipline.complaints.index')"
-                            class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                            class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:bg-gray-900"
                         >
                             Cancel
                         </Link>

@@ -79,10 +79,6 @@
             background-color: #f9fafb;
         }
 
-        tbody tr:hover {
-            background-color: #eef2ff;
-        }
-
         .footer {
             position: fixed;
             bottom: 0;

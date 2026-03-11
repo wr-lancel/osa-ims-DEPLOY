@@ -112,7 +112,7 @@ const close = () => {
 <template>
     <Modal :show="show" @close="close" max-width="md">
         <div class="p-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-6">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">
                 {{ role ? 'Edit Role' : 'Add New Role' }}
             </h2>
 

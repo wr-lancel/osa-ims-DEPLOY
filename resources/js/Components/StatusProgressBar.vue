@@ -150,14 +150,14 @@ const cancelChange = () => {
                         leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 translate-y-1">
                         <div v-if="confirmingIndex === index" class="absolute z-50 mt-2 -translate-x-1/2 left-1/2 top-4"
                             style="min-width: 200px">
-                            <div class="bg-white rounded-lg shadow-lg border border-gray-200 p-3 text-center">
-                                <p class="text-sm text-gray-700 mb-2">
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-3 text-center">
+                                <p class="text-sm text-gray-700 dark:text-gray-200 mb-2">
                                     Change status to
-                                    <span class="font-semibold text-indigo-600">{{ step.label || step.value }}</span>?
+                                    <span class="font-semibold text-indigo-600 dark:text-indigo-400">{{ step.label || step.value }}</span>?
                                 </p>
                                 <div class="flex items-center justify-center gap-2">
                                     <button type="button"
-                                        class="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition"
+                                        class="px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-800 rounded-md hover:bg-gray-200 transition"
                                         @click.stop="cancelChange">
                                         Cancel
                                     </button>
@@ -187,11 +187,11 @@ const cancelChange = () => {
                     <span class="truncate max-w-full" :class="[
                         sizeClasses.label,
                         getStepState(index) === 'current'
-                            ? 'font-medium text-gray-900'
+                            ? 'font-medium text-gray-900 dark:text-white'
                             : getStepState(index) === 'completed'
-                                ? 'text-gray-600'
-                                : 'text-gray-400',
-                        editable && canClick(index) ? 'hover:text-indigo-600 hover:font-medium' : '',
+                                ? 'text-gray-600 dark:text-gray-300'
+                                : 'text-gray-400 dark:text-gray-500 dark:text-gray-400',
+                        editable && canClick(index) ? 'hover:text-indigo-600 dark:text-indigo-400 hover:font-medium' : '',
                     ]" :title="step.label || step.value">
                         {{ step.label || step.value }}
                     </span>
@@ -200,7 +200,7 @@ const cancelChange = () => {
         </div>
 
         <!-- Editable hint -->
-        <p v-if="editable" class="text-xs text-gray-400 mt-1 text-center">
+        <p v-if="editable" class="text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400 mt-1 text-center">
             Click a step to change status
         </p>
     </div>

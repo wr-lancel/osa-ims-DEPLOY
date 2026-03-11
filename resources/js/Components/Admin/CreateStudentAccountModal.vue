@@ -137,11 +137,11 @@ const isExistingAccount = computed(() => {
 <template>
     <Modal :show="show" @close="close" max-width="2xl">
         <div class="p-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-6">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">
                 {{ isExistingAccount ? 'View/Reset Student Account' : 'Create Student Account' }}
             </h2>
 
-            <div v-if="!student" class="text-sm text-gray-500">
+            <div v-if="!student" class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                 No student selected.
             </div>
 
@@ -159,15 +159,15 @@ const isExistingAccount = computed(() => {
                 </div>
 
                 <!-- Student Info -->
-                <div class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <h3 class="text-sm font-medium text-gray-900 mb-2">Student Information</h3>
+                <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Student Information</h3>
                     <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                            <span class="text-gray-500">Student Number:</span>
+                            <span class="text-gray-500 dark:text-gray-400 dark:text-gray-400">Student Number:</span>
                             <span class="ml-2 font-medium">{{ student.student_number }}</span>
                         </div>
                         <div>
-                            <span class="text-gray-500">Name:</span>
+                            <span class="text-gray-500 dark:text-gray-400 dark:text-gray-400">Name:</span>
                             <span class="ml-2 font-medium">{{ student.name }}</span>
                         </div>
                     </div>
@@ -180,11 +180,11 @@ const isExistingAccount = computed(() => {
                             <InputLabel for="email" value="Institutional Email" />
                             <div class="mt-1 flex rounded-md shadow-sm">
                                 <div
-                                    class="block w-full rounded-md border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-700 cursor-not-allowed">
+                                    class="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 cursor-not-allowed">
                                     {{ generatedEmail }}
                                 </div>
                                 <button type="button" @click="copyToClipboard(generatedEmail)"
-                                    class="ml-2 inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    class="ml-2 inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     title="Copy to clipboard">
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -192,7 +192,7 @@ const isExistingAccount = computed(() => {
                                     </svg>
                                 </button>
                             </div>
-                            <p class="mt-1 text-xs text-gray-500">
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                 Auto-generated from student number. This is the student's institutional email.
                             </p>
                         </div>
@@ -202,10 +202,10 @@ const isExistingAccount = computed(() => {
                             <InputLabel for="password" value="Default Password *" />
                             <div class="mt-1 flex rounded-md shadow-sm">
                                 <TextInput id="password" v-model="password" type="text"
-                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                     :class="{ 'border-red-500': formErrors.password }" required />
                                 <button type="button" @click="copyToClipboard(password)"
-                                    class="ml-2 inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    class="ml-2 inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     title="Copy to clipboard">
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -214,7 +214,7 @@ const isExistingAccount = computed(() => {
                                 </button>
                             </div>
                             <InputError :message="formErrors.password" class="mt-2" />
-                            <p class="mt-1 text-xs text-gray-500">
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                 Default password is the student number. Student should change it on first login.
                             </p>
                         </div>

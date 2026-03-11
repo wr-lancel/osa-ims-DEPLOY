@@ -121,7 +121,7 @@ const close = () => {
 <template>
     <Modal :show="show" @close="close">
         <div class="p-6">
-            <h2 class="text-2xl font-semibold text-gray-900 mb-6">
+            <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
                 {{ event ? 'Edit Event' : 'Add Event' }}
             </h2>
 
@@ -132,7 +132,7 @@ const close = () => {
                     <select
                         id="org_id"
                         v-model="form.org_id"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                         :class="{ 'border-red-300': formErrors.org_id }"
                     >
                         <option value="">Select Organization (Optional)</option>
@@ -168,7 +168,7 @@ const close = () => {
                         id="description"
                         v-model="form.description"
                         rows="4"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                         :class="{ 'border-red-300': formErrors.description }"
                     />
                     <InputError :message="formErrors.description" />
@@ -233,7 +233,7 @@ const close = () => {
                     <select
                         id="status"
                         v-model="form.status"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                         :class="{ 'border-red-300': formErrors.status }"
                         required
                     >
@@ -267,11 +267,11 @@ const close = () => {
                 aria-modal="true"
                 aria-labelledby="conflict-dialog-title"
             >
-                <div class="bg-white rounded-xl shadow-lg max-w-md w-full p-6">
-                    <h3 id="conflict-dialog-title" class="text-lg font-semibold text-gray-900 mb-2">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg max-w-md w-full p-6">
+                    <h3 id="conflict-dialog-title" class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                         Event date conflict
                     </h3>
-                    <p class="text-sm text-gray-600 mb-6">
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-6">
                         {{ conflictMessage }}
                     </p>
                     <div class="flex justify-end space-x-3">

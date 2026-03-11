@@ -153,17 +153,20 @@ const exportPdf = async () => {
         <template #header>
 
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <h2 class="text-2xl font-semibold text-gray-900">
+                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                     Discipline Unit
                 </h2>
                 <div class="flex items-center gap-3">
                     <Link :href="route('admin.discipline.complaints.index')"
-                        class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
+                        class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-sm font-medium">
                         Complaints Inbox
                     </Link>
-                    <SecondaryButton @click="exportPdf">
-                        Export PDF
-                    </SecondaryButton>
+                    <div class="flex flex-col items-start gap-0.5">
+                        <SecondaryButton @click="exportPdf">
+                            Export PDF
+                        </SecondaryButton>
+                        <span class="text-xs text-gray-400 dark:text-gray-500 px-1">Uses current filters</span>
+                    </div>
                     <PrimaryButton @click="openAddModal">
                         Add Violation
                     </PrimaryButton>
@@ -176,18 +179,18 @@ const exportPdf = async () => {
             <DashboardCards :cards="dashboardStats" />
 
             <!-- Filters (auto-apply; debounced search) -->
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-4">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div class="md:col-span-2">
-                        <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                        <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Search</label>
                         <input id="search" v-model="search" type="text"
                             placeholder="Student name, ID, case ID, or violation..."
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100" />
                     </div>
                     <div>
-                        <label for="term" class="block text-sm font-medium text-gray-700 mb-1">Term</label>
+                        <label for="term" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Term</label>
                         <select id="term" v-model="acadId"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100">
                             <option value="">All Terms</option>
                             <option v-for="t in terms" :key="t.calendar_id" :value="t.calendar_id">
                                 {{ t.display_label }}
@@ -195,18 +198,18 @@ const exportPdf = async () => {
                         </select>
                     </div>
                     <div>
-                        <label for="severity" class="block text-sm font-medium text-gray-700 mb-1">Severity</label>
+                        <label for="severity" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Severity</label>
                         <select id="severity" v-model="severity"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100">
                             <option v-for="option in severityOptions" :key="option.value" :value="option.value">
                                 {{ option.label }}
                             </option>
                         </select>
                     </div>
                     <div>
-                        <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Status</label>
                         <select id="status" v-model="status"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100">
                             <option v-for="option in statusOptions" :key="option.value" :value="option.value">
                                 {{ option.label }}
                             </option>
@@ -217,64 +220,64 @@ const exportPdf = async () => {
             </div>
 
             <!-- Violations Table -->
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-900">
                             <tr>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     Violation ID
                                 </th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     Student
                                 </th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     Violation Type
                                 </th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     Date
                                 </th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     Severity
                                 </th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     Status
                                 </th>
                                 <th
-                                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     Actions
                                 </th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             <tr v-if="violations.data && violations.data.length === 0">
-                                <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
+                                <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
                                     No violations found.
                                 </td>
                             </tr>
                             <tr v-for="violation in violations.data" :key="violation.discipline_id"
-                                class="hover:bg-gray-50 cursor-pointer" @click="goToDetail(violation)">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                class="hover:bg-gray-50 dark:bg-gray-900 cursor-pointer" @click="goToDetail(violation)">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                                     #{{ violation.discipline_id }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                                     <div>
                                         <div class="font-medium">{{ violation.student_name }}</div>
-                                        <div class="text-gray-500 text-xs">{{ violation.student_number }}</div>
+                                        <div class="text-gray-500 dark:text-gray-400 text-xs">{{ violation.student_number }}</div>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 text-sm text-gray-900">
+                                <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">
                                     <div class="max-w-xs truncate" :title="violation.violation_type">
                                         {{ violation.violation_type }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                     {{ violation.violation_date }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -286,7 +289,7 @@ const exportPdf = async () => {
                                         }">
                                         {{ violation.severity }}
                                     </span>
-                                    <span v-else class="text-gray-400 text-xs">-</span>
+                                    <span v-else class="text-gray-400 dark:text-gray-500 text-xs">-</span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap" @click.stop>
                                     <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
@@ -294,17 +297,17 @@ const exportPdf = async () => {
                                             ? 'bg-green-100 text-green-800'
                                             : violation.status_color === 'yellow'
                                                 ? 'bg-yellow-100 text-yellow-800'
-                                                : 'bg-gray-100 text-gray-800'">
+                                                : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100'">
                                         {{ violation.status }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2"
                                     @click.stop>
                                     <Link :href="route('admin.discipline.show', violation.discipline_id)"
-                                        class="text-indigo-600 hover:text-indigo-900">
+                                        class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
                                         View
                                     </Link>
-                                    <button type="button" class="text-indigo-600 hover:text-indigo-900"
+                                    <button type="button" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300"
                                         @click.stop="openEditModal(violation)">
                                         Edit
                                     </button>

@@ -106,15 +106,15 @@ const saveNarrative = () => {
         <template #header>
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h2 class="text-2xl font-semibold text-gray-900">
+                    <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                         Appointment Details
                     </h2>
-                    <p class="text-sm text-gray-500 mt-1">
+                    <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 mt-1">
                         {{ appointment.student_name }} ({{ appointment.student_id }})
                     </p>
                 </div>
                 <div class="flex items-center space-x-3">
-                    <Link :href="route('admin.guidance.index')" class="text-indigo-600 hover:text-indigo-900 text-sm">
+                    <Link :href="route('admin.guidance.index')" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-sm">
                         ← Back to List
                     </Link>
                 </div>
@@ -123,28 +123,28 @@ const saveNarrative = () => {
 
         <div class="space-y-6">
             <!-- Appointment Details Card -->
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Appointment Information</h3>
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Appointment Information</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-500">Student</label>
-                        <p class="mt-1 text-sm text-gray-900">{{ appointment.student_name }}</p>
-                        <p class="text-xs text-gray-500">{{ appointment.student_id }}</p>
+                        <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Student</label>
+                        <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ appointment.student_name }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">{{ appointment.student_id }}</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-500">Date & Time</label>
-                        <p class="mt-1 text-sm text-gray-900">{{ appointment.appointment_date }}</p>
-                        <p class="text-xs text-gray-500">{{ appointment.appointment_time }}</p>
+                        <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Date & Time</label>
+                        <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ appointment.appointment_date }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">{{ appointment.appointment_time }}</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-500">Type</label>
+                        <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Type</label>
                         <span class="mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full capitalize"
                             :class="getAppointmentTypeBadgeClass(appointment.appointment_type)">
                             {{ appointment.appointment_type }}
                         </span>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-500">Status</label>
+                        <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Status</label>
                         <span class="mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full"
                             :class="getStatusBadgeClass(appointment.status)">
                             {{ appointment.status }}
@@ -159,32 +159,32 @@ const saveNarrative = () => {
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-500">Created At</label>
-                        <p class="mt-1 text-sm text-gray-900">{{ appointment.created_at }}</p>
+                        <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Created At</label>
+                        <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ appointment.created_at }}</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-500">Last Updated</label>
-                        <p class="mt-1 text-sm text-gray-900">{{ appointment.updated_at }}</p>
+                        <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Last Updated</label>
+                        <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ appointment.updated_at }}</p>
                     </div>
                 </div>
             </div>
 
             <!-- Concern -->
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Concern</h3>
-                <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ appointment.concern || '—' }}</p>
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Concern</h3>
+                <p class="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{{ appointment.concern || '—' }}</p>
             </div>
 
             <!-- Notes -->
-            <div v-if="appointment.notes" class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Notes</h3>
-                <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ appointment.notes }}</p>
+            <div v-if="appointment.notes" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Notes</h3>
+                <p class="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{{ appointment.notes }}</p>
             </div>
 
             <!-- Narrative Report - Inline Editable -->
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Narrative Report</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Narrative Report</h3>
                     <PrimaryButton type="button" :disabled="narrativeProcessing" @click="saveNarrative">
                         {{ narrativeProcessing ? 'Saving...' : 'Save Narrative' }}
                     </PrimaryButton>
@@ -208,15 +208,15 @@ const saveNarrative = () => {
 
             <!-- Admin Response -->
             <div v-if="appointment.admin_remarks || appointment.approved_at || appointment.rejected_at"
-                class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Admin Response</h3>
+                class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Admin Response</h3>
                 <div class="space-y-3">
                     <div v-if="appointment.approved_at" class="flex items-center space-x-2">
                         <span
                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                             Approved
                         </span>
-                        <span class="text-sm text-gray-600">
+                        <span class="text-sm text-gray-600 dark:text-gray-300">
                             {{ appointment.approved_at }} by {{ appointment.approver_name || 'N/A' }}
                         </span>
                     </div>
@@ -225,13 +225,13 @@ const saveNarrative = () => {
                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                             Rejected
                         </span>
-                        <span class="text-sm text-gray-600">
+                        <span class="text-sm text-gray-600 dark:text-gray-300">
                             {{ appointment.rejected_at }} by {{ appointment.rejector_name || 'N/A' }}
                         </span>
                     </div>
                     <div v-if="appointment.admin_remarks">
-                        <label class="block text-sm font-medium text-gray-500 mb-1">Remarks</label>
-                        <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ appointment.admin_remarks }}</p>
+                        <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 mb-1">Remarks</label>
+                        <p class="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{{ appointment.admin_remarks }}</p>
                     </div>
                 </div>
             </div>
@@ -239,7 +239,7 @@ const saveNarrative = () => {
             <!-- Back Button -->
             <div class="flex justify-end">
                 <Link :href="route('admin.guidance.index')"
-                    class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50">
+                    class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md font-semibold text-xs text-gray-700 dark:text-gray-200 uppercase tracking-widest shadow-sm hover:bg-gray-50 dark:bg-gray-900">
                     Back to Guidance Unit
                 </Link>
             </div>

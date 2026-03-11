@@ -63,19 +63,19 @@ watch(
     <StudentLayout>
         <template #header>
             <div class="flex items-center justify-between">
-                <h2 class="text-2xl font-semibold text-gray-900">
+                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                     Submit Certificate of Candidacy
                 </h2>
                 <Link :href="route('student.organizations.candidacies.index')"
-                    class="text-indigo-600 hover:text-indigo-900 text-sm">
+                    class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-sm">
                     My Candidacies
                 </Link>
             </div>
         </template>
 
         <div class="space-y-6">
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-                <p class="text-sm text-gray-600 mb-6">
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+                <p class="text-sm text-gray-600 dark:text-gray-300 mb-6">
                     Submit your candidacy to run for a leadership position in an organization you belong to.
                 </p>
 
@@ -101,7 +101,7 @@ watch(
                         <div>
                             <InputLabel for="org_id" value="Organization" />
                             <select id="org_id" v-model="form.org_id"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                                 :class="{ 'border-red-300': form.errors.org_id }" required
                                 :disabled="!!preSelectedOrgId">
                                 <option value="">Select organization</option>
@@ -115,7 +115,7 @@ watch(
                         <div>
                             <InputLabel for="acad_id" value="Term / Semester" />
                             <select id="acad_id" v-model="form.acad_id"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                                 :class="{ 'border-red-300': form.errors.acad_id }" required>
                                 <option value="">Select term</option>
                                 <option v-for="term in academicTerms" :key="term.calendar_id" :value="term.calendar_id">
@@ -129,7 +129,7 @@ watch(
                     <div>
                         <InputLabel for="position_id" value="Position" />
                         <select id="position_id" v-model="form.position_id"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                             :class="{ 'border-red-300': form.errors.position_id }" required :disabled="!form.org_id">
                             <option value="">Select position</option>
                             <option v-for="pos in positionsForSelectedOrg" :key="pos.position_id"
@@ -143,7 +143,7 @@ watch(
                     <div>
                         <InputLabel for="platform_statement" value="Platform Statement" />
                         <textarea id="platform_statement" v-model="form.platform_statement" rows="4"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                             :class="{ 'border-red-300': form.errors.platform_statement }"
                             placeholder="Your platform and goals..." />
                         <InputError :message="form.errors.platform_statement" />
@@ -152,7 +152,7 @@ watch(
                     <div>
                         <InputLabel for="motivation" value="Motivation / Why you want to run" />
                         <textarea id="motivation" v-model="form.motivation" rows="4"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                             :class="{ 'border-red-300': form.errors.motivation }"
                             placeholder="Why do you want to run for this position?" />
                         <InputError :message="form.errors.motivation" />

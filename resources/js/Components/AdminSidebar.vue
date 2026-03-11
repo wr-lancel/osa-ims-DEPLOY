@@ -157,7 +157,7 @@ watch(() => page.url, () => {
           </div>
 
           <!-- Nav Items -->
-          <nav class="flex-1 px-3 pb-6 overflow-y-auto">
+          <nav class="flex-1 px-3 pb-6 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
             <div class="text-[11px] font-medium tracking-wide text-slate-400 px-3 mb-2">
               NAVIGATION
             </div>

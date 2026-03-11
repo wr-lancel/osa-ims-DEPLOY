@@ -2,8 +2,13 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
+import axios from 'axios';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import Pagination from '@/Components/Pagination.vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
+import { useNotification } from '@/composables/useNotification';
+
+const { notify } = useNotification();
 
 const props = defineProps({
     applications: {
@@ -22,6 +27,10 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    organizationTypes: {
+        type: Array,
+        default: () => [],
+    },
     terms: {
         type: Array,
         default: () => [],
@@ -35,22 +44,24 @@ const props = defineProps({
 const statusFilter = ref(props.filters.status || '');
 const orgFilter = ref(props.filters.org_id || '');
 const termFilter = ref(props.filters.acad_id || '');
+const orgTypeFilter = ref(props.filters.org_type || '');
 
 function applyFilters() {
     router.get(route('admin.organizations.candidacies.index'), {
         status: statusFilter.value || undefined,
         org_id: orgFilter.value || undefined,
         acad_id: termFilter.value || undefined,
+        org_type: orgTypeFilter.value || undefined,
     }, {
         preserveState: true,
         preserveScroll: true,
         replace: true,
         showProgress: false,
-        only: ['applications', 'filters', 'stats', 'organizations', 'terms', 'candidacyOpen'],
+        only: ['applications', 'filters', 'stats', 'organizations', 'organizationTypes', 'terms', 'candidacyOpen'],
     });
 }
 
-watch([statusFilter, orgFilter, termFilter], () => {
+watch([statusFilter, orgFilter, termFilter, orgTypeFilter], () => {
     applyFilters();
 });
 
@@ -73,6 +84,37 @@ const toggleCandidacy = () => {
         onFinish: () => { toggling.value = false; },
     });
 };
+
+const isExporting = ref(false);
+
+const exportPdf = async () => {
+    isExporting.value = true;
+    try {
+        const params = new URLSearchParams();
+        if (statusFilter.value) params.append('status', statusFilter.value);
+        if (orgFilter.value) params.append('org_id', orgFilter.value);
+        if (termFilter.value) params.append('acad_id', termFilter.value);
+        if (orgTypeFilter.value) params.append('org_type', orgTypeFilter.value);
+
+        const response = await axios.get(route('admin.organizations.candidacies.export.pdf') + (params.toString() ? '?' + params.toString() : ''), {
+            responseType: 'blob',
+        });
+
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'candidacy_applications.pdf');
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('Failed to export PDF:', error);
+        notify('error', 'Failed to generate PDF. Please try again.');
+    } finally {
+        isExporting.value = false;
+    }
+};
 </script>
 
 <template>
@@ -80,29 +122,38 @@ const toggleCandidacy = () => {
     <Head title="Candidacy Applications" />
 
     <AdminLayout>
+        <LoadingOverlay :show="isExporting" message="Generating PDF... Please wait." />
         <template #header>
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h2 class="text-2xl font-semibold text-gray-900">
+                    <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                         Candidacy Applications
                     </h2>
-                    <p class="text-sm text-gray-500 mt-1">All candidacy applications across organizations</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 mt-1">All candidacy applications across organizations</p>
                 </div>
-                <Link :href="route('admin.organizations.index')">
-                    <SecondaryButton type="button">← Back to Organizations</SecondaryButton>
-                </Link>
+                <div class="flex items-center space-x-3">
+                    <div>
+                        <SecondaryButton @click="exportPdf">
+                            Export PDF
+                        </SecondaryButton>
+                        <span class="block text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400 mt-0.5 text-center">Uses current filters</span>
+                    </div>
+                    <Link :href="route('admin.organizations.index')">
+                        <SecondaryButton type="button">← Back to Organizations</SecondaryButton>
+                    </Link>
+                </div>
             </div>
         </template>
 
         <div class="space-y-6">
             <!-- Global Candidacy Toggle -->
-            <div class="bg-white rounded-lg border shadow-sm p-4"
-                :class="candidacyOpen ? 'border-green-200' : 'border-gray-200'">
+            <div class="bg-white dark:bg-gray-800 rounded-lg border shadow-sm p-4"
+                :class="candidacyOpen ? 'border-green-200' : 'border-gray-200 dark:border-gray-700'">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-lg flex items-center justify-center"
-                            :class="candidacyOpen ? 'bg-green-100' : 'bg-gray-100'">
-                            <svg class="h-5 w-5" :class="candidacyOpen ? 'text-green-600' : 'text-gray-400'" fill="none"
+                            :class="candidacyOpen ? 'bg-green-100' : 'bg-gray-100 dark:bg-gray-800'">
+                            <svg class="h-5 w-5" :class="candidacyOpen ? 'text-green-600' : 'text-gray-400 dark:text-gray-500 dark:text-gray-400'" fill="none"
                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -110,10 +161,10 @@ const toggleCandidacy = () => {
                         </div>
                         <div>
                             <p class="text-sm font-semibold"
-                                :class="candidacyOpen ? 'text-green-900' : 'text-gray-900'">
+                                :class="candidacyOpen ? 'text-green-900' : 'text-gray-900 dark:text-white'">
                                 Candidacy Submissions {{ candidacyOpen ? 'Open' : 'Closed' }}
                             </p>
-                            <p class="text-xs" :class="candidacyOpen ? 'text-green-600' : 'text-gray-500'">
+                            <p class="text-xs" :class="candidacyOpen ? 'text-green-600' : 'text-gray-500 dark:text-gray-400 dark:text-gray-400'">
                                 <template v-if="candidacyOpen">Students can submit candidacy applications to all
                                     organizations.</template>
                                 <template v-else>Students cannot submit new candidacy applications.</template>
@@ -125,7 +176,7 @@ const toggleCandidacy = () => {
                         :class="candidacyOpen ? 'bg-green-500' : 'bg-gray-300'">
                         <span class="sr-only">Toggle candidacy</span>
                         <span
-                            class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                            class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white dark:bg-gray-800 shadow ring-0 transition duration-200 ease-in-out"
                             :class="candidacyOpen ? 'translate-x-5' : 'translate-x-0'" />
                     </button>
                 </div>
@@ -133,31 +184,31 @@ const toggleCandidacy = () => {
 
             <!-- Stats -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
-                    <p class="text-sm font-medium text-gray-500">Submitted</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ stats.submitted }}</p>
+                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-4">
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Submitted</p>
+                    <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ stats.submitted }}</p>
                 </div>
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
-                    <p class="text-sm font-medium text-gray-500">Under Review</p>
+                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-4">
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Under Review</p>
                     <p class="text-2xl font-semibold text-blue-600">{{ stats.under_review }}</p>
                 </div>
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
-                    <p class="text-sm font-medium text-gray-500">Approved</p>
+                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-4">
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Approved</p>
                     <p class="text-2xl font-semibold text-green-600">{{ stats.approved }}</p>
                 </div>
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
-                    <p class="text-sm font-medium text-gray-500">Rejected</p>
-                    <p class="text-2xl font-semibold text-red-600">{{ stats.rejected }}</p>
+                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-4">
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Rejected</p>
+                    <p class="text-2xl font-semibold text-red-600 dark:text-red-400">{{ stats.rejected }}</p>
                 </div>
             </div>
 
             <!-- Filters -->
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
-                        <label for="org" class="block text-sm font-medium text-gray-700 mb-1">Organization</label>
+                        <label for="org" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Organization</label>
                         <select id="org" v-model="orgFilter"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100">
                             <option value="">All Organizations</option>
                             <option v-for="org in organizations" :key="org.org_id" :value="org.org_id">
                                 {{ org.org_name }} ({{ org.org_code }})
@@ -165,9 +216,19 @@ const toggleCandidacy = () => {
                         </select>
                     </div>
                     <div>
-                        <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <label for="org_type" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Org Type</label>
+                        <select id="org_type" v-model="orgTypeFilter"
+                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100">
+                            <option value="">All Types</option>
+                            <option v-for="t in organizationTypes" :key="t" :value="t">
+                                {{ t }}
+                            </option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Status</label>
                         <select id="status" v-model="statusFilter"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100">
                             <option value="">All</option>
                             <option value="submitted">Submitted</option>
                             <option value="under_review">Under Review</option>
@@ -177,9 +238,9 @@ const toggleCandidacy = () => {
                         </select>
                     </div>
                     <div>
-                        <label for="term" class="block text-sm font-medium text-gray-700 mb-1">Term</label>
+                        <label for="term" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Term</label>
                         <select id="term" v-model="termFilter"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100">
                             <option value="">All</option>
                             <option v-for="t in terms" :key="t.calendar_id" :value="t.calendar_id">
                                 {{ t.display_label }}
@@ -190,44 +251,44 @@ const toggleCandidacy = () => {
             </div>
 
             <!-- Table -->
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Applications</h3>
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Applications</h3>
 
-                <div v-if="applications.data && applications.data.length > 0" class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                <div v-if="applications.data && applications.data.length > 0" class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-900">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Applicant
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Applicant
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Organization
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Organization
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Position
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Position
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Term</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Submitted
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Term</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Submitted
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Status</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Actions
                                 </th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <tr v-for="app in applications.data" :key="app.application_id" class="hover:bg-gray-50">
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            <tr v-for="app in applications.data" :key="app.application_id" class="hover:bg-gray-50 dark:bg-gray-900">
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900">{{ app.applicant_name }}</div>
-                                    <div class="text-xs text-gray-500">{{ app.student_number }}</div>
+                                    <div class="text-sm font-medium text-gray-900 dark:text-white">{{ app.applicant_name }}</div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">{{ app.student_number }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">{{ app.org_name }}</div>
-                                    <div class="text-xs text-gray-500">{{ app.org_code }}</div>
+                                    <div class="text-sm text-gray-900 dark:text-white">{{ app.org_name }}</div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">{{ app.org_code }}</div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                                     {{ app.position_name }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                     {{ app.term_label || '—' }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                     {{ app.submitted_at || '—' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -238,7 +299,7 @@ const toggleCandidacy = () => {
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
                                     <Link :href="route('admin.organizations.candidacies.show', app.application_id)"
-                                        class="text-indigo-600 hover:text-indigo-900">
+                                        class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
                                         View
                                     </Link>
                                 </td>
@@ -247,7 +308,7 @@ const toggleCandidacy = () => {
                     </table>
                 </div>
 
-                <p v-else class="text-sm text-gray-500 py-4">No applications found.</p>
+                <p v-else class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 py-4">No applications found.</p>
 
                 <!-- Pagination -->
                 <Pagination :data="applications" />

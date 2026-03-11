@@ -156,15 +156,15 @@ watch(searchText, () => {
         <!-- Input -->
         <div class="relative">
             <input ref="inputRef" v-model="searchText" type="text" :placeholder="placeholder" :disabled="disabled"
-                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 pr-8"
+                class="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 pr-8"
                 :class="{
                     'border-red-300 focus:border-red-500 focus:ring-red-500': error,
-                    'bg-gray-100 cursor-not-allowed': disabled,
+                    'bg-gray-100 dark:bg-gray-600 cursor-not-allowed': disabled,
                 }" autocomplete="off" @focus="openDropdown" @blur="closeDropdown" @keydown="onKeydown"
                 @input="isOpen = true" />
             <!-- Clear button when a value is selected -->
             <button v-if="modelValue && !disabled" type="button"
-                class="absolute inset-y-0 right-0 flex items-center pr-2.5 text-gray-400 hover:text-gray-600"
+                class="absolute inset-y-0 right-0 flex items-center pr-2.5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-200"
                 @mousedown.prevent="clearSelection">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -172,7 +172,7 @@ watch(searchText, () => {
             </button>
             <!-- Chevron when no value -->
             <div v-else-if="!disabled"
-                class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-gray-400">
+                class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-gray-400 dark:text-gray-500 dark:text-gray-400">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
@@ -181,15 +181,15 @@ watch(searchText, () => {
 
         <!-- Dropdown -->
         <div v-if="isOpen" ref="dropdownRef"
-            class="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-52 overflow-y-auto">
-            <div v-if="filteredOptions.length === 0" class="px-4 py-3 text-sm text-gray-500">
+            class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg max-h-52 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+            <div v-if="filteredOptions.length === 0" class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
                 No results found.
             </div>
             <button v-for="(option, idx) in filteredOptions" :key="option[valueKey]" :data-index="idx" type="button"
                 class="block w-full text-left px-4 py-2.5 text-sm transition-colors" :class="{
-                    'bg-indigo-50 text-indigo-700': highlightedIndex === idx,
-                    'text-gray-900 hover:bg-gray-50': highlightedIndex !== idx,
-                    'font-medium bg-indigo-50/50': String(option[valueKey]) === String(modelValue),
+                    'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300': highlightedIndex === idx,
+                    'text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-600': highlightedIndex !== idx,
+                    'font-medium bg-indigo-50/50 dark:bg-indigo-900/20': String(option[valueKey]) === String(modelValue),
                 }" @mousedown.prevent="selectOption(option)" @mouseenter="highlightedIndex = idx">
                 <slot name="option" :option="option">
                     {{ option[labelKey] }}
@@ -198,6 +198,6 @@ watch(searchText, () => {
         </div>
 
         <!-- Error message -->
-        <p v-if="error" class="mt-1 text-sm text-red-600">{{ error }}</p>
+        <p v-if="error" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
     </div>
 </template>

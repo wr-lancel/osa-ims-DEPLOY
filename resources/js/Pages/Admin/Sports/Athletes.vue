@@ -88,7 +88,7 @@ const getIcon = (index) => sportIcons[index % sportIcons.length];
     <AdminLayout>
         <template #header>
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <h2 class="text-2xl font-semibold text-gray-900">
+                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                     Athletes
                 </h2>
                 <div class="flex space-x-3">
@@ -108,7 +108,7 @@ const getIcon = (index) => sportIcons[index % sportIcons.length];
                 <div
                     v-for="(sport, index) in sports"
                     :key="sport.sport_id"
-                    class="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group overflow-hidden"
+                    class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group overflow-hidden"
                     @click="goToSport(sport)"
                 >
                     <!-- Color accent bar -->
@@ -118,12 +118,12 @@ const getIcon = (index) => sportIcons[index % sportIcons.length];
                             <div class="flex items-center gap-3">
                                 <span class="text-2xl">{{ getIcon(index) }}</span>
                                 <div>
-                                    <h3 class="text-lg font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:text-indigo-400 transition-colors">
                                         {{ sport.name }}
                                     </h3>
                                     <span
                                         class="inline-block mt-1 px-2 py-0.5 text-xs font-medium rounded-full"
-                                        :class="sport.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'"
+                                        :class="sport.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 dark:text-gray-400'"
                                     >
                                         {{ sport.status }}
                                     </span>
@@ -131,7 +131,7 @@ const getIcon = (index) => sportIcons[index % sportIcons.length];
                             </div>
                             <!-- Edit button (stop propagation) -->
                             <button
-                                class="p-1 text-gray-400 hover:text-gray-600 rounded-md hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity"
+                                class="p-1 text-gray-400 dark:text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:bg-gray-800 opacity-0 group-hover:opacity-100 transition-opacity"
                                 @click.stop="openEditModal(sport)"
                                 title="Edit sport"
                             >
@@ -140,11 +140,11 @@ const getIcon = (index) => sportIcons[index % sportIcons.length];
                                 </svg>
                             </button>
                         </div>
-                        <p v-if="sport.description" class="text-sm text-gray-500 mb-3 line-clamp-2">
+                        <p v-if="sport.description" class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 mb-3 line-clamp-2">
                             {{ sport.description }}
                         </p>
-                        <div class="flex items-center text-sm text-gray-600">
-                            <svg class="w-4 h-4 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="flex items-center text-sm text-gray-600 dark:text-gray-300">
+                            <svg class="w-4 h-4 mr-1.5 text-gray-400 dark:text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                             </svg>
                             <span class="font-medium">{{ sport.athletes_count }}</span>
@@ -155,10 +155,10 @@ const getIcon = (index) => sportIcons[index % sportIcons.length];
             </div>
 
             <!-- Empty State -->
-            <div v-else class="bg-white rounded-lg border border-gray-200 shadow-sm p-12 text-center">
+            <div v-else class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-12 text-center">
                 <div class="text-4xl mb-4">🏆</div>
-                <h3 class="text-lg font-semibold text-gray-900 mb-2">No sports added yet</h3>
-                <p class="text-sm text-gray-500 mb-6">Get started by adding your first sport.</p>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No sports added yet</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 mb-6">Get started by adding your first sport.</p>
                 <PrimaryButton @click="openAddModal">
                     Add Sport
                 </PrimaryButton>
@@ -166,32 +166,32 @@ const getIcon = (index) => sportIcons[index % sportIcons.length];
         </div>
 
         <!-- Add Sport Modal -->
-        <div v-if="showAddModal" class="fixed inset-0 z-50 overflow-y-auto">
+        <div v-if="showAddModal" class="fixed inset-0 z-50 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
             <div class="flex items-center justify-center min-h-screen px-4">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeAddModal"></div>
-                <div class="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Add New Sport</h3>
+                <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Add New Sport</h3>
                     <form @submit.prevent="submitAdd">
                         <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Sport Name</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Sport Name</label>
                             <input
                                 v-model="addForm.name"
                                 type="text"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                                 placeholder="e.g. Basketball"
                                 required
                             />
-                            <p v-if="addForm.errors.name" class="mt-1 text-sm text-red-600">{{ addForm.errors.name }}</p>
+                            <p v-if="addForm.errors.name" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ addForm.errors.name }}</p>
                         </div>
                         <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Description (optional)</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Description (optional)</label>
                             <textarea
                                 v-model="addForm.description"
                                 rows="3"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                                 placeholder="Brief description of the sport..."
                             ></textarea>
-                            <p v-if="addForm.errors.description" class="mt-1 text-sm text-red-600">{{ addForm.errors.description }}</p>
+                            <p v-if="addForm.errors.description" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ addForm.errors.description }}</p>
                         </div>
                         <div class="flex justify-end space-x-3">
                             <SecondaryButton type="button" @click="closeAddModal">Cancel</SecondaryButton>
@@ -205,35 +205,35 @@ const getIcon = (index) => sportIcons[index % sportIcons.length];
         </div>
 
         <!-- Edit Sport Modal -->
-        <div v-if="showEditModal" class="fixed inset-0 z-50 overflow-y-auto">
+        <div v-if="showEditModal" class="fixed inset-0 z-50 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
             <div class="flex items-center justify-center min-h-screen px-4">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeEditModal"></div>
-                <div class="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Edit Sport</h3>
+                <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Edit Sport</h3>
                     <form @submit.prevent="submitEdit">
                         <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Sport Name</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Sport Name</label>
                             <input
                                 v-model="editForm.name"
                                 type="text"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                                 required
                             />
-                            <p v-if="editForm.errors.name" class="mt-1 text-sm text-red-600">{{ editForm.errors.name }}</p>
+                            <p v-if="editForm.errors.name" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ editForm.errors.name }}</p>
                         </div>
                         <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Description (optional)</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Description (optional)</label>
                             <textarea
                                 v-model="editForm.description"
                                 rows="3"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                             ></textarea>
                         </div>
                         <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Status</label>
                             <select
                                 v-model="editForm.status"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                             >
                                 <option value="active">Active</option>
                                 <option value="inactive">Inactive</option>

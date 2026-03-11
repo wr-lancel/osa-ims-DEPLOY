@@ -134,7 +134,7 @@ const close = () => {
 <template>
     <Modal :show="show" @close="close" max-width="2xl">
         <div class="p-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-6">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">
                 {{ course ? 'Edit Course' : 'Add New Course' }}
             </h2>
 
@@ -188,7 +188,7 @@ const close = () => {
                             id="description"
                             v-model="form.description"
                             rows="3"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                             :class="{ 'border-red-500': form.errors.description }"
                         />
                         <InputError :message="form.errors.description" class="mt-2" />

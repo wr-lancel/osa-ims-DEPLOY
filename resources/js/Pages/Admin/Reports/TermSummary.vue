@@ -67,7 +67,7 @@ const exportPdf = async () => {
         <template #header>
 
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <h2 class="text-2xl font-semibold text-gray-900">
+                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                     Term Summary Report
                 </h2>
                 <button
@@ -81,12 +81,12 @@ const exportPdf = async () => {
         </template>
 
         <div class="space-y-6">
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
-                <label for="calendar" class="block text-sm font-medium text-gray-700 mb-2">Academic term</label>
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-4">
+                <label for="calendar" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Academic term</label>
                 <select
                     id="calendar"
                     :value="selectedCalendarId ?? ''"
-                    class="block w-full max-w-xs rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                    class="block w-full max-w-xs rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm dark:bg-gray-700 dark:text-gray-100"
                     @change="onCalendarChange($event.target.value ? Number($event.target.value) : null)"
                 >
                     <option value="">Current active term</option>
@@ -100,41 +100,41 @@ const exportPdf = async () => {
                 </select>
             </div>
 
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-                <h3 class="text-lg font-semibold text-gray-900 px-6 py-4 border-b border-gray-200">
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                     {{ summary.term_label || 'No term selected' }}
                 </h3>
-                <dl class="divide-y divide-gray-200">
+                <dl class="divide-y divide-gray-200 dark:divide-gray-700">
                     <div class="px-6 py-4 flex justify-between items-center">
-                        <dt class="text-sm font-medium text-gray-500">Enrolled students</dt>
-                        <dd class="text-sm font-semibold text-gray-900">{{ summary.total_students ?? 0 }}</dd>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Enrolled students</dt>
+                        <dd class="text-sm font-semibold text-gray-900 dark:text-white">{{ summary.total_students ?? 0 }}</dd>
                     </div>
                     <div class="px-6 py-4 flex justify-between items-center">
-                        <dt class="text-sm font-medium text-gray-500">Discipline cases (this term)</dt>
-                        <dd class="text-sm font-semibold text-gray-900">{{ summary.discipline_total ?? 0 }}</dd>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Discipline cases (this term)</dt>
+                        <dd class="text-sm font-semibold text-gray-900 dark:text-white">{{ summary.discipline_total ?? 0 }}</dd>
                     </div>
                     <div class="px-6 py-4 flex justify-between items-center">
-                        <dt class="text-sm font-medium text-gray-500">Complaints (this term)</dt>
-                        <dd class="text-sm font-semibold text-gray-900">{{ summary.complaints_total ?? 0 }}</dd>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Complaints (this term)</dt>
+                        <dd class="text-sm font-semibold text-gray-900 dark:text-white">{{ summary.complaints_total ?? 0 }}</dd>
                     </div>
                     <div class="px-6 py-4 flex justify-between items-center">
-                        <dt class="text-sm font-medium text-gray-500">Guidance cases (this term)</dt>
-                        <dd class="text-sm font-semibold text-gray-900">{{ summary.guidance_cases_total ?? 0 }}</dd>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Guidance cases (this term)</dt>
+                        <dd class="text-sm font-semibold text-gray-900 dark:text-white">{{ summary.guidance_cases_total ?? 0 }}</dd>
                     </div>
                     <div class="px-6 py-4 flex justify-between items-center">
-                        <dt class="text-sm font-medium text-gray-500">Events (this term)</dt>
-                        <dd class="text-sm font-semibold text-gray-900">{{ summary.events_total ?? 0 }}</dd>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Events (this term)</dt>
+                        <dd class="text-sm font-semibold text-gray-900 dark:text-white">{{ summary.events_total ?? 0 }}</dd>
                     </div>
                     <div class="px-6 py-4 flex justify-between items-center">
-                        <dt class="text-sm font-medium text-gray-500">Active organizations</dt>
-                        <dd class="text-sm font-semibold text-gray-900">{{ summary.active_organizations ?? 0 }}</dd>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Active organizations</dt>
+                        <dd class="text-sm font-semibold text-gray-900 dark:text-white">{{ summary.active_organizations ?? 0 }}</dd>
                     </div>
                     <div class="px-6 py-4 flex justify-between items-center">
-                        <dt class="text-sm font-medium text-gray-500">Pending candidacies</dt>
-                        <dd class="text-sm font-semibold text-gray-900">{{ summary.pending_candidacies ?? 0 }}</dd>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Pending candidacies</dt>
+                        <dd class="text-sm font-semibold text-gray-900 dark:text-white">{{ summary.pending_candidacies ?? 0 }}</dd>
                     </div>
                 </dl>
-                <p class="px-6 py-3 text-xs text-gray-500 border-t border-gray-100">
+                <p class="px-6 py-3 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700">
                     Generated {{ summary.generated_at }}
                 </p>
             </div>

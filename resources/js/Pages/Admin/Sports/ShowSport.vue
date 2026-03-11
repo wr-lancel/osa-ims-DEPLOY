@@ -103,11 +103,11 @@ const removeAthlete = () => {
         <template #header>
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-3">
-                    <h2 class="text-2xl font-semibold text-gray-900">
+                    <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                         {{ sport.name }}
                     </h2>
                     <span class="inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full"
-                        :class="sport.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'">
+                        :class="sport.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 dark:text-gray-400'">
                         {{ sport.status }}
                     </span>
                 </div>
@@ -124,83 +124,83 @@ const removeAthlete = () => {
 
         <div class="space-y-6">
             <!-- Sport Description -->
-            <div v-if="sport.description" class="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
-                <p class="text-sm text-gray-600">{{ sport.description }}</p>
+            <div v-if="sport.description" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-4">
+                <p class="text-sm text-gray-600 dark:text-gray-300">{{ sport.description }}</p>
             </div>
 
             <!-- Search Filter -->
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-4">
                 <div class="max-w-md">
-                    <label for="search" class="block text-sm font-medium text-gray-700 mb-1">
+                    <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         Search Athletes
                     </label>
                     <input id="search" v-model="searchQuery" type="text" placeholder="Student ID or name..."
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100" />
                 </div>
             </div>
 
             <!-- Athletes Table -->
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-900">
                             <tr>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                     Student ID
                                 </th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                     Name
                                 </th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                     Course
                                 </th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                     Section
                                 </th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                     Date Added
                                 </th>
                                 <th
-                                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                     Actions
                                 </th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             <tr v-if="athletes.data && athletes.data.length === 0">
                                 <td colspan="6" class="px-6 py-12 text-center">
                                     <div class="text-3xl mb-2">👤</div>
-                                    <p class="text-sm text-gray-500">No athletes in this sport yet.</p>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">No athletes in this sport yet.</p>
                                     <button @click="openAddModal"
-                                        class="mt-2 text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+                                        class="mt-2 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 font-medium">
                                         Add your first player
                                     </button>
                                 </td>
                             </tr>
-                            <tr v-for="athlete in athletes.data" :key="athlete.id" class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            <tr v-for="athlete in athletes.data" :key="athlete.id" class="hover:bg-gray-50 dark:bg-gray-900">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                                     {{ athlete.student_number }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                                     {{ athlete.name }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                     {{ athlete.course || '-' }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                     {{ athlete.section || '-' }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                     {{ athlete.added_at }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
                                     <button @click="confirmRemove(athlete)"
-                                        class="text-red-600 hover:text-red-800 font-medium">
+                                        class="text-red-600 dark:text-red-400 hover:text-red-800 font-medium">
                                         Remove
                                     </button>
                                 </td>
@@ -217,14 +217,14 @@ const removeAthlete = () => {
         </div>
 
         <!-- Add Player Modal -->
-        <div v-if="showAddModal" class="fixed inset-0 z-50 overflow-y-auto">
+        <div v-if="showAddModal" class="fixed inset-0 z-50 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
             <div class="flex items-center justify-center min-h-screen px-4">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeAddModal"></div>
-                <div class="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Add Player to {{ sport.name }}</h3>
+                <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Add Player to {{ sport.name }}</h3>
                     <form @submit.prevent="submitAdd">
                         <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Select Student</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Select Student</label>
                             <SearchableSelect v-model="addForm.student_number" :options="studentOptions"
                                 placeholder="Search by name or student number..."
                                 :error="addForm.errors.student_number" />
@@ -241,12 +241,12 @@ const removeAthlete = () => {
         </div>
 
         <!-- Confirm Remove Modal -->
-        <div v-if="showConfirmRemove" class="fixed inset-0 z-50 overflow-y-auto">
+        <div v-if="showConfirmRemove" class="fixed inset-0 z-50 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
             <div class="flex items-center justify-center min-h-screen px-4">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="cancelRemove"></div>
-                <div class="relative bg-white rounded-lg shadow-xl max-w-sm w-full p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Remove Athlete</h3>
-                    <p class="text-sm text-gray-600 mb-6">
+                <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-sm w-full p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Remove Athlete</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-6">
                         Are you sure you want to remove
                         <span class="font-semibold">{{ athleteToRemove?.name }}</span>
                         from {{ sport.name }}?

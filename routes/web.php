@@ -168,6 +168,7 @@ Route::middleware('auth')->group(function () {
             ->group(function () {
                 // Events (must be before dynamic {organization} routes)
                 Route::prefix('events')->name('events.')->group(function () {
+                    Route::get('/export/pdf', [EventController::class, 'exportPdf'])->name('export.pdf');
                     Route::get('/', [EventController::class, 'index'])->name('index');
                     Route::post('/', [EventController::class, 'store'])->name('store');
                     Route::get('/{event}', [EventController::class, 'show'])->name('show');
@@ -179,6 +180,7 @@ Route::middleware('auth')->group(function () {
                 Route::get('/', [OrganizationController::class, 'index'])->name('index');
                 Route::post('/', [OrganizationController::class, 'store'])->name('store');
                 // Candidacy applications (global - not org-scoped)
+                Route::get('/candidacies/export/pdf', [AdminCandidacyController::class, 'exportPdf'])->name('candidacies.export.pdf');
                 Route::get('/candidacies', [AdminCandidacyController::class, 'index'])->name('candidacies.index');
                 Route::get('/candidacies/{application}', [AdminCandidacyController::class, 'show'])->name('candidacies.show');
                 Route::post('/candidacies/{application}/status', [AdminCandidacyController::class, 'updateStatus'])->name('candidacies.updateStatus');

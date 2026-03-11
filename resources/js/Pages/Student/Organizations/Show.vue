@@ -344,7 +344,7 @@ const getAudienceLabel = (audience) => {
                                 {{ organization.mission_file_name }}
                             </a>
                         </div>
-                        <p v-else class="text-sm text-gray-400 dark:text-gray-500 italic transition-colors">No mission uploaded yet.</p>
+                        <p v-else class="text-sm text-gray-400 dark:text-gray-500 dark:text-gray-400 italic transition-colors">No mission uploaded yet.</p>
                     </div>
 
                     <!-- Vision -->
@@ -372,7 +372,7 @@ const getAudienceLabel = (audience) => {
                                 {{ organization.vision_file_name }}
                             </a>
                         </div>
-                        <p v-else class="text-sm text-gray-400 dark:text-gray-500 italic transition-colors">No vision uploaded yet.</p>
+                        <p v-else class="text-sm text-gray-400 dark:text-gray-500 dark:text-gray-400 italic transition-colors">No vision uploaded yet.</p>
                     </div>
 
                     <!-- Goals -->
@@ -398,7 +398,7 @@ const getAudienceLabel = (audience) => {
                                 {{ organization.goals_file_name }}
                             </a>
                         </div>
-                        <p v-else class="text-sm text-gray-400 dark:text-gray-500 italic transition-colors">No goals uploaded yet.</p>
+                        <p v-else class="text-sm text-gray-400 dark:text-gray-500 dark:text-gray-400 italic transition-colors">No goals uploaded yet.</p>
                     </div>
 
                     <!-- Constitution & By-Laws -->
@@ -433,7 +433,7 @@ const getAudienceLabel = (audience) => {
                                 </span>
                             </a>
                         </div>
-                        <p v-else class="text-sm text-gray-400 dark:text-gray-500 italic transition-colors">No constitution & by-laws uploaded yet.</p>
+                        <p v-else class="text-sm text-gray-400 dark:text-gray-500 dark:text-gray-400 italic transition-colors">No constitution & by-laws uploaded yet.</p>
                     </div>
                 </div>
             </div>
@@ -441,7 +441,7 @@ const getAudienceLabel = (audience) => {
             <!-- Officers Section -->
             <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6 transition-colors">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 transition-colors">Officers</h3>
-                <div v-if="organization.officers && organization.officers.length > 0" class="overflow-x-auto">
+                <div v-if="organization.officers && organization.officers.length > 0" class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 transition-colors">
                         <thead class="bg-gray-50 dark:bg-gray-700/50 transition-colors">
                             <tr>
@@ -477,7 +477,7 @@ const getAudienceLabel = (audience) => {
             <!-- Members Section -->
             <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6 transition-colors">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 transition-colors">Members</h3>
-                <div v-if="organization.members && organization.members.length > 0" class="overflow-x-auto">
+                <div v-if="organization.members && organization.members.length > 0" class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 transition-colors">
                         <thead class="bg-gray-50 dark:bg-gray-700/50 transition-colors">
                             <tr>
@@ -515,7 +515,7 @@ const getAudienceLabel = (audience) => {
                     </PrimaryButton>
                 </div>
 
-                <div v-if="organization.events && organization.events.length > 0" class="overflow-x-auto">
+                <div v-if="organization.events && organization.events.length > 0" class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 transition-colors">
                         <thead class="bg-gray-50 dark:bg-gray-700/50 transition-colors">
                             <tr>
@@ -537,7 +537,7 @@ const getAudienceLabel = (audience) => {
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 transition-colors">
                                     <div>{{ event.event_date }}</div>
-                                    <div v-if="event.start_time" class="text-xs text-gray-400 dark:text-gray-500 transition-colors">
+                                    <div v-if="event.start_time" class="text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400 transition-colors">
                                         {{ event.start_time }}
                                         <span v-if="event.end_time"> - {{ event.end_time }}</span>
                                     </div>
@@ -567,7 +567,7 @@ const getAudienceLabel = (audience) => {
                     </PrimaryButton>
                 </div>
 
-                <div v-if="organization.meetings && organization.meetings.length > 0" class="overflow-x-auto">
+                <div v-if="organization.meetings && organization.meetings.length > 0" class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 transition-colors">
                         <thead class="bg-gray-50 dark:bg-gray-700/50 transition-colors">
                             <tr>
@@ -593,7 +593,7 @@ const getAudienceLabel = (audience) => {
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 transition-colors">
                                     <div>{{ meeting.meeting_date }}</div>
-                                    <div v-if="meeting.start_time" class="text-xs text-gray-400 dark:text-gray-500 transition-colors">
+                                    <div v-if="meeting.start_time" class="text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400 transition-colors">
                                         {{ meeting.start_time }}
                                         <span v-if="meeting.end_time"> - {{ meeting.end_time }}</span>
                                     </div>
@@ -634,7 +634,7 @@ const getAudienceLabel = (audience) => {
                     <div class="mb-4">
                         <InputLabel for="description" value="Description" />
                         <textarea id="description" v-model="editDescription" rows="4"
-                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors" />
+                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors dark:bg-gray-700 dark:text-gray-100" />
                         <InputError :message="editErrors.description" />
                     </div>
 
@@ -684,13 +684,13 @@ const getAudienceLabel = (audience) => {
                         <InputLabel value="Constitution & By-Laws" />
                         <div v-if="organization.constitution_bylaws_file_url && !removeConstitutionFile"
                             class="mt-1 mb-2 flex items-center gap-2 text-sm">
-                            <svg class="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            <svg class="h-4 w-4 text-indigo-500 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                                 stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                             </svg>
                             <a :href="organization.constitution_bylaws_file_url" target="_blank"
-                                class="text-indigo-600 hover:text-indigo-900 underline">
+                                class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 underline">
                                 {{ organization.constitution_bylaws_file_name }}
                             </a>
                             <button type="button" class="text-red-500 hover:text-red-700 text-xs ml-2"
@@ -701,7 +701,7 @@ const getAudienceLabel = (audience) => {
                         <input type="file" accept=".pdf,.doc,.docx"
                             class="mt-1 block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 dark:file:bg-indigo-900/50 file:text-indigo-700 dark:file:text-indigo-300 hover:file:bg-indigo-100 dark:hover:file:bg-indigo-800/60 transition-colors"
                             @change="(e) => { editConstitutionFile = e.target.files[0]; removeConstitutionFile = false; }" />
-                        <p class="mt-1 text-xs text-gray-400 dark:text-gray-500 transition-colors">Upload a .pdf, .doc, or .docx file (max 10MB).</p>
+                        <p class="mt-1 text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400 transition-colors">Upload a .pdf, .doc, or .docx file (max 10MB).</p>
                         <InputError :message="editErrors.constitution_bylaws_file" />
                     </div>
 
@@ -736,7 +736,7 @@ const getAudienceLabel = (audience) => {
                     <div class="mb-4">
                         <InputLabel for="event_description" value="Description" />
                         <textarea id="event_description" v-model="eventForm.description" rows="3"
-                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors" />
+                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors dark:bg-gray-700 dark:text-gray-100" />
                         <InputError :message="eventForm.errors.description" />
                     </div>
 
@@ -778,7 +778,7 @@ const getAudienceLabel = (audience) => {
                     <div class="mb-6">
                         <InputLabel for="status" value="Status" />
                         <select id="status" v-model="eventForm.status"
-                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors"
+                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors dark:bg-gray-700 dark:text-gray-100"
                             required>
                             <option v-for="option in statusOptions" :key="option.value" :value="option.value">
                                 {{ option.label }}
@@ -880,7 +880,7 @@ const getAudienceLabel = (audience) => {
                     <div class="mb-4">
                         <InputLabel for="meeting_target_audience" value="Notify" />
                         <select id="meeting_target_audience" v-model="meetingForm.target_audience"
-                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors"
+                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors dark:bg-gray-700 dark:text-gray-100"
                             required>
                             <option v-for="option in audienceOptions" :key="option.value" :value="option.value">
                                 {{ option.label }}
@@ -893,7 +893,7 @@ const getAudienceLabel = (audience) => {
                     <div class="mb-6">
                         <InputLabel for="meeting_description" value="Agenda / Description (optional)" />
                         <textarea id="meeting_description" v-model="meetingForm.description" rows="3"
-                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors"
+                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors dark:bg-gray-700 dark:text-gray-100"
                             placeholder="Brief description or agenda items..." />
                         <InputError :message="meetingForm.errors.description" />
                     </div>

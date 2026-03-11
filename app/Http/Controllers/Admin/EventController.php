@@ -158,5 +158,60 @@ class EventController extends Controller
         return redirect()->route('admin.organizations.events.index')
             ->with('success', 'Event updated successfully.');
     }
+
+    /**
+     * Export events to PDF with current filters.
+     */
+    public function exportPdf(Request $request)
+    {
+        $query = Event::with(['organization', 'creator']);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('event_name', 'like', "%{$search}%")
+                    ->orWhereHas('organization', function ($orgQuery) use ($search) {
+                        $orgQuery->where('org_name', 'like', "%{$search}%");
+                    });
+            });
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('org_id')) {
+            $query->where('org_id', $request->org_id);
+        }
+
+        $events = $query->orderBy('event_date', 'desc')->get();
+
+        $headers = ['Event Name', 'Organization', 'Date', 'Time', 'Venue', 'Status'];
+        $rows = $events->map(fn($e) => [
+            $e->event_name,
+            $e->organization->org_name ?? 'N/A',
+            $e->event_date?->format('Y-m-d') ?? 'N/A',
+            ($e->start_time ? (is_string($e->start_time) ? $e->start_time : $e->start_time->format('H:i')) : '') .
+                ($e->end_time ? ' - ' . (is_string($e->end_time) ? $e->end_time : $e->end_time->format('H:i')) : ''),
+            $e->venue ?? 'N/A',
+            $e->status ?? 'N/A',
+        ])->toArray();
+
+        $filterLabels = array_filter([
+            'Search' => $request->input('search'),
+            'Organization' => $request->filled('org_id')
+                ? (StudentOrganization::find($request->org_id)?->org_name ?? $request->org_id)
+                : null,
+            'Status' => $request->filled('status') ? ucfirst($request->status) : null,
+        ]);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.pdf-table', [
+            'title' => 'Events Report',
+            'date' => now()->format('F j, Y g:i A'),
+            'headers' => $headers,
+            'rows' => $rows,
+            'filters' => $filterLabels,
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->download('events_export_' . date('Y-m-d_His') . '.pdf');
+    }
 }
 

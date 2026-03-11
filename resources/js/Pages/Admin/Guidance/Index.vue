@@ -324,7 +324,7 @@ const rejectAppointment = () => {
         <template #header>
 
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <h2 class="text-2xl font-semibold text-gray-900">
+                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                     Guidance Unit
                 </h2>
                 <div class="flex space-x-3">
@@ -334,9 +334,12 @@ const rejectAppointment = () => {
                     <SecondaryButton v-else @click="activeTab = 'appointments'">
                         View Appointments
                     </SecondaryButton>
-                    <SecondaryButton v-if="activeTab === 'cases'" @click="exportPdf">
-                        Export PDF
-                    </SecondaryButton>
+                    <div>
+                        <SecondaryButton v-if="activeTab === 'cases'" @click="exportPdf">
+                            Export PDF
+                        </SecondaryButton>
+                        <span v-if="activeTab === 'cases'" class="block text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400 mt-0.5 text-center">Uses current filters</span>
+                    </div>
                     <PrimaryButton v-if="activeTab === 'cases'" @click="openAddModal">
                         Add Case
                     </PrimaryButton>
@@ -360,18 +363,18 @@ const rejectAppointment = () => {
                     </div>
                     <div class="space-y-3">
                         <div v-for="appointment in pendingAppointments" :key="appointment.appointment_id"
-                            class="bg-white rounded-lg border border-yellow-200 p-4">
+                            class="bg-white dark:bg-gray-800 rounded-lg border border-yellow-200 p-4">
                             <div class="flex items-start justify-between">
                                 <div class="flex-1">
                                     <div class="flex items-center gap-3 mb-2">
-                                        <h4 class="text-sm font-semibold text-gray-900">Appointment Request #{{
+                                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Appointment Request #{{
                                             appointment.appointment_id }}</h4>
                                         <span
                                             class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
                                             Pending
                                         </span>
                                     </div>
-                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-gray-600">
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-gray-600 dark:text-gray-300">
                                         <div>
                                             <span class="font-medium">Student:</span> {{ appointment.student_name }} ({{
                                             appointment.student_id }})
@@ -423,25 +426,25 @@ const rejectAppointment = () => {
                 </div>
 
                 <!-- Appointment Filters -->
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-4">
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <!-- Search -->
                         <div class="md:col-span-2">
-                            <label for="appointment_search" class="block text-sm font-medium text-gray-700 mb-1">
+                            <label for="appointment_search" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                 Search
                             </label>
                             <input id="appointment_search" v-model="appointmentSearch" type="text"
                                 placeholder="Student name, concern..."
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100" />
                         </div>
 
                         <!-- Status Filter -->
                         <div>
-                            <label for="appointment_status" class="block text-sm font-medium text-gray-700 mb-1">
+                            <label for="appointment_status" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                 Status
                             </label>
                             <select id="appointment_status" v-model="appointmentStatus"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100">
                                 <option value="">All Statuses</option>
                                 <option value="pending">Pending</option>
                                 <option value="approved">Approved</option>
@@ -453,11 +456,11 @@ const rejectAppointment = () => {
 
                         <!-- Type Filter -->
                         <div>
-                            <label for="appointment_type" class="block text-sm font-medium text-gray-700 mb-1">
+                            <label for="appointment_type" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                 Type
                             </label>
                             <select id="appointment_type" v-model="appointmentType"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100">
                                 <option value="">All Types</option>
                                 <option value="counseling">Counseling</option>
                                 <option value="consultation">Consultation</option>
@@ -471,62 +474,62 @@ const rejectAppointment = () => {
                 </div>
 
                 <!-- Appointments Table -->
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-gray-900">
                                 <tr>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Student
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Date & Time
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Type
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Concern
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Status
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Admin Action
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Actions
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                 <tr v-if="appointments.data && appointments.data.length === 0">
-                                    <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
+                                    <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                         No appointments found.
                                     </td>
                                 </tr>
                                 <tr v-for="appointment in appointments.data" :key="appointment.appointment_id"
-                                    class="hover:bg-gray-50 cursor-pointer"
+                                    class="hover:bg-gray-50 dark:bg-gray-900 cursor-pointer"
                                     @click="viewAppointmentDetails(appointment)">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                                         <div class="font-medium">{{ appointment.student_name }}</div>
-                                        <div class="text-xs text-gray-500">{{ appointment.student_id }}</div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">{{ appointment.student_id }}</div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                         <div>{{ appointment.appointment_date }}</div>
                                         <div class="text-xs">{{ appointment.appointment_time }}</div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 capitalize">
                                         {{ appointment.appointment_type }}
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-500">
+                                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                         <div class="truncate max-w-xs">{{ appointment.concern }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap" @click.stop>
@@ -535,23 +538,23 @@ const rejectAppointment = () => {
                                             {{ appointment.status }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-600">
+                                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
                                         <div v-if="appointment.approver_name && appointment.approved_at"
                                             class="text-green-700">
                                             <div class="font-medium">Approved by:</div>
                                             <div class="text-xs">{{ appointment.approver_name }}</div>
-                                            <div class="text-xs text-gray-500">{{ appointment.approved_at }}</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">{{ appointment.approved_at }}</div>
                                         </div>
                                         <div v-else-if="appointment.rejector_name && appointment.rejected_at"
                                             class="text-red-700">
                                             <div class="font-medium">Rejected by:</div>
                                             <div class="text-xs">{{ appointment.rejector_name }}</div>
-                                            <div class="text-xs text-gray-500">{{ appointment.rejected_at }}</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">{{ appointment.rejected_at }}</div>
                                         </div>
-                                        <div v-else class="text-gray-400 text-xs">
+                                        <div v-else class="text-gray-400 dark:text-gray-500 dark:text-gray-400 text-xs">
                                             -
                                         </div>
-                                        <div v-if="appointment.admin_remarks" class="mt-1 text-xs text-gray-500 italic">
+                                        <div v-if="appointment.admin_remarks" class="mt-1 text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 italic">
                                             "{{ appointment.admin_remarks }}"
                                         </div>
                                     </td>
@@ -566,7 +569,7 @@ const rejectAppointment = () => {
                                             <button
                                                 v-if="appointment.status === 'Pending' || appointment.status === 'pending'"
                                                 @click.stop="openRejectModal(appointment)"
-                                                class="text-red-600 hover:text-red-900">
+                                                class="text-red-600 dark:text-red-400 hover:text-red-900">
                                                 Reject
                                             </button>
                                         </div>
@@ -584,24 +587,24 @@ const rejectAppointment = () => {
             <!-- Cases Tab -->
             <div v-if="activeTab === 'cases'">
                 <!-- Filters -->
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-4">
                     <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                         <!-- Search -->
                         <div class="md:col-span-2">
-                            <label for="search" class="block text-sm font-medium text-gray-700 mb-1">
+                            <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                 Search
                             </label>
                             <input id="search" v-model="search" type="text" placeholder="Case number, student name..."
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100" />
                         </div>
 
                         <!-- Status -->
                         <div>
-                            <label for="status" class="block text-sm font-medium text-gray-700 mb-1">
+                            <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                 Status
                             </label>
                             <select id="status" v-model="status"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100">
                                 <option value="">All</option>
                                 <option v-for="s in statuses" :key="s" :value="s">
                                     {{ s.charAt(0).toUpperCase() + s.slice(1) }}
@@ -611,11 +614,11 @@ const rejectAppointment = () => {
 
                         <!-- Case Type -->
                         <div>
-                            <label for="case_type" class="block text-sm font-medium text-gray-700 mb-1">
+                            <label for="case_type" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                 Case Type
                             </label>
                             <select id="case_type" v-model="caseType"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100">
                                 <option value="">All</option>
                                 <option v-for="type in caseTypes" :key="type" :value="type">
                                     {{ type.charAt(0).toUpperCase() + type.slice(1) }}
@@ -625,11 +628,11 @@ const rejectAppointment = () => {
 
                         <!-- Assigned Staff -->
                         <div>
-                            <label for="assigned_staff_id" class="block text-sm font-medium text-gray-700 mb-1">
+                            <label for="assigned_staff_id" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                 Assigned Staff
                             </label>
                             <select id="assigned_staff_id" v-model="assignedStaffId"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100">
                                 <option value="">All</option>
                                 <option v-for="employee in employees" :key="employee.employee_id"
                                     :value="employee.employee_id">
@@ -643,69 +646,69 @@ const rejectAppointment = () => {
                 </div>
 
                 <!-- Cases Table -->
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-gray-900">
                                 <tr>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Case No
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Student
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Section
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Case Type
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Status
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Assigned Staff
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Requested At
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Actions
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Options
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                 <tr v-if="cases.data.length === 0">
-                                    <td colspan="9" class="px-6 py-4 text-center text-sm text-gray-500">
+                                    <td colspan="9" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                         No guidance cases found.
                                     </td>
                                 </tr>
                                 <tr v-for="caseItem in cases.data" :key="caseItem.guidance_case_id"
-                                    class="hover:bg-gray-50 cursor-pointer" @click="viewCaseDetails(caseItem)">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    class="hover:bg-gray-50 dark:bg-gray-900 cursor-pointer" @click="viewCaseDetails(caseItem)">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                                         {{ caseItem.case_no }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                                         <div v-if="caseItem.student">
                                             {{ caseItem.student.full_name }}
-                                            <div class="text-xs text-gray-500">{{ caseItem.student.student_number }}
+                                            <div class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">{{ caseItem.student.student_number }}
                                             </div>
                                         </div>
-                                        <span v-else class="text-gray-400">N/A</span>
+                                        <span v-else class="text-gray-400 dark:text-gray-500 dark:text-gray-400">N/A</span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                         {{ caseItem.section?.section_name || 'N/A' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
@@ -721,20 +724,20 @@ const rejectAppointment = () => {
                                             {{ caseItem.status.charAt(0).toUpperCase() + caseItem.status.slice(1) }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                         {{ caseItem.assigned_staff?.full_name || 'Unassigned' }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                         {{ caseItem.requested_at ? new Date(caseItem.requested_at).toLocaleDateString()
                                         : 'N/A'
                                         }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                         {{ caseItem.actions_count || 0 }} action(s)
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium" @click.stop>
                                         <button @click.stop="viewCaseDetails(caseItem)"
-                                            class="text-indigo-600 hover:text-indigo-900 mr-4">
+                                            class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-4">
                                             View
                                         </button>
                                         <button @click.stop="openActionModal(caseItem)"
@@ -742,11 +745,11 @@ const rejectAppointment = () => {
                                             Add Action
                                         </button>
                                         <button @click.stop="openEditModal(caseItem)"
-                                            class="text-indigo-600 hover:text-indigo-900 mr-4">
+                                            class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-4">
                                             Edit
                                         </button>
                                         <button @click.stop="deleteCase(caseItem)"
-                                            class="text-red-600 hover:text-red-900">
+                                            class="text-red-600 dark:text-red-400 hover:text-red-900">
                                             Delete
                                         </button>
                                     </td>
@@ -762,10 +765,10 @@ const rejectAppointment = () => {
         </div>
 
         <!-- Approve Appointment Modal -->
-        <div v-if="showApproveModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div v-if="showApproveModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 h-full w-full z-50">
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
                 <div class="mt-3">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Approve Appointment Request</h3>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Approve Appointment Request</h3>
                     <form @submit.prevent="approveAppointment">
                         <div class="mb-4">
                             <InputLabel for="approve_remarks" value="Admin Remarks (Optional)" />
@@ -787,10 +790,10 @@ const rejectAppointment = () => {
         </div>
 
         <!-- Reject Appointment Modal -->
-        <div v-if="showRejectModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div v-if="showRejectModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 h-full w-full z-50">
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
                 <div class="mt-3">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Reject Appointment Request</h3>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Reject Appointment Request</h3>
                     <form @submit.prevent="rejectAppointment">
                         <div class="mb-4">
                             <InputLabel for="reject_remarks" value="Rejection Reason *" />
@@ -820,19 +823,19 @@ const rejectAppointment = () => {
             @saved="handleActionSaved" />
 
         <!-- Case Details Modal -->
-        <div v-if="showCaseDetails && selectedCase" class="fixed inset-0 z-50 overflow-y-auto"
+        <div v-if="showCaseDetails && selectedCase" class="fixed inset-0 z-50 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
             aria-labelledby="modal-title" role="dialog" aria-modal="true">
             <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"
                     @click="closeCaseDetails"></div>
                 <div
-                    class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+                    <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                         <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-lg font-medium text-gray-900">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-white">
                                 Case Details: {{ selectedCase.case_no }}
                             </h3>
-                            <button @click="closeCaseDetails" class="text-gray-400 hover:text-gray-500">
+                            <button @click="closeCaseDetails" class="text-gray-400 dark:text-gray-500 dark:text-gray-400 hover:text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                 <span class="sr-only">Close</span>
                                 <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -843,19 +846,19 @@ const rejectAppointment = () => {
                         <div class="space-y-4">
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">Student</label>
-                                    <p class="mt-1 text-sm text-gray-900">{{ selectedCase.student?.full_name || 'N/A' }}
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Student</label>
+                                    <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ selectedCase.student?.full_name || 'N/A' }}
                                     </p>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">Case Type</label>
-                                    <p class="mt-1 text-sm text-gray-900">{{
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Case Type</label>
+                                    <p class="mt-1 text-sm text-gray-900 dark:text-white">{{
                                         selectedCase.case_type?.charAt(0).toUpperCase() +
                                         selectedCase.case_type?.slice(1) || 'N/A' }}</p>
                                 </div>
                                 <div class="col-span-2">
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                                    <p class="text-sm text-gray-900 mb-2">{{
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Status</label>
+                                    <p class="text-sm text-gray-900 dark:text-white mb-2">{{
                                         selectedCase.status?.charAt(0).toUpperCase() +
                                         selectedCase.status?.slice(1) || 'N/A' }}</p>
                                     <StatusProgressBar :steps="[
@@ -866,26 +869,26 @@ const rejectAppointment = () => {
                                     ]" :current-status="selectedCase.status" />
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">Assigned Staff</label>
-                                    <p class="mt-1 text-sm text-gray-900">{{ selectedCase.assigned_staff?.full_name ||
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Assigned Staff</label>
+                                    <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ selectedCase.assigned_staff?.full_name ||
                                         'Unassigned' }}</p>
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Concern</label>
-                                <p class="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{{ selectedCase.concern ||
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Concern</label>
+                                <p class="mt-1 text-sm text-gray-900 dark:text-white whitespace-pre-wrap">{{ selectedCase.concern ||
                                     'N/A' }}
                                 </p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Actions Timeline</label>
-                                <div class="space-y-2 max-h-96 overflow-y-auto">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Actions Timeline</label>
+                                <div class="space-y-2 max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
                                     <div v-for="action in selectedCase.actions" :key="action.action_id"
-                                        class="border-l-4 border-indigo-500 pl-4 py-2 bg-gray-50 rounded">
+                                        class="border-l-4 border-indigo-500 pl-4 py-2 bg-gray-50 dark:bg-gray-900 rounded">
                                         <div class="flex justify-between items-start">
                                             <div class="flex-1">
-                                                <p class="text-sm text-gray-900">{{ action.note || 'No note' }}</p>
-                                                <p class="text-xs text-gray-500 mt-1">
+                                                <p class="text-sm text-gray-900 dark:text-white">{{ action.note || 'No note' }}</p>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 mt-1">
                                                     By {{ action.action_by_user?.display_name || 'Unknown' }} on {{ new
                                                     Date(action.created_at).toLocaleString() }}
                                                 </p>
@@ -900,14 +903,14 @@ const rejectAppointment = () => {
                                         </div>
                                     </div>
                                     <div v-if="!selectedCase.actions || selectedCase.actions.length === 0"
-                                        class="text-sm text-gray-500">
+                                        class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                         No actions recorded yet.
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <div class="bg-gray-50 dark:bg-gray-900 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                         <SecondaryButton @click="closeCaseDetails" class="w-full sm:w-auto">
                             Close
                         </SecondaryButton>

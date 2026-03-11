@@ -37,10 +37,10 @@ const borrowerLabel = () => {
     <AdminLayout>
         <template #header>
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <h2 class="text-2xl font-semibold text-gray-900">
+                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                     Borrowing Details
                 </h2>
-                <Link :href="route('admin.sports.index')" class="text-sm text-gray-600 hover:text-gray-900">
+                <Link :href="route('admin.sports.index')" class="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:text-white">
                     ← Back to Sports Unit
                 </Link>
             </div>
@@ -48,11 +48,11 @@ const borrowerLabel = () => {
 
         <div class="space-y-6">
             <!-- Status Card -->
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-900">{{ borrowing.item_name }}</h3>
-                        <p class="text-sm text-gray-500 mt-1">Request ID: #{{ borrowing.borrowing_id }}</p>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ borrowing.item_name }}</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 mt-1">Request ID: #{{ borrowing.borrowing_id }}</p>
                     </div>
                     <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full"
                         :class="getStatusBadgeClass(borrowing.status, borrowing.status_color)">
@@ -69,44 +69,44 @@ const borrowerLabel = () => {
             </div>
 
             <!-- Request Information -->
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                 <div class="p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Request Information</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Request Information</h3>
 
                     <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Borrower</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ borrowerLabel() }}</dd>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Borrower</dt>
+                            <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ borrowerLabel() }}</dd>
                         </div>
 
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Item Name</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ borrowing.item_name }}</dd>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Item Name</dt>
+                            <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ borrowing.item_name }}</dd>
                         </div>
 
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Borrow Date</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ borrowing.borrow_date }}</dd>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Borrow Date</dt>
+                            <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ borrowing.borrow_date }}</dd>
                         </div>
 
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Expected Return Date</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ borrowing.expected_return_date }}</dd>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Expected Return Date</dt>
+                            <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ borrowing.expected_return_date }}</dd>
                         </div>
 
                         <div v-if="borrowing.return_date">
-                            <dt class="text-sm font-medium text-gray-500">Return Date</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ borrowing.return_date }}</dd>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Return Date</dt>
+                            <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ borrowing.return_date }}</dd>
                         </div>
 
                         <div v-if="borrowing.description" class="md:col-span-2">
-                            <dt class="text-sm font-medium text-gray-500">Description</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ borrowing.description }}</dd>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Description</dt>
+                            <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ borrowing.description }}</dd>
                         </div>
 
                         <div v-if="borrowing.notes" class="md:col-span-2">
-                            <dt class="text-sm font-medium text-gray-500">Notes</dt>
-                            <dd class="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{{ borrowing.notes }}</dd>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Notes</dt>
+                            <dd class="mt-1 text-sm text-gray-900 dark:text-white whitespace-pre-wrap">{{ borrowing.notes }}</dd>
                         </div>
                     </dl>
                 </div>
@@ -114,34 +114,34 @@ const borrowerLabel = () => {
 
             <!-- Admin Response -->
             <div v-if="borrowing.admin_remarks || borrowing.approved_at || borrowing.rejected_at"
-                class="bg-white rounded-lg border border-gray-200 shadow-sm">
+                class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                 <div class="p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Admin Response</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Admin Response</h3>
 
                     <dl class="space-y-4">
                         <div v-if="borrowing.approved_at">
-                            <dt class="text-sm font-medium text-gray-500">Approved On</dt>
-                            <dd class="mt-1 text-sm text-gray-900">
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Approved On</dt>
+                            <dd class="mt-1 text-sm text-gray-900 dark:text-white">
                                 {{ borrowing.approved_at }}
-                                <span v-if="borrowing.approver_name" class="text-gray-500">
+                                <span v-if="borrowing.approver_name" class="text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                     by {{ borrowing.approver_name }}
                                 </span>
                             </dd>
                         </div>
 
                         <div v-if="borrowing.rejected_at">
-                            <dt class="text-sm font-medium text-gray-500">Rejected On</dt>
-                            <dd class="mt-1 text-sm text-gray-900">
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Rejected On</dt>
+                            <dd class="mt-1 text-sm text-gray-900 dark:text-white">
                                 {{ borrowing.rejected_at }}
-                                <span v-if="borrowing.rejector_name" class="text-gray-500">
+                                <span v-if="borrowing.rejector_name" class="text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                     by {{ borrowing.rejector_name }}
                                 </span>
                             </dd>
                         </div>
 
                         <div v-if="borrowing.admin_remarks">
-                            <dt class="text-sm font-medium text-gray-500">Admin Remarks</dt>
-                            <dd class="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{{ borrowing.admin_remarks }}
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Admin Remarks</dt>
+                            <dd class="mt-1 text-sm text-gray-900 dark:text-white whitespace-pre-wrap">{{ borrowing.admin_remarks }}
                             </dd>
                         </div>
                     </dl>

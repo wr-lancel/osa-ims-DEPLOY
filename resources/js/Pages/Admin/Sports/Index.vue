@@ -227,16 +227,19 @@ const exportPdf = async () => {
         <template #header>
 
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <h2 class="text-2xl font-semibold text-gray-900">
+                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                     Sports Unit
                 </h2>
                 <div class="flex space-x-3">
                     <SecondaryButton @click="router.visit(route('admin.sports.athletes'))">
                         View Athletes
                     </SecondaryButton>
-                    <SecondaryButton @click="exportPdf">
-                        Export PDF
-                    </SecondaryButton>
+                    <div class="flex flex-col items-start gap-0.5">
+                        <SecondaryButton @click="exportPdf">
+                            Export PDF
+                        </SecondaryButton>
+                        <span class="text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400 px-1">Uses current filters</span>
+                    </div>
                     <PrimaryButton @click="openAddModal">
                         New Borrowing
                     </PrimaryButton>
@@ -260,18 +263,18 @@ const exportPdf = async () => {
                     </div>
                     <div class="space-y-3">
                         <div v-for="borrowing in pendingBorrowings" :key="borrowing.borrowing_id"
-                            class="bg-white rounded-lg border border-yellow-200 p-4 cursor-pointer hover:border-yellow-300 transition-colors"
+                            class="bg-white dark:bg-gray-800 rounded-lg border border-yellow-200 p-4 cursor-pointer hover:border-yellow-300 transition-colors"
                             @click="goToBorrowingDetail(borrowing)">
                             <div class="flex items-start justify-between">
                                 <div class="flex-1">
                                     <div class="flex items-center gap-3 mb-2">
-                                        <h4 class="text-sm font-semibold text-gray-900">{{ borrowing.item_name }}</h4>
+                                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ borrowing.item_name }}</h4>
                                         <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
                                             :class="getStatusBadgeClass(borrowing.status, borrowing.status_color || 'yellow')">
                                             {{ borrowing.status }}
                                         </span>
                                     </div>
-                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-gray-600">
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-gray-600 dark:text-gray-300">
                                         <div>
                                             <span class="font-medium">Borrower:</span> {{ borrowing.borrower_name }} ({{
                                             borrowing.borrower_id }})
@@ -321,25 +324,25 @@ const exportPdf = async () => {
                 </div>
 
                 <!-- Filters -->
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-4">
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <!-- Search -->
                         <div class="md:col-span-2">
-                            <label for="borrowing_search" class="block text-sm font-medium text-gray-700 mb-1">
+                            <label for="borrowing_search" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                 Search
                             </label>
                             <input id="borrowing_search" v-model="borrowingSearch" type="text"
                                 placeholder="Equipment, student, or employee..."
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100" />
                         </div>
 
                         <!-- Status Filter -->
                         <div>
-                            <label for="borrowing_status" class="block text-sm font-medium text-gray-700 mb-1">
+                            <label for="borrowing_status" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                 Status
                             </label>
                             <select id="borrowing_status" v-model="borrowingStatus"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100">
                                 <option v-for="option in statusOptions" :key="option.value" :value="option.value">
                                     {{ option.label }}
                                 </option>
@@ -351,71 +354,71 @@ const exportPdf = async () => {
                 </div>
 
                 <!-- Borrowings Table -->
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-gray-900">
                                 <tr>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Borrower
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Equipment
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Borrow Date
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Due Date
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Return Date
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Status
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Admin Action
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Actions
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                 <tr v-if="borrowings.data && borrowings.data.length === 0">
-                                    <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500">
+                                    <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                         No borrowing records found.
                                     </td>
                                 </tr>
                                 <tr v-for="borrowing in borrowings.data" :key="borrowing.borrowing_id"
-                                    class="hover:bg-gray-50 cursor-pointer"
+                                    class="hover:bg-gray-50 dark:bg-gray-900 cursor-pointer"
                                     :class="{ 'bg-red-50': borrowing.is_overdue }"
                                     @click="goToBorrowingDetail(borrowing)">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                                         <div>
                                             <div class="font-medium">{{ borrowing.borrower_name }}</div>
-                                            <div class="text-gray-500 text-xs">{{ borrowing.borrower_id }}</div>
+                                            <div class="text-gray-500 dark:text-gray-400 dark:text-gray-400 text-xs">{{ borrowing.borrower_id }}</div>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-900">
+                                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">
                                         {{ borrowing.item_name }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                         {{ borrowing.borrow_date }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                         {{ borrowing.expected_return_date }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                         {{ borrowing.return_date || '-' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap" @click.stop>
@@ -424,23 +427,23 @@ const exportPdf = async () => {
                                             {{ borrowing.status }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-600">
+                                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
                                         <div v-if="borrowing.approver_name && borrowing.approved_at"
                                             class="text-green-700">
                                             <div class="font-medium">Approved by:</div>
                                             <div class="text-xs">{{ borrowing.approver_name }}</div>
-                                            <div class="text-xs text-gray-500">{{ borrowing.approved_at }}</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">{{ borrowing.approved_at }}</div>
                                         </div>
                                         <div v-else-if="borrowing.rejector_name && borrowing.rejected_at"
                                             class="text-red-700">
                                             <div class="font-medium">Rejected by:</div>
                                             <div class="text-xs">{{ borrowing.rejector_name }}</div>
-                                            <div class="text-xs text-gray-500">{{ borrowing.rejected_at }}</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">{{ borrowing.rejected_at }}</div>
                                         </div>
-                                        <div v-else class="text-gray-400 text-xs">
+                                        <div v-else class="text-gray-400 dark:text-gray-500 dark:text-gray-400 text-xs">
                                             -
                                         </div>
-                                        <div v-if="borrowing.admin_remarks" class="mt-1 text-xs text-gray-500 italic">
+                                        <div v-if="borrowing.admin_remarks" class="mt-1 text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 italic">
                                             "{{ borrowing.admin_remarks }}"
                                         </div>
                                     </td>
@@ -455,7 +458,7 @@ const exportPdf = async () => {
                                             <button
                                                 v-if="borrowing.status === 'pending'"
                                                 @click.stop="openRejectModal(borrowing)"
-                                                class="text-red-600 hover:text-red-900">
+                                                class="text-red-600 dark:text-red-400 hover:text-red-900">
                                                 Reject
                                             </button>
                                             <button
@@ -465,7 +468,7 @@ const exportPdf = async () => {
                                                 Mark Returned
                                             </button>
                                             <button @click.stop="openEditModal(borrowing)"
-                                                class="text-indigo-600 hover:text-indigo-900">
+                                                class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
                                                 Edit
                                             </button>
                                         </div>
@@ -486,15 +489,15 @@ const exportPdf = async () => {
             :employees="employees" @close="closeModal" @saved="handleSaved" />
 
         <!-- Approve Modal -->
-        <div v-if="showApproveModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div v-if="showApproveModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 h-full w-full z-50">
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
                 <div class="mt-3">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Approve Borrowing Request</h3>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Approve Borrowing Request</h3>
                     <form @submit.prevent="approveBorrowing">
                         <div class="mb-4">
                             <InputLabel for="approve_status" value="Status" />
                             <select id="approve_status" v-model="approveForm.status"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100">
                                 <option value="approved">Approved</option>
                                 <option value="borrowed">Borrowed (Equipment Ready)</option>
                             </select>
@@ -520,10 +523,10 @@ const exportPdf = async () => {
         </div>
 
         <!-- Reject Modal -->
-        <div v-if="showRejectModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div v-if="showRejectModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 h-full w-full z-50">
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
                 <div class="mt-3">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Reject Borrowing Request</h3>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Reject Borrowing Request</h3>
                     <form @submit.prevent="rejectBorrowing">
                         <div class="mb-4">
                             <InputLabel for="reject_remarks" value="Rejection Reason *" />

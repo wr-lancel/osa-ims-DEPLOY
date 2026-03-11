@@ -83,7 +83,7 @@ const close = () => {
 <template>
     <Modal :show="show" @close="close">
         <div class="p-6">
-            <h2 class="text-2xl font-semibold text-gray-900 mb-6">
+            <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
                 {{ meeting ? 'Edit Meeting' : 'Schedule Meeting' }}
             </h2>
             <form @submit.prevent="submit">
@@ -125,7 +125,7 @@ const close = () => {
                         id="purpose_notes"
                         v-model="form.purpose_notes"
                         rows="3"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                     />
                     <InputError :message="form.errors.purpose_notes" />
                 </div>
@@ -134,7 +134,7 @@ const close = () => {
                     <select
                         id="status"
                         v-model="form.status"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                         required
                     >
                         <option

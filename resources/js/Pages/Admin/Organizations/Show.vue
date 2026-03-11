@@ -441,7 +441,7 @@ const hasAboutContent = computed(() => {
                     </PrimaryButton>
                 </div>
 
-                <div v-if="organization.officers && organization.officers.length > 0" class="overflow-x-auto">
+                <div v-if="organization.officers && organization.officers.length > 0" class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 transition-colors">
                         <thead class="bg-gray-50 dark:bg-gray-700/50 transition-colors">
                             <tr>
@@ -489,7 +489,7 @@ const hasAboutContent = computed(() => {
             <!-- Members Section -->
             <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6 transition-colors">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 transition-colors">Members</h3>
-                <div v-if="organization.members && organization.members.length > 0" class="overflow-x-auto">
+                <div v-if="organization.members && organization.members.length > 0" class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 transition-colors">
                         <thead class="bg-gray-50 dark:bg-gray-700/50 transition-colors">
                             <tr>
@@ -529,7 +529,7 @@ const hasAboutContent = computed(() => {
                     </Link>
                 </div>
 
-                <div v-if="organization.events && organization.events.length > 0" class="overflow-x-auto">
+                <div v-if="organization.events && organization.events.length > 0" class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 transition-colors">
                         <thead class="bg-gray-50 dark:bg-gray-700/50 transition-colors">
                             <tr>
@@ -550,7 +550,7 @@ const hasAboutContent = computed(() => {
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 transition-colors">
                                     <div>{{ event.event_date }}</div>
-                                    <div v-if="event.start_time" class="text-xs text-gray-400 dark:text-gray-500 transition-colors">
+                                    <div v-if="event.start_time" class="text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400 transition-colors">
                                         {{ event.start_time }}
                                         <span v-if="event.end_time"> - {{ event.end_time }}</span>
                                     </div>
@@ -584,7 +584,7 @@ const hasAboutContent = computed(() => {
                 </SecondaryButton>
             </div>
 
-            <div v-if="organization.meetings && organization.meetings.length > 0" class="overflow-x-auto">
+            <div v-if="organization.meetings && organization.meetings.length > 0" class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 transition-colors">
                     <thead class="bg-gray-50 dark:bg-gray-700/50 transition-colors">
                         <tr>
@@ -606,7 +606,7 @@ const hasAboutContent = computed(() => {
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 transition-colors">
                                 <div>{{ meeting.meeting_date }}</div>
-                                <div class="text-xs text-gray-400 dark:text-gray-500 transition-colors">
+                                <div class="text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400 transition-colors">
                                     {{ meeting.start_time }}
                                     <span v-if="meeting.end_time"> - {{ meeting.end_time }}</span>
                                 </div>
@@ -640,7 +640,7 @@ const hasAboutContent = computed(() => {
                                     class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 transition-colors">
                                     Cancel
                                 </button>
-                                <span v-if="meeting.status !== 'scheduled'" class="text-gray-400 dark:text-gray-500 transition-colors">—</span>
+                                <span v-if="meeting.status !== 'scheduled'" class="text-gray-400 dark:text-gray-500 dark:text-gray-400 transition-colors">—</span>
                             </td>
                         </tr>
                     </tbody>
@@ -727,7 +727,7 @@ const hasAboutContent = computed(() => {
                         <div>
                             <InputLabel for="edit_type" value="Type" />
                             <select id="edit_type" v-model="editForm.type"
-                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors">
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors dark:bg-gray-700 dark:text-gray-100">
                                 <option v-for="option in typeOptions" :key="option.value" :value="option.value">
                                     {{ option.label }}
                                 </option>
@@ -739,7 +739,7 @@ const hasAboutContent = computed(() => {
                         <div>
                             <InputLabel for="edit_status" value="Status" />
                             <select id="edit_status" v-model="editForm.status"
-                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors dark:bg-gray-700 dark:text-gray-100"
                                 required>
                                 <option v-for="option in statusOptions" :key="option.value" :value="option.value">
                                     {{ option.label }}
@@ -760,7 +760,7 @@ const hasAboutContent = computed(() => {
                         <div class="md:col-span-2">
                             <InputLabel for="edit_description" value="Description" />
                             <textarea id="edit_description" v-model="editForm.description" rows="4"
-                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors" />
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors dark:bg-gray-700 dark:text-gray-100" />
                             <InputError :message="editFormErrors.description" />
                         </div>
                     </div>
@@ -899,7 +899,7 @@ const hasAboutContent = computed(() => {
                         <div class="md:col-span-2">
                             <InputLabel for="target_audience" value="Who should attend?" />
                             <select id="target_audience" v-model="meetingForm.target_audience"
-                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors dark:bg-gray-700 dark:text-gray-100"
                                 required>
                                 <option value="all">All (Officers & Members)</option>
                                 <option value="officers">Officers Only</option>
@@ -912,7 +912,7 @@ const hasAboutContent = computed(() => {
                         <div class="md:col-span-2">
                             <InputLabel for="meeting_description" value="Agenda / Description (Optional)" />
                             <textarea id="meeting_description" v-model="meetingForm.description" rows="3"
-                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors dark:bg-gray-700 dark:text-gray-100"
                                 placeholder="Describe the purpose and agenda of the meeting..." />
                             <InputError :message="meetingForm.errors.description" />
                         </div>

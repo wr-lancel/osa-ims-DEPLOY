@@ -71,7 +71,7 @@ const goToDetail = (appointment) => {
 
     <StudentLayout>
         <template #header>
-            <h2 class="text-2xl font-semibold text-gray-900">
+            <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                 Guidance Unit - Appointments
             </h2>
         </template>
@@ -88,9 +88,9 @@ const goToDetail = (appointment) => {
             </div>
 
             <!-- Appointment Request Form -->
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                 <div class="p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Request Appointment</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Request Appointment</h3>
                     
                     <form @submit.prevent="submitForm" class="space-y-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -125,7 +125,7 @@ const goToDetail = (appointment) => {
                             <select
                                 id="appointment_type"
                                 v-model="form.appointment_type"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                                 required
                             >
                                 <option value="consultation">Consultation</option>
@@ -171,19 +171,19 @@ const goToDetail = (appointment) => {
             </div>
 
             <!-- Appointment History -->
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold text-gray-900">My Appointment History</h3>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">My Appointment History</h3>
                         
                         <!-- Status Filter -->
                         <div class="flex items-center gap-2">
-                            <label for="status_filter" class="text-sm text-gray-700">Filter:</label>
+                            <label for="status_filter" class="text-sm text-gray-700 dark:text-gray-200">Filter:</label>
                             <select
                                 id="status_filter"
                                 v-model="statusFilter"
                                 @change="filterByStatus(statusFilter)"
-                                class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                class="rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm dark:bg-gray-700 dark:text-gray-100"
                             >
                                 <option value="">All Status</option>
                                 <option value="pending">Pending</option>
@@ -196,43 +196,43 @@ const goToDetail = (appointment) => {
                     </div>
 
                     <!-- Appointments Table -->
-                    <div v-if="appointments.data && appointments.data.length > 0" class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+                    <div v-if="appointments.data && appointments.data.length > 0" class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-gray-900">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Date & Time
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Type
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Concern
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Status
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Actions
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                 <tr
                                     v-for="appointment in appointments.data"
                                     :key="appointment.appointment_id"
-                                    class="hover:bg-gray-50 cursor-pointer"
+                                    class="hover:bg-gray-50 dark:bg-gray-900 cursor-pointer"
                                     @click="goToDetail(appointment)"
                                 >
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900">{{ appointment.appointment_date }}</div>
-                                        <div class="text-sm text-gray-500">{{ appointment.appointment_time }}</div>
+                                        <div class="text-sm font-medium text-gray-900 dark:text-white">{{ appointment.appointment_date }}</div>
+                                        <div class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">{{ appointment.appointment_time }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="text-sm text-gray-900 capitalize">{{ appointment.appointment_type }}</span>
+                                        <span class="text-sm text-gray-900 dark:text-white capitalize">{{ appointment.appointment_type }}</span>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <div class="text-sm text-gray-900 truncate max-w-xs">{{ appointment.concern }}</div>
+                                        <div class="text-sm text-gray-900 dark:text-white truncate max-w-xs">{{ appointment.concern }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap" @click.stop>
                                         <span
@@ -245,7 +245,7 @@ const goToDetail = (appointment) => {
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" @click.stop>
                                         <Link
                                             :href="route('student.guidance.appointments.show', appointment.appointment_id)"
-                                            class="text-indigo-600 hover:text-indigo-900"
+                                            class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300"
                                         >
                                             View Details
                                         </Link>
@@ -260,11 +260,11 @@ const goToDetail = (appointment) => {
 
                     <!-- Empty State -->
                     <div v-else class="text-center py-12">
-                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        <h3 class="mt-2 text-sm font-medium text-gray-900">No appointments found</h3>
-                        <p class="mt-1 text-sm text-gray-500">Get started by submitting an appointment request above.</p>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No appointments found</h3>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">Get started by submitting an appointment request above.</p>
                     </div>
                 </div>
             </div>

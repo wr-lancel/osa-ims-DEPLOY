@@ -2,10 +2,15 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
+import axios from 'axios';
 import EventFormModal from '@/Components/Admin/EventFormModal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import Pagination from '@/Components/Pagination.vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
+import { useNotification } from '@/composables/useNotification';
+
+const { notify } = useNotification();
 
 const props = defineProps({
     events: {
@@ -76,30 +81,69 @@ const handleSaved = () => {
     closeModal();
     router.reload({ only: ['events'] });
 };
+
+const isExporting = ref(false);
+
+const exportPdf = async () => {
+    isExporting.value = true;
+    try {
+        const params = new URLSearchParams();
+        if (search.value) params.append('search', search.value);
+        if (status.value) params.append('status', status.value);
+        if (orgId.value) params.append('org_id', orgId.value);
+
+        const response = await axios.get(route('admin.organizations.events.export.pdf') + (params.toString() ? '?' + params.toString() : ''), {
+            responseType: 'blob',
+        });
+
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'events_list.pdf');
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('Failed to export PDF:', error);
+        notify('error', 'Failed to generate PDF. Please try again.');
+    } finally {
+        isExporting.value = false;
+    }
+};
 </script>
 
 <template>
     <Head title="Event Management" />
 
     <AdminLayout>
+        <LoadingOverlay :show="isExporting" message="Generating PDF... Please wait." />
         <template #header>
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <h2 class="text-2xl font-semibold text-gray-900">
+                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                     Event Management
                 </h2>
-                <PrimaryButton @click="openAddModal">
-                    Add Event
-                </PrimaryButton>
+                <div class="flex items-center space-x-3">
+                    <div>
+                        <SecondaryButton @click="exportPdf">
+                            Export PDF
+                        </SecondaryButton>
+                        <span class="block text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400 mt-0.5 text-center">Uses current filters</span>
+                    </div>
+                    <PrimaryButton @click="openAddModal">
+                        Add Event
+                    </PrimaryButton>
+                </div>
             </div>
         </template>
 
         <div class="space-y-6">
             <!-- Filters -->
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-4">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <!-- Search -->
                     <div class="md:col-span-2">
-                        <label for="search" class="block text-sm font-medium text-gray-700 mb-1">
+                        <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Search
                         </label>
                         <input
@@ -107,20 +151,20 @@ const handleSaved = () => {
                             v-model="search"
                             type="text"
                             placeholder="Event name or organization..."
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
 
                         />
                     </div>
 
                     <!-- Organization Filter -->
                     <div>
-                        <label for="org_id" class="block text-sm font-medium text-gray-700 mb-1">
+                        <label for="org_id" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Organization
                         </label>
                         <select
                             id="org_id"
                             v-model="orgId"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                         >
                             <option value="">All Organizations</option>
                             <option
@@ -135,13 +179,13 @@ const handleSaved = () => {
 
                     <!-- Status Filter -->
                     <div>
-                        <label for="status" class="block text-sm font-medium text-gray-700 mb-1">
+                        <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Status
                         </label>
                         <select
                             id="status"
                             v-model="status"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                         >
                             <option
                                 v-for="option in statusOptions"
@@ -158,62 +202,62 @@ const handleSaved = () => {
             </div>
 
             <!-- Events Table -->
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-900">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                     Event Name
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                     Organization
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                     Date & Time
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                     Location
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                     Created By
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                     Status
                                 </th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                     Actions
                                 </th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             <tr v-if="events.data && events.data.length === 0">
-                                <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
+                                <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                     No events found.
                                 </td>
                             </tr>
                             <tr
                                 v-for="event in events.data"
                                 :key="event.event_id"
-                                class="hover:bg-gray-50"
+                                class="hover:bg-gray-50 dark:bg-gray-900"
                             >
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                                     {{ event.event_name }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                     {{ event.organization_name }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                     <div>{{ event.event_date }}</div>
-                                    <div v-if="event.start_time" class="text-xs text-gray-400">
+                                    <div v-if="event.start_time" class="text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400">
                                         {{ event.start_time }}
                                         <span v-if="event.end_time"> - {{ event.end_time }}</span>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                     {{ event.venue || '-' }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                     {{ event.created_by_name || '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -231,7 +275,7 @@ const handleSaved = () => {
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <button
                                         @click="openEditModal(event)"
-                                        class="text-indigo-600 hover:text-indigo-900"
+                                        class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300"
                                     >
                                         Edit
                                     </button>

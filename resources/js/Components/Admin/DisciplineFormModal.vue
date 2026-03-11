@@ -190,7 +190,7 @@ const close = () => {
     <LoadingOverlay :show="isProcessing" message="Saving violation... Please wait." />
     <Modal :show="show" @close="close" max-width="2xl">
         <div class="p-6">
-            <h2 class="text-2xl font-semibold text-gray-900 mb-6">
+            <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
                 {{ violation ? 'Edit Violation' : 'Add Violation' }}
             </h2>
 
@@ -224,7 +224,7 @@ const close = () => {
                     <select
                         id="severity"
                         v-model="form.severity"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                         required
                     >
                         <option
@@ -243,7 +243,7 @@ const close = () => {
                     <select
                         id="violation_type"
                         v-model="form.violation_type"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                         :class="{ 'border-red-300': formErrors.violation_type }"
                         :disabled="!form.severity"
                         required
@@ -266,7 +266,7 @@ const close = () => {
                         id="description"
                         v-model="form.description"
                         rows="4"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                         :class="{ 'border-red-300': formErrors.description }"
                         placeholder="Describe the violation in detail..."
                         required
@@ -279,7 +279,7 @@ const close = () => {
                     <select
                         id="status"
                         v-model="form.status"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                         required
                     >
                         <option
@@ -299,7 +299,7 @@ const close = () => {
                         id="sanction"
                         v-model="form.sanction"
                         rows="2"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                         placeholder="Sanction applied..."
                     />
                     <InputError :message="formErrors.sanction" />
@@ -311,7 +311,7 @@ const close = () => {
                         id="remarks"
                         v-model="form.remarks"
                         rows="2"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                         placeholder="Additional remarks..."
                     />
                     <InputError :message="formErrors.remarks" />

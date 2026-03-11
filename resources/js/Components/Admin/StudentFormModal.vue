@@ -165,7 +165,7 @@ const close = () => {
 <template>
     <Modal :show="show" @close="close" max-width="2xl">
         <div class="p-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-6">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">
                 {{ student ? 'Edit Student' : 'Add New Student' }}
             </h2>
 
@@ -194,7 +194,7 @@ const close = () => {
                                 class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                 Active Term
                             </span>
-                            <span v-if="!activeTerm" class="text-sm text-red-600">
+                            <span v-if="!activeTerm" class="text-sm text-red-600 dark:text-red-400">
                                 No active term set. Please set an active term in Settings first.
                             </span>
                         </div>
@@ -244,7 +244,7 @@ const close = () => {
                         <div>
                             <InputLabel for="course_id" value="Course *" />
                             <select id="course_id" v-model="form.course_id"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                                 :class="{ 'border-red-500': form.errors.course_id }" required>
                                 <option value="">Select Course</option>
                                 <option v-for="course in courses" :key="course.course_id" :value="course.course_id">
@@ -257,7 +257,7 @@ const close = () => {
                         <div>
                             <InputLabel for="year_level" value="Year Level *" />
                             <select id="year_level" v-model="form.year_level"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                                 :class="{ 'border-red-500': form.errors.year_level }" required>
                                 <option value="">Select Year Level</option>
                                 <option v-for="level in yearLevels" :key="level" :value="level">

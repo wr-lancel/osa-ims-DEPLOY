@@ -129,14 +129,14 @@ const shouldShow = () => {
 </script>
 
 <template>
-    <div v-if="shouldShow()" class="bg-white px-4 py-2.5 border-t border-gray-200 sm:px-6">
+    <div v-if="shouldShow()" class="bg-white dark:bg-gray-800 px-4 py-2.5 border-t border-gray-200 dark:border-gray-700 sm:px-6">
         <div class="flex items-center justify-between">
             <!-- Left: Showing count -->
-            <p class="text-sm text-gray-600">
+            <p class="text-sm text-gray-600 dark:text-gray-400">
                 Showing
-                <span class="font-semibold text-gray-900">{{ showingCount }}</span>
+                <span class="font-semibold text-gray-900 dark:text-gray-100">{{ showingCount }}</span>
                 of
-                <span class="font-semibold text-gray-900">{{ totalItems }}</span>
+                <span class="font-semibold text-gray-900 dark:text-gray-100">{{ totalItems }}</span>
             </p>
 
             <!-- Right: Navigation controls -->
@@ -145,8 +145,8 @@ const shouldShow = () => {
                 <button
                     @click="goFirst"
                     :disabled="!canGoPrev"
-                    class="inline-flex items-center justify-center w-8 h-8 rounded border border-gray-300 bg-white text-gray-500 transition-colors"
-                    :class="canGoPrev ? 'hover:bg-gray-50 hover:text-gray-700 cursor-pointer' : 'opacity-40 cursor-not-allowed'"
+                    class="inline-flex items-center justify-center w-8 h-8 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
+                    :class="canGoPrev ? 'hover:bg-gray-50 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200 cursor-pointer' : 'opacity-40 cursor-not-allowed'"
                     title="First page"
                     aria-label="Go to first page"
                 >
@@ -159,8 +159,8 @@ const shouldShow = () => {
                 <button
                     @click="goPrev"
                     :disabled="!canGoPrev"
-                    class="inline-flex items-center justify-center w-8 h-8 rounded border border-gray-300 bg-white text-gray-500 transition-colors"
-                    :class="canGoPrev ? 'hover:bg-gray-50 hover:text-gray-700 cursor-pointer' : 'opacity-40 cursor-not-allowed'"
+                    class="inline-flex items-center justify-center w-8 h-8 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
+                    :class="canGoPrev ? 'hover:bg-gray-50 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200 cursor-pointer' : 'opacity-40 cursor-not-allowed'"
                     title="Previous page"
                     aria-label="Go to previous page"
                 >
@@ -173,7 +173,7 @@ const shouldShow = () => {
                 <select
                     v-model.number="currentPage"
                     @change="onPageChange"
-                    class="h-8 rounded border-gray-300 bg-white text-sm text-gray-700 pl-2 pr-7 py-0 focus:border-indigo-500 focus:ring-indigo-500 cursor-pointer"
+                    class="h-8 rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 pl-2 pr-7 py-0 focus:border-indigo-500 focus:ring-indigo-500 cursor-pointer"
                 >
                     <option v-for="p in pageOptions" :key="p" :value="p">
                         {{ p }}
@@ -184,8 +184,8 @@ const shouldShow = () => {
                 <button
                     @click="goNext"
                     :disabled="!canGoNext"
-                    class="inline-flex items-center justify-center w-8 h-8 rounded border border-gray-300 bg-white text-gray-500 transition-colors"
-                    :class="canGoNext ? 'hover:bg-gray-50 hover:text-gray-700 cursor-pointer' : 'opacity-40 cursor-not-allowed'"
+                    class="inline-flex items-center justify-center w-8 h-8 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
+                    :class="canGoNext ? 'hover:bg-gray-50 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200 cursor-pointer' : 'opacity-40 cursor-not-allowed'"
                     title="Next page"
                     aria-label="Go to next page"
                 >
@@ -198,8 +198,8 @@ const shouldShow = () => {
                 <button
                     @click="goLast"
                     :disabled="!canGoNext"
-                    class="inline-flex items-center justify-center w-8 h-8 rounded border border-gray-300 bg-white text-gray-500 transition-colors"
-                    :class="canGoNext ? 'hover:bg-gray-50 hover:text-gray-700 cursor-pointer' : 'opacity-40 cursor-not-allowed'"
+                    class="inline-flex items-center justify-center w-8 h-8 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
+                    :class="canGoNext ? 'hover:bg-gray-50 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200 cursor-pointer' : 'opacity-40 cursor-not-allowed'"
                     title="Last page"
                     aria-label="Go to last page"
                 >
@@ -212,7 +212,7 @@ const shouldShow = () => {
                 <select
                     v-model.number="currentPerPage"
                     @change="onPerPageChange"
-                    class="h-8 rounded border-gray-300 bg-white text-sm text-gray-700 pl-2 pr-7 py-0 focus:border-indigo-500 focus:ring-indigo-500 cursor-pointer ml-1"
+                    class="h-8 rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 pl-2 pr-7 py-0 focus:border-indigo-500 focus:ring-indigo-500 cursor-pointer ml-1"
                 >
                     <option v-for="opt in perPageOptions" :key="opt" :value="opt">
                         {{ opt }}

@@ -145,7 +145,7 @@ const close = () => {
 <template>
     <Modal :show="show" @close="close" max-width="2xl">
         <div class="p-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-6">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">
                 {{ calendar ? 'Edit Academic Calendar' : 'Add New Academic Calendar' }}
             </h2>
 
@@ -229,7 +229,7 @@ const close = () => {
                         <select
                             id="status"
                             v-model="form.status"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                             :class="{ 'border-red-500': form.errors.status }"
                         >
                             <option
@@ -240,7 +240,7 @@ const close = () => {
                                 {{ option.label }}
                             </option>
                         </select>
-                        <p class="mt-1 text-xs text-gray-500">
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">
                             Setting a semester as "Active" will automatically mark other active semesters as "Completed".
                         </p>
                         <InputError :message="form.errors.status" class="mt-2" />

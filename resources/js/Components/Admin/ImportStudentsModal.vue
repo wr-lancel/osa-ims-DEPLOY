@@ -125,7 +125,7 @@ const downloadErrorReport = () => {
     <LoadingOverlay :show="form.processing" message="Importing records... This might take a while for large files." />
     <Modal :show="show" @close="close" max-width="2xl">
         <div class="p-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-6">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">
                 Import Students from Excel
             </h2>
 
@@ -158,16 +158,16 @@ const downloadErrorReport = () => {
                         <button
                             type="button"
                             @click="downloadErrorReport"
-                            class="text-xs text-indigo-600 hover:text-indigo-800 underline"
+                            class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 underline"
                         >
                             Download Error Report
                         </button>
                     </div>
-                    <ul class="text-xs space-y-1 max-h-32 overflow-y-auto bg-white bg-opacity-50 p-2 rounded">
+                    <ul class="text-xs space-y-1 max-h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 bg-white dark:bg-gray-800 bg-opacity-50 p-2 rounded">
                         <li v-for="(error, index) in importResult.errors.slice(0, 10)" :key="index" class="text-red-700">
                             Row {{ error.row }} ({{ error.student_number }}): {{ error.error }}
                         </li>
-                        <li v-if="importResult.errors.length > 10" class="text-gray-500 italic">
+                        <li v-if="importResult.errors.length > 10" class="text-gray-500 dark:text-gray-400 dark:text-gray-400 italic">
                             ... and {{ importResult.errors.length - 10 }} more errors. Download the full report above.
                         </li>
                     </ul>
@@ -189,7 +189,7 @@ const downloadErrorReport = () => {
                             >
                                 Active Term
                             </span>
-                            <span v-if="!activeTerm" class="text-sm text-red-600">
+                            <span v-if="!activeTerm" class="text-sm text-red-600 dark:text-red-400">
                                 No active term set. Please set an active term in Settings first.
                             </span>
                         </div>
@@ -208,21 +208,21 @@ const downloadErrorReport = () => {
                             type="file"
                             accept=".xlsx,.xls,.csv"
                             @change="handleFileChange"
-                            class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-gray-800"
+                            class="mt-1 block w-full text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-gray-800"
                         />
                         <InputError :message="form.errors.file" class="mt-2" />
-                        <p class="mt-2 text-sm text-gray-500">
+                        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                             Upload an Excel file with student data. Maximum file size: 10MB.
                         </p>
                     </div>
 
                     <!-- Template Info -->
-                    <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <h4 class="font-medium text-sm text-gray-900 mb-2">Supported Columns (auto-detected):</h4>
-                        <p class="text-xs text-gray-600 mb-2">
+                    <div class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+                        <h4 class="font-medium text-sm text-gray-900 dark:text-white mb-2">Supported Columns (auto-detected):</h4>
+                        <p class="text-xs text-gray-600 dark:text-gray-300 mb-2">
                             Upload your enrolled list directly — the system will auto-detect columns by header name.
                         </p>
-                        <ul class="text-xs text-gray-600 list-disc list-inside space-y-1">
+                        <ul class="text-xs text-gray-600 dark:text-gray-300 list-disc list-inside space-y-1">
                             <li><strong>Student Number</strong> — headers like: Student, Student No, ID <span class="text-red-500">(required)</span></li>
                             <li><strong>Last Name</strong> — headers like: Last Name, Surname</li>
                             <li><strong>First Name</strong> — headers like: First Name, Given Name</li>
@@ -231,7 +231,7 @@ const downloadErrorReport = () => {
                             <li><strong>Course</strong> — headers like: Course, Program <span class="text-red-500">(required, must match existing)</span></li>
                             <li><strong>Section</strong> — headers like: Section, Sec (auto-extracts letter from e.g. "BSHM-B" → "B")</li>
                         </ul>
-                        <p class="text-xs text-gray-500 mt-2">
+                        <p class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 mt-2">
                             Other columns (Sex, Address, Contact, etc.) will be ignored — students can fill those in their profile.
                         </p>
                     </div>

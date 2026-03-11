@@ -33,6 +33,9 @@ class CandidacyController extends Controller
         if ($request->filled('acad_id')) {
             $query->where('acad_id', $request->acad_id);
         }
+        if ($request->filled('org_type')) {
+            $query->whereHas('organization', fn($q) => $q->where('type', $request->org_type));
+        }
 
         $applications = $query->orderBy('submitted_at', 'desc')
             ->paginate($request->input('perPage', 20))
@@ -70,8 +73,9 @@ class CandidacyController extends Controller
         return Inertia::render('Admin/Organizations/CandidaciesIndex', [
             'applications' => $applications,
             'stats' => $stats,
-            'filters' => $request->only(['status', 'org_id', 'acad_id']),
+            'filters' => $request->only(['status', 'org_id', 'acad_id', 'org_type']),
             'organizations' => $organizations,
+            'organizationTypes' => StudentOrganization::distinct()->whereNotNull('type')->pluck('type')->sort()->values(),
             'terms' => $terms,
             'candidacyOpen' => SystemSetting::isCandidacyOpen(),
         ]);
@@ -129,5 +133,60 @@ class CandidacyController extends Controller
 
         $status = !$currentlyOpen ? 'opened' : 'closed';
         return redirect()->back()->with('success', "Candidacy submissions {$status} globally.");
+    }
+
+    /**
+     * Export candidacy applications to PDF with current filters.
+     */
+    public function exportPdf(Request $request)
+    {
+        $query = CandidacyApplication::with(['enrollment.student', 'position', 'academicCalendar', 'organization']);
+
+        if ($request->filled('org_id')) {
+            $query->where('org_id', $request->org_id);
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('acad_id')) {
+            $query->where('acad_id', $request->acad_id);
+        }
+        if ($request->filled('org_type')) {
+            $query->whereHas('organization', fn($q) => $q->where('type', $request->org_type));
+        }
+
+        $applications = $query->orderBy('submitted_at', 'desc')->get();
+
+        $headers = ['Applicant', 'Student #', 'Organization', 'Position', 'Term', 'Submitted', 'Status'];
+        $rows = $applications->map(fn($app) => [
+            $app->enrollment?->student?->full_name ?? '—',
+            $app->enrollment?->student?->student_number ?? '—',
+            $app->organization?->org_name ?? '—',
+            $app->position?->position_name ?? '—',
+            $app->academicCalendar ? ($app->academicCalendar->academic_year . ($app->academicCalendar->semester ? ' - ' . $app->academicCalendar->semester : '')) : '—',
+            $app->submitted_at?->format('Y-m-d H:i') ?? '—',
+            ucfirst(str_replace('_', ' ', $app->status)),
+        ])->toArray();
+
+        $filterLabels = array_filter([
+            'Organization' => $request->filled('org_id')
+                ? (StudentOrganization::find($request->org_id)?->org_name ?? $request->org_id)
+                : null,
+            'Org Type' => $request->filled('org_type') ? ucfirst($request->org_type) : null,
+            'Status' => $request->filled('status') ? ucfirst(str_replace('_', ' ', $request->status)) : null,
+            'Term' => $request->filled('acad_id')
+                ? (\App\Models\AcademicCalendar::find($request->acad_id)?->display_label ?? $request->acad_id)
+                : null,
+        ]);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.pdf-table', [
+            'title' => 'Candidacy Applications Report',
+            'date' => now()->format('F j, Y g:i A'),
+            'headers' => $headers,
+            'rows' => $rows,
+            'filters' => $filterLabels,
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->download('candidacy_applications_' . date('Y-m-d_His') . '.pdf');
     }
 }

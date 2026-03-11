@@ -118,7 +118,7 @@ const filteredOrganizations = computed(() => {
                                 v-model="search"
                                 type="text"
                                 placeholder="Search organization name or code..."
-                                class="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 transition-colors"
+                                class="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 transition-colors dark:bg-gray-700 dark:text-gray-100"
                             />
                         </div>
                         <div>
@@ -126,7 +126,7 @@ const filteredOrganizations = computed(() => {
                             <select
                                 id="type"
                                 v-model="filterType"
-                                class="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 transition-colors"
+                                class="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 transition-colors dark:bg-gray-700 dark:text-gray-100"
                             >
                                 <option
                                     v-for="option in typeOptions"
@@ -185,7 +185,7 @@ const filteredOrganizations = computed(() => {
                 </div>
                 
                 <div v-else class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-8 text-center transition-colors">
-                    <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 dark:text-gray-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
                     <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 transition-colors">No organizations found</p>

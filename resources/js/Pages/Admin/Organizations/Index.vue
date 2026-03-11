@@ -143,9 +143,12 @@ const exportPdf = async () => {
                     <Link v-if="activeTab === 'organizations'" :href="route('admin.organizations.candidacies.index')">
                         <SecondaryButton type="button">Candidacy Applications</SecondaryButton>
                     </Link>
-                    <SecondaryButton v-if="activeTab === 'organizations'" @click="exportPdf">
-                        Export PDF
-                    </SecondaryButton>
+                    <div>
+                        <SecondaryButton v-if="activeTab === 'organizations'" @click="exportPdf">
+                            Export PDF
+                        </SecondaryButton>
+                        <span v-if="activeTab === 'organizations'" class="block text-xs text-gray-400 dark:text-gray-500 mt-0.5 text-center">Uses current filters</span>
+                    </div>
                     <PrimaryButton v-if="activeTab === 'organizations'" @click="openAddModal">
                         Add Organization
                     </PrimaryButton>
@@ -174,7 +177,7 @@ const exportPdf = async () => {
                             </label>
                             <input id="search" v-model="search" type="text"
                                 placeholder="Organization name, code, or president..."
-                                class="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors" />
+                                class="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors dark:bg-gray-700 dark:text-gray-100" />
                         </div>
 
                         <!-- Type Filter -->
@@ -183,7 +186,7 @@ const exportPdf = async () => {
                                 Type
                             </label>
                             <select id="type" v-model="type"
-                                class="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors">
+                                class="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors dark:bg-gray-700 dark:text-gray-100">
                                 <option v-for="option in typeOptions" :key="option.value" :value="option.value">
                                     {{ option.label }}
                                 </option>
@@ -196,7 +199,7 @@ const exportPdf = async () => {
                                 Status
                             </label>
                             <select id="status" v-model="status"
-                                class="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors">
+                                class="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors dark:bg-gray-700 dark:text-gray-100">
                                 <option v-for="option in statusOptions" :key="option.value" :value="option.value">
                                     {{ option.label }}
                                 </option>
@@ -209,7 +212,7 @@ const exportPdf = async () => {
 
                 <!-- Organizations Table -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden transition-colors">
-                    <div class="overflow-x-auto">
+                    <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 transition-colors">
                             <thead class="bg-gray-50 dark:bg-gray-700/50 transition-colors">
                                 <tr>
@@ -277,7 +280,7 @@ const exportPdf = async () => {
                                                 Adv: {{ org.adviser_name }}
                                             </div>
                                         </div>
-                                        <span v-else class="text-gray-400 dark:text-gray-500 transition-colors">-</span>
+                                        <span v-else class="text-gray-400 dark:text-gray-500 dark:text-gray-400 transition-colors">-</span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 transition-colors">
                                         {{ org.members_count }}

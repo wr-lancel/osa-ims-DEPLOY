@@ -222,10 +222,16 @@ Route::middleware('auth')->group(function () {
                 Route::delete('/sports/{sport}/athletes/{student}', [SportsController::class, 'removeAthlete'])->name('sports.athletes.destroy');
             });
 
-        // Settings (Admin/Super Admin only)
-        Route::middleware('role:admin,super_admin')->group(function () {
+        // Settings — view & lookup-values open to any settings module role
+        Route::middleware('module:settings')->group(function () {
             Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
 
+            // Lookup Values management (controller enforces per-module key restrictions)
+            Route::put('/settings/lookup-values', [SettingsController::class, 'updateLookupValues'])->name('settings.lookup-values.update');
+        });
+
+        // Settings mutations — admin/super_admin only
+        Route::middleware('role:admin,super_admin')->group(function () {
             // Discipline Workflow Step management
             Route::post('/settings/discipline-steps', [SettingsController::class, 'storeDisciplineStep'])->name('settings.discipline-steps.store');
             Route::put('/settings/discipline-steps/reorder', [SettingsController::class, 'reorderDisciplineSteps'])->name('settings.discipline-steps.reorder');
@@ -236,9 +242,6 @@ Route::middleware('auth')->group(function () {
             Route::post('/settings/violation-types', [SettingsController::class, 'storeViolationType'])->name('settings.violation-types.store');
             Route::put('/settings/violation-types/{type}', [SettingsController::class, 'updateViolationType'])->name('settings.violation-types.update');
             Route::delete('/settings/violation-types/{type}', [SettingsController::class, 'destroyViolationType'])->name('settings.violation-types.destroy');
-
-            // Lookup Values management
-            Route::put('/settings/lookup-values', [SettingsController::class, 'updateLookupValues'])->name('settings.lookup-values.update');
         });
     });
 

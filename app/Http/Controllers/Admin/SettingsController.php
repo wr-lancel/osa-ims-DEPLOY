@@ -10,6 +10,7 @@ use App\Models\DisciplineViolationType;
 use App\Models\DisciplineWorkflowStep;
 use App\Models\Role;
 use App\Models\SystemSetting;
+use App\Services\ModuleAuthorizationService;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,79 +25,104 @@ class SettingsController extends Controller
      */
     public function index(Request $request): Response
     {
-        $perPage = $request->input('perPage', 20);
+        $user = $request->user();
+        $moduleService = app(ModuleAuthorizationService::class);
+        $accessibleModules = $moduleService->getAccessibleModules($user);
 
-        // Get all academic calendars
-        $academicCalendars = AcademicCalendar::orderBy('start_date', 'desc')
-            ->paginate($perPage, ['*'], 'calendars_page')
-            ->withQueryString()
-            ->through(function ($calendar) {
-                return [
-                    'calendar_id' => $calendar->calendar_id,
-                    'academic_year' => $calendar->academic_year,
-                    'semester' => $calendar->semester,
-                    'start_date' => $calendar->start_date->format('Y-m-d'),
-                    'end_date' => $calendar->end_date->format('Y-m-d'),
-                    'status' => $calendar->status,
-                    'display_label' => $calendar->display_label,
-                    'enrollments_count' => $calendar->enrolledStudents()->count(),
-                ];
-            });
+        // Full admins have access to the 'students' module
+        $isFullAdmin = in_array('students', $accessibleModules, true);
+        $hasDiscipline = in_array('discipline', $accessibleModules, true);
 
-        // Get all courses with section counts
-        $courses = Course::withCount('sections')
-            ->orderBy('course_name')
-            ->paginate($perPage, ['*'], 'courses_page')
-            ->withQueryString()
-            ->through(function ($course) {
-                return [
-                    'course_id' => $course->course_id,
-                    'course_code' => $course->course_code,
-                    'course_name' => $course->course_name,
-                    'description' => $course->description,
-                    'sections_count' => $course->sections_count,
-                ];
-            });
+        // Determine which tabs this user can see
+        if ($isFullAdmin) {
+            $availableTabs = ['calendars', 'courses', 'roles', 'discipline-workflow', 'violation-types', 'lookup-values'];
+        } elseif ($hasDiscipline) {
+            $availableTabs = ['discipline-workflow', 'violation-types', 'lookup-values'];
+        } else {
+            $availableTabs = ['lookup-values'];
+        }
 
-
-
-        // Get discipline workflow steps
-        $disciplineWorkflowSteps = DisciplineWorkflowStep::ordered()->get()->map(fn($step) => [
-            'id' => $step->id,
-            'name' => $step->name,
-            'description' => $step->description,
-            'sort_order' => $step->sort_order,
-            'is_terminal' => $step->is_terminal,
-            'cases_count' => Discipline::where('status', $step->name)->count(),
-        ]);
-
-        // Get discipline violation types
-        $disciplineViolationTypes = DisciplineViolationType::ordered()->get()->map(fn($t) => [
-            'id' => $t->id,
-            'name' => $t->name,
-            'severity' => $t->severity,
-            'description' => $t->description,
-            'default_sanction' => $t->default_sanction,
-            'sort_order' => $t->sort_order,
-            'cases_count' => Discipline::where('violation_type', $t->name)->where('severity', $t->severity)->count(),
-        ]);
-        // Get roles with user counts
-        $roles = Role::withCount('users')->orderBy('role_name')->get()->map(fn($role) => [
-            'role_id' => $role->role_id,
-            'role_name' => $role->role_name,
-            'users_count' => $role->users_count,
-        ]);
-
-        // Get lookup values
+        // ── Lookup values (filtered to accessible modules) ──
+        $accessibleLookupKeys = SystemSetting::getAccessibleLookupKeys($accessibleModules);
         $lookupValues = [];
-        foreach (array_keys(SystemSetting::DEFAULTS) as $key) {
+        foreach ($accessibleLookupKeys as $key) {
             $lookupValues[$key] = SystemSetting::getList($key);
         }
 
+        // ── Admin-only data ──
+        $academicCalendars = ['data' => [], 'links' => [], 'meta' => ['total' => 0]];
+        $courses = ['data' => [], 'links' => [], 'meta' => ['total' => 0]];
+        $roles = [];
+
+        if ($isFullAdmin) {
+            $perPage = $request->input('perPage', 20);
+
+            $academicCalendars = AcademicCalendar::orderBy('start_date', 'desc')
+                ->paginate($perPage, ['*'], 'calendars_page')
+                ->withQueryString()
+                ->through(function ($calendar) {
+                    return [
+                        'calendar_id' => $calendar->calendar_id,
+                        'academic_year' => $calendar->academic_year,
+                        'semester' => $calendar->semester,
+                        'start_date' => $calendar->start_date->format('Y-m-d'),
+                        'end_date' => $calendar->end_date->format('Y-m-d'),
+                        'status' => $calendar->status,
+                        'display_label' => $calendar->display_label,
+                        'enrollments_count' => $calendar->enrolledStudents()->count(),
+                    ];
+                });
+
+            $courses = Course::withCount('sections')
+                ->orderBy('course_name')
+                ->paginate($perPage, ['*'], 'courses_page')
+                ->withQueryString()
+                ->through(function ($course) {
+                    return [
+                        'course_id' => $course->course_id,
+                        'course_code' => $course->course_code,
+                        'course_name' => $course->course_name,
+                        'description' => $course->description,
+                        'sections_count' => $course->sections_count,
+                    ];
+                });
+
+            $roles = Role::withCount('users')->orderBy('role_name')->get()->map(fn($role) => [
+                'role_id' => $role->role_id,
+                'role_name' => $role->role_name,
+                'users_count' => $role->users_count,
+            ]);
+        }
+
+        // ── Discipline-specific data ──
+        $disciplineWorkflowSteps = [];
+        $disciplineViolationTypes = [];
+
+        if ($isFullAdmin || $hasDiscipline) {
+            $disciplineWorkflowSteps = DisciplineWorkflowStep::ordered()->get()->map(fn($step) => [
+                'id' => $step->id,
+                'name' => $step->name,
+                'description' => $step->description,
+                'sort_order' => $step->sort_order,
+                'is_terminal' => $step->is_terminal,
+                'cases_count' => Discipline::where('status', $step->name)->count(),
+            ]);
+
+            $disciplineViolationTypes = DisciplineViolationType::ordered()->get()->map(fn($t) => [
+                'id' => $t->id,
+                'name' => $t->name,
+                'severity' => $t->severity,
+                'description' => $t->description,
+                'default_sanction' => $t->default_sanction,
+                'sort_order' => $t->sort_order,
+                'cases_count' => Discipline::where('violation_type', $t->name)->where('severity', $t->severity)->count(),
+            ]);
+        }
+
         return Inertia::render('Admin/Settings/Index', [
+            'availableTabs' => $availableTabs,
             'academicCalendars' => $academicCalendars,
             'courses' => $courses,
-
             'disciplineWorkflowSteps' => $disciplineWorkflowSteps,
             'disciplineViolationTypes' => $disciplineViolationTypes,
             'roles' => $roles,
@@ -305,7 +331,10 @@ class SettingsController extends Controller
      */
     public function updateLookupValues(Request $request): RedirectResponse
     {
-        $allowedKeys = array_keys(SystemSetting::DEFAULTS);
+        $user = $request->user();
+        $moduleService = app(ModuleAuthorizationService::class);
+        $accessibleModules = $moduleService->getAccessibleModules($user);
+        $allowedKeys = SystemSetting::getAccessibleLookupKeys($accessibleModules);
 
         $request->validate([
             'key' => ['required', 'string', 'in:' . implode(',', $allowedKeys)],

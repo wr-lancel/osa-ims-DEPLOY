@@ -65,18 +65,22 @@ class ModuleAuthorizationService
         'sports_admin' => [
             self::MODULE_DASHBOARD,
             self::MODULE_SPORTS,
+            self::MODULE_SETTINGS,
         ],
         'organization_admin' => [
             self::MODULE_DASHBOARD,
             self::MODULE_ORGANIZATIONS,
+            self::MODULE_SETTINGS,
         ],
         'discipline_admin' => [
             self::MODULE_DASHBOARD,
             self::MODULE_DISCIPLINE,
+            self::MODULE_SETTINGS,
         ],
         'guidance_admin' => [
             self::MODULE_DASHBOARD,
             self::MODULE_GUIDANCE,
+            self::MODULE_SETTINGS,
         ],
     ];
 

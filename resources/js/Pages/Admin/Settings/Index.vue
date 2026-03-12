@@ -1,7 +1,7 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, router, usePage } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import AcademicCalendarFormModal from '@/Components/Admin/AcademicCalendarFormModal.vue';
@@ -44,20 +44,25 @@ const props = defineProps({
         type: Object,
         default: () => ({}),
     },
+    availableTabs: {
+        type: Array,
+        default: () => ['calendars', 'courses', 'roles', 'discipline-workflow', 'violation-types', 'lookup-values'],
+    },
 });
 
 // Tab management
-const activeTab = ref('calendars');
+const activeTab = ref(props.availableTabs[0] ?? 'lookup-values');
 
-const tabs = [
+const allTabs = [
     { id: 'calendars', label: 'Academic Calendars', count: computed(() => props.academicCalendars.total ?? props.academicCalendars.data?.length ?? 0) },
     { id: 'courses', label: 'Courses', count: computed(() => props.courses.total ?? props.courses.data?.length ?? 0) },
-
     { id: 'roles', label: 'Roles', count: computed(() => props.roles.length) },
     { id: 'discipline-workflow', label: 'Discipline Workflow', count: computed(() => props.disciplineWorkflowSteps.length) },
     { id: 'violation-types', label: 'Violation Types', count: computed(() => props.disciplineViolationTypes.length) },
     { id: 'lookup-values', label: 'Lookup Values', count: computed(() => Object.keys(props.lookupValues).length) },
 ];
+
+const tabs = computed(() => allTabs.filter(tab => props.availableTabs.includes(tab.id)));
 
 // Academic Calendar Modal
 const showCalendarModal = ref(false);
@@ -558,7 +563,7 @@ const saveLookupValues = (key, values) => {
                 <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                     Settings
                 </h2>
-                <PrimaryButton @click="handleAddNew">
+                <PrimaryButton v-if="activeTab !== 'lookup-values'" @click="handleAddNew">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>

@@ -54,6 +54,15 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 16px;
+            page-break-inside: auto;
+        }
+
+        thead {
+            display: table-header-group;
+        }
+
+        tr {
+            page-break-inside: avoid;
         }
 
         thead th {
@@ -69,14 +78,16 @@
         }
 
         tbody td {
-            padding: 6px;
+            padding: 5px 6px;
             border: 1px solid #e5e7eb;
             font-size: 9px;
-            vertical-align: top;
         }
 
-        tbody tr:nth-child(even) {
-            background-color: #f9fafb;
+        .record-count {
+            text-align: right;
+            font-size: 9px;
+            color: #6b7280;
+            margin-bottom: 8px;
         }
 
         .footer {
@@ -89,13 +100,6 @@
             color: #9ca3af;
             padding: 8px 0;
             border-top: 1px solid #e5e7eb;
-        }
-
-        .record-count {
-            text-align: right;
-            font-size: 9px;
-            color: #6b7280;
-            margin-bottom: 8px;
         }
 
         @page {
@@ -149,7 +153,6 @@
     </table>
 
     <div class="footer">
-        Page
         <script type="text/php">
             if (isset($pdf)) {
                 $x = 270;

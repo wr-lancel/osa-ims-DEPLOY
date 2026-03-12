@@ -693,8 +693,6 @@ class StudentRecordController extends Controller
             abort(404, 'No active academic calendar found.');
         }
 
-        $query = $this->buildFilteredEnrollmentQuery($request, $statusFilter, $academicCalendar);
-
         // Build filter label map for human-readable display in PDF
         $filterLabels = [];
         if ($request->filled('status')) {
@@ -704,31 +702,82 @@ class StudentRecordController extends Controller
             $filterLabels['Year Level'] = 'Year ' . $request->year_level;
         }
         if ($request->filled('course_id')) {
-            $course = \App\Models\Course::find($request->course_id);
+            $course = Course::find($request->course_id);
             $filterLabels['Course'] = $course ? ($course->course_code . ' — ' . $course->course_name) : $request->course_id;
         }
         if ($request->filled('search')) {
             $filterLabels['Search'] = $request->search;
         }
 
-        $headers = ['Student ID', 'Name', 'Year Level', 'Section', 'Course', 'Status'];
-        $rows = [];
+        // Single JOIN query — replaces cursor() + eager loading to eliminate N+1
+        $query = DB::table('enrolled_students as e')
+            ->join('students as s', 'e.student_number', '=', 's.student_number')
+            ->leftJoin('courses as c', 'e.course_id', '=', 'c.course_id')
+            ->leftJoin('sections as sec', 'e.section_id', '=', 'sec.section_id')
+            ->select([
+                's.student_number',
+                's.last_name',
+                's.first_name',
+                's.middle_name',
+                'e.year_level',
+                'sec.section_name',
+                'c.course_name',
+                's.status',
+            ]);
 
-        // Use cursor() to iterate through database records without loading all into memory
-        foreach ($query->with([
-            'student:student_id,student_number,first_name,last_name,middle_name,status',
-            'course:course_id,course_code,course_name',
-            'section:section_id,section_name',
-        ])->cursor() as $e) {
-            $rows[] = [
-                $e->student?->student_number ?? 'N/A',
-                $e->student?->full_name ?? 'N/A',
-                $e->year_level ?? 'N/A',
-                $e->section?->section_name ?? 'N/A',
-                $e->course?->course_name ?? 'N/A',
-                $e->student?->status ?? 'N/A',
-            ];
+        // Apply the same filter logic as buildFilteredEnrollmentQuery
+        if ($isActiveTermOnly && $academicCalendar) {
+            $query->where('e.acad_id', $academicCalendar->calendar_id)
+                  ->where('s.status', 'enrolled');
+        } else {
+            $query->whereIn('e.enrollment_id', function ($sub) {
+                $sub->selectRaw('MAX(enrollment_id)')
+                    ->from('enrolled_students')
+                    ->groupBy('student_number');
+            });
+            if ($statusFilter && $statusFilter !== 'all') {
+                $query->where('s.status', $statusFilter);
+            }
         }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('s.student_number', 'like', "%{$search}%")
+                  ->orWhere('s.first_name', 'like', "%{$search}%")
+                  ->orWhere('s.last_name', 'like', "%{$search}%")
+                  ->orWhere('s.middle_name', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('course_id')) {
+            $query->where('e.course_id', $request->course_id);
+        }
+
+        if ($request->filled('year_level')) {
+            $query->where('e.year_level', $request->year_level);
+        }
+
+        $headers = ['Student ID', 'Name', 'Year Level', 'Section', 'Course', 'Status'];
+
+        $rows = $query->orderBy('s.last_name')
+            ->orderBy('s.first_name')
+            ->get()
+            ->map(function ($r) {
+                $fullName = $r->last_name . ', ' . $r->first_name;
+                if ($r->middle_name) {
+                    $fullName .= ' ' . $r->middle_name;
+                }
+                return [
+                    $r->student_number ?? 'N/A',
+                    $fullName,
+                    $r->year_level ?? 'N/A',
+                    $r->section_name ?? 'N/A',
+                    $r->course_name ?? 'N/A',
+                    ucfirst($r->status ?? 'N/A'),
+                ];
+            })
+            ->toArray();
 
         $titleSuffix = $isActiveTermOnly && $academicCalendar
             ? $academicCalendar->display_label

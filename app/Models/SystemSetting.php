@@ -13,6 +13,18 @@ class SystemSetting extends Model
 
     protected $fillable = ['key', 'value'];
 
+    // ─── Which module owns each lookup key ───
+    public const LOOKUP_MODULE_MAP = [
+        'sports_equipment'           => 'sports',
+        'organization_types'         => 'organizations',
+        'default_org_positions'      => 'organizations',
+        'event_statuses'             => 'organizations',
+        'guidance_case_types'        => 'guidance',
+        'guidance_appointment_types' => 'guidance',
+        'violation_severities'       => 'discipline',
+        'complaint_categories'       => 'discipline',
+    ];
+
     // ─── Default values for each configurable list ───
     public const DEFAULTS = [
         'organization_types' => ['Academic', 'Cultural', 'Governance', 'Special Interest'],
@@ -74,5 +86,24 @@ class SystemSetting extends Model
     public static function isCandidacyOpen(): bool
     {
         return (bool) static::getValue('candidacy_submissions_open', '0');
+    }
+
+    /**
+     * Return the lookup keys accessible to the given modules.
+     * Full admins (who have 'students' module) get all keys.
+     */
+    public static function getAccessibleLookupKeys(array $accessibleModules): array
+    {
+        if (in_array('students', $accessibleModules, true)) {
+            return array_keys(self::DEFAULTS);
+        }
+
+        $keys = [];
+        foreach (self::LOOKUP_MODULE_MAP as $key => $module) {
+            if (in_array($module, $accessibleModules, true)) {
+                $keys[] = $key;
+            }
+        }
+        return $keys;
     }
 }

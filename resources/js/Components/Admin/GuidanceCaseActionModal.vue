@@ -11,6 +11,20 @@ import { useNotification } from '@/composables/useNotification';
 
 const { notification, notify, closeNotification } = useNotification();
 
+const weekendError = ref('');
+
+const onDateChange = () => {
+    if (!formData.value.action_at) return;
+    const [year, month, day] = formData.value.action_at.split('-').map(Number);
+    const d = new Date(year, month - 1, day);
+    if (d.getDay() === 0 || d.getDay() === 6) {
+        formData.value.action_at = '';
+        weekendError.value = 'Weekends are not available. Please select a weekday (Monday – Friday).';
+    } else {
+        weekendError.value = '';
+    }
+};
+
 const props = defineProps({
     show: {
         type: Boolean,
@@ -114,6 +128,7 @@ const resetForm = () => {
         action_at: new Date().toISOString().split('T')[0],
     };
     errors.value = {};
+    weekendError.value = '';
 };
 
 const close = () => {
@@ -173,7 +188,10 @@ const close = () => {
                         type="date"
                         class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                         :class="{ 'border-red-300': errors.action_at }"
+                        :min="new Date().toISOString().split('T')[0]"
+                        @change="onDateChange"
                     />
+                    <p v-if="weekendError" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ weekendError }}</p>
                     <InputError :message="errors.action_at?.[0]" />
                 </div>
 

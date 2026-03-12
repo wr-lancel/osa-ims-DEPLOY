@@ -38,7 +38,7 @@ const props = defineProps({
 
 const quickActions = [
     { title: 'Book Guidance', icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z', route: 'student.guidance.index', gradient: 'from-blue-500 to-indigo-600', shadow: 'shadow-blue-500/30' },
-    { title: 'Borrow Sports Eq.', icon: 'M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z', route: 'student.sports.index', gradient: 'from-emerald-400 to-teal-500', shadow: 'shadow-emerald-500/30' },
+    { title: 'Borrow Sports Equipment', icon: 'M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z', route: 'student.sports.index', gradient: 'from-emerald-400 to-teal-500', shadow: 'shadow-emerald-500/30' },
     { title: 'File Complaint', icon: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z', route: 'student.discipline.complaints.create', gradient: 'from-rose-400 to-red-500', shadow: 'shadow-rose-500/30' },
     { title: 'Organizations', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z', route: 'student.organizations.index', gradient: 'from-amber-400 to-orange-500', shadow: 'shadow-amber-500/30' },
 ];

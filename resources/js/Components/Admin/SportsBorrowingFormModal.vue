@@ -32,6 +32,33 @@ const emit = defineEmits(['close', 'saved']);
 const isProcessing = ref(false);
 const formErrors = ref({});
 const borrowerType = ref('student');
+const borrowDateError = ref('');
+const returnDateError = ref('');
+
+const validateWeekday = (dateStr) => {
+    if (!dateStr) return true;
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const d = new Date(year, month - 1, day);
+    return d.getDay() !== 0 && d.getDay() !== 6;
+};
+
+const onBorrowDateChange = () => {
+    if (!validateWeekday(form.borrow_date)) {
+        form.borrow_date = '';
+        borrowDateError.value = 'Weekends are not available. Please select a weekday (Monday – Friday).';
+    } else {
+        borrowDateError.value = '';
+    }
+};
+
+const onReturnDateChange = () => {
+    if (!validateWeekday(form.expected_return_date)) {
+        form.expected_return_date = '';
+        returnDateError.value = 'Weekends are not available. Please select a weekday (Monday – Friday).';
+    } else {
+        returnDateError.value = '';
+    }
+};
 
 const form = useForm({
     student_number: '',
@@ -115,6 +142,8 @@ const submit = () => {
 const close = () => {
     form.reset();
     formErrors.value = {};
+    borrowDateError.value = '';
+    returnDateError.value = '';
     emit('close');
 };
 </script>
@@ -218,8 +247,11 @@ const close = () => {
                         type="date"
                         class="mt-1 block w-full"
                         :class="{ 'border-red-300': formErrors.borrow_date }"
+                        :min="new Date().toISOString().split('T')[0]"
                         required
+                        @change="onBorrowDateChange"
                     />
+                    <p v-if="borrowDateError" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ borrowDateError }}</p>
                     <InputError :message="formErrors.borrow_date" />
                 </div>
 
@@ -232,8 +264,11 @@ const close = () => {
                         type="date"
                         class="mt-1 block w-full"
                         :class="{ 'border-red-300': formErrors.expected_return_date }"
+                        :min="new Date().toISOString().split('T')[0]"
                         required
+                        @change="onReturnDateChange"
                     />
+                    <p v-if="returnDateError" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ returnDateError }}</p>
                     <InputError :message="formErrors.expected_return_date" />
                 </div>
 

@@ -451,6 +451,7 @@ const lookupLabels = {
     event_statuses: 'Event Statuses',
     violation_severities: 'Violation Severities',
     default_org_positions: 'Default Org Positions',
+    sports_equipment: 'Sports Equipment',
 };
 
 const lookupDescriptions = {
@@ -461,6 +462,7 @@ const lookupDescriptions = {
     event_statuses: 'Status options for organization events.',
     violation_severities: 'Severity levels for discipline violations.',
     default_org_positions: 'Default officer positions seeded for new organizations.',
+    sports_equipment: 'Equipment items students can select when requesting a borrow.',
 };
 
 const lookupIcons = {
@@ -471,6 +473,7 @@ const lookupIcons = {
     event_statuses: '🎉',
     violation_severities: '⚠️',
     default_org_positions: '👤',
+    sports_equipment: '🏸',
 };
 
 const lookupProcessing = ref(false);

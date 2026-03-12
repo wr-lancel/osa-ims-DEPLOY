@@ -227,6 +227,33 @@ const getStatusColor = (status) => {
 };
 
 // Meeting form
+const meetingWeekendError = ref('');
+
+const officeHours = [
+    { value: '08:00', label: '8:00 AM' },
+    { value: '09:00', label: '9:00 AM' },
+    { value: '10:00', label: '10:00 AM' },
+    { value: '11:00', label: '11:00 AM' },
+    { value: '12:00', label: '12:00 PM' },
+    { value: '13:00', label: '1:00 PM' },
+    { value: '14:00', label: '2:00 PM' },
+    { value: '15:00', label: '3:00 PM' },
+    { value: '16:00', label: '4:00 PM' },
+    { value: '17:00', label: '5:00 PM' },
+];
+
+const onMeetingDateChange = () => {
+    if (!meetingForm.meeting_date) return;
+    const [year, month, day] = meetingForm.meeting_date.split('-').map(Number);
+    const d = new Date(year, month - 1, day);
+    if (d.getDay() === 0 || d.getDay() === 6) {
+        meetingForm.meeting_date = '';
+        meetingWeekendError.value = 'Weekends are not available. Please select a weekday (Monday – Friday).';
+    } else {
+        meetingWeekendError.value = '';
+    }
+};
+
 const showMeetingModal = ref(false);
 const meetingForm = useForm({
     title: '',
@@ -247,6 +274,7 @@ const openMeetingModal = () => {
 const closeMeetingModal = () => {
     showMeetingModal.value = false;
     meetingForm.reset();
+    meetingWeekendError.value = '';
 };
 
 const submitMeeting = () => {
@@ -866,7 +894,9 @@ const hasAboutContent = computed(() => {
                             <InputLabel for="meeting_date" value="Meeting Date" />
                             <TextInput id="meeting_date" v-model="meetingForm.meeting_date" type="date"
                                 class="mt-1 block w-full" :class="{ 'border-red-300': meetingForm.errors.meeting_date }"
-                                required />
+                                :min="new Date().toISOString().split('T')[0]"
+                                required @change="onMeetingDateChange" />
+                            <p v-if="meetingWeekendError" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ meetingWeekendError }}</p>
                             <InputError :message="meetingForm.errors.meeting_date" />
                         </div>
 
@@ -881,17 +911,24 @@ const hasAboutContent = computed(() => {
                         <!-- Start Time -->
                         <div>
                             <InputLabel for="meeting_start_time" value="Start Time" />
-                            <TextInput id="meeting_start_time" v-model="meetingForm.start_time" type="time"
-                                class="mt-1 block w-full" :class="{ 'border-red-300': meetingForm.errors.start_time }"
-                                required />
+                            <select id="meeting_start_time" v-model="meetingForm.start_time"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                                :class="{ 'border-red-300': meetingForm.errors.start_time }"
+                                required>
+                                <option value="">— Select Time —</option>
+                                <option v-for="h in officeHours" :key="h.value" :value="h.value">{{ h.label }}</option>
+                            </select>
                             <InputError :message="meetingForm.errors.start_time" />
                         </div>
 
                         <!-- End Time -->
                         <div>
                             <InputLabel for="meeting_end_time" value="End Time (Optional)" />
-                            <TextInput id="meeting_end_time" v-model="meetingForm.end_time" type="time"
-                                class="mt-1 block w-full" />
+                            <select id="meeting_end_time" v-model="meetingForm.end_time"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100">
+                                <option value="">— Select Time —</option>
+                                <option v-for="h in officeHours" :key="h.value" :value="h.value">{{ h.label }}</option>
+                            </select>
                             <InputError :message="meetingForm.errors.end_time" />
                         </div>
 

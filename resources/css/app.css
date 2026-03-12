@@ -38,6 +38,15 @@
     }
 }
 
+/* Dark mode: make native date/time/color picker icons visible */
+.dark input[type="date"],
+.dark input[type="time"],
+.dark input[type="datetime-local"],
+.dark input[type="month"],
+.dark input[type="week"] {
+    color-scheme: dark;
+}
+
 /* Global scrollbar fallbacks since tailwind-scrollbar plugin not installed */
 .scrollbar-thin::-webkit-scrollbar {
     width: 6px;

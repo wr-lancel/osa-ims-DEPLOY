@@ -22,6 +22,7 @@ class SystemSetting extends Model
         'event_statuses' => ['Planning', 'Upcoming', 'Completed'],
         'violation_severities' => ['Minor', 'Moderate', 'Major'],
         'default_org_positions' => ['President', 'Vice President', 'Secretary', 'Treasurer', 'Auditor', 'PIO', 'Business Manager', 'Sergeant-at-Arms'],
+        'sports_equipment' => ['Basketballs', 'Volleyballs', 'Badminton Sets', 'Table Tennis Paddles', 'Soccer Balls', 'Chess Sets', 'Tennis Rackets', 'Jump Ropes', 'Yoga Mats'],
     ];
 
     /**

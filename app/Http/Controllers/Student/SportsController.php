@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Student\StoreSportsBorrowingRequest;
 use App\Models\SportsBorrowing;
+use App\Models\SystemSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -63,6 +64,7 @@ class SportsController extends Controller
         return Inertia::render('Student/Sports/Index', [
             'borrowings' => $borrowings,
             'filters' => $request->only(['status']),
+            'equipmentList' => SystemSetting::getList('sports_equipment'),
         ]);
     }
 

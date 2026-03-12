@@ -32,32 +32,32 @@ const iconConfig = computed(() => {
     switch (props.type) {
         case 'success':
             return {
-                bgColor: 'bg-green-100',
-                iconColor: 'text-green-600',
+                bgColor: 'bg-green-100 dark:bg-green-900/40',
+                iconColor: 'text-green-600 dark:text-green-400',
                 path: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
             };
         case 'error':
             return {
-                bgColor: 'bg-red-100',
-                iconColor: 'text-red-600',
+                bgColor: 'bg-red-100 dark:bg-red-900/40',
+                iconColor: 'text-red-600 dark:text-red-400',
                 path: 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z',
             };
         case 'warning':
             return {
-                bgColor: 'bg-amber-100',
-                iconColor: 'text-amber-600',
+                bgColor: 'bg-amber-100 dark:bg-amber-900/40',
+                iconColor: 'text-amber-600 dark:text-amber-400',
                 path: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z',
             };
         case 'confirm':
             return {
-                bgColor: 'bg-blue-100',
-                iconColor: 'text-blue-600',
+                bgColor: 'bg-blue-100 dark:bg-blue-900/40',
+                iconColor: 'text-blue-600 dark:text-blue-400',
                 path: 'M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
             };
         default:
             return {
-                bgColor: 'bg-gray-100',
-                iconColor: 'text-gray-600',
+                bgColor: 'bg-gray-100 dark:bg-gray-700',
+                iconColor: 'text-gray-600 dark:text-gray-300',
                 path: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
             };
     }
@@ -65,11 +65,11 @@ const iconConfig = computed(() => {
 
 const titleColor = computed(() => {
     switch (props.type) {
-        case 'success': return 'text-green-900';
-        case 'error': return 'text-red-900';
-        case 'warning': return 'text-amber-900';
-        case 'confirm': return 'text-gray-900';
-        default: return 'text-gray-900';
+        case 'success': return 'text-green-900 dark:text-green-300';
+        case 'error': return 'text-red-900 dark:text-red-300';
+        case 'warning': return 'text-amber-900 dark:text-amber-300';
+        case 'confirm': return 'text-gray-900 dark:text-white';
+        default: return 'text-gray-900 dark:text-white';
     }
 });
 

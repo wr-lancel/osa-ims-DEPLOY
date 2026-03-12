@@ -30,6 +30,33 @@ const form = useForm({
 
 const statusFilter = ref(props.filters.status || '');
 
+const weekendError = ref('');
+
+const officeHours = [
+    { value: '08:00', label: '8:00 AM' },
+    { value: '09:00', label: '9:00 AM' },
+    { value: '10:00', label: '10:00 AM' },
+    { value: '11:00', label: '11:00 AM' },
+    { value: '12:00', label: '12:00 PM' },
+    { value: '13:00', label: '1:00 PM' },
+    { value: '14:00', label: '2:00 PM' },
+    { value: '15:00', label: '3:00 PM' },
+    { value: '16:00', label: '4:00 PM' },
+    { value: '17:00', label: '5:00 PM' },
+];
+
+const onDateChange = () => {
+    if (!form.appointment_date) return;
+    const [year, month, day] = form.appointment_date.split('-').map(Number);
+    const d = new Date(year, month - 1, day);
+    if (d.getDay() === 0 || d.getDay() === 6) {
+        form.appointment_date = '';
+        weekendError.value = 'Weekends are not available. Please select a weekday (Monday – Friday).';
+    } else {
+        weekendError.value = '';
+    }
+};
+
 const submitForm = () => {
     form.post(route('student.guidance.appointments.store'), {
         preserveScroll: true,
@@ -37,6 +64,7 @@ const submitForm = () => {
             form.reset();
             form.appointment_date = new Date().toISOString().split('T')[0];
             form.appointment_type = 'consultation';
+            weekendError.value = '';
         },
     });
 };
@@ -103,19 +131,23 @@ const goToDetail = (appointment) => {
                                     class="mt-1 block w-full"
                                     :min="new Date().toISOString().split('T')[0]"
                                     required
+                                    @change="onDateChange"
                                 />
+                                <p v-if="weekendError" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ weekendError }}</p>
                                 <InputError :message="form.errors.appointment_date" class="mt-2" />
                             </div>
 
                             <div>
                                 <InputLabel for="appointment_time" value="Appointment Time *" />
-                                <TextInput
+                                <select
                                     id="appointment_time"
                                     v-model="form.appointment_time"
-                                    type="time"
-                                    class="mt-1 block w-full"
+                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                                     required
-                                />
+                                >
+                                    <option value="" disabled>— Select Time —</option>
+                                    <option v-for="h in officeHours" :key="h.value" :value="h.value">{{ h.label }}</option>
+                                </select>
                                 <InputError :message="form.errors.appointment_time" class="mt-2" />
                             </div>
                         </div>

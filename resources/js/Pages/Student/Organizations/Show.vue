@@ -106,10 +106,41 @@ const submitEdit = () => {
     });
 };
 
+// Shared office hours & weekend validation helpers
+const officeHours = [
+    { value: '08:00', label: '8:00 AM' },
+    { value: '09:00', label: '9:00 AM' },
+    { value: '10:00', label: '10:00 AM' },
+    { value: '11:00', label: '11:00 AM' },
+    { value: '12:00', label: '12:00 PM' },
+    { value: '13:00', label: '1:00 PM' },
+    { value: '14:00', label: '2:00 PM' },
+    { value: '15:00', label: '3:00 PM' },
+    { value: '16:00', label: '4:00 PM' },
+    { value: '17:00', label: '5:00 PM' },
+];
+
+const isWeekend = (dateStr) => {
+    if (!dateStr) return false;
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const d = new Date(year, month - 1, day);
+    return d.getDay() === 0 || d.getDay() === 6;
+};
+
 // Create Event Modal
 const showEventModal = ref(false);
 const showEventConflictDialog = ref(false);
 const eventConflictMessage = ref('');
+const eventWeekendError = ref('');
+
+const onEventDateChange = () => {
+    if (isWeekend(eventForm.event_date)) {
+        eventForm.event_date = '';
+        eventWeekendError.value = 'Weekends are not available. Please select a weekday (Monday – Friday).';
+    } else {
+        eventWeekendError.value = '';
+    }
+};
 const eventForm = useForm({
     event_name: '',
     description: '',
@@ -137,6 +168,7 @@ const openEventModal = () => {
 const closeEventModal = () => {
     showEventModal.value = false;
     eventForm.reset();
+    eventWeekendError.value = '';
 };
 
 const doSubmitEvent = () => {
@@ -175,6 +207,17 @@ const getStatusColor = (status) => {
 };
 
 // Call Meeting Modal
+const meetingWeekendError = ref('');
+
+const onMeetingDateChange = () => {
+    if (isWeekend(meetingForm.meeting_date)) {
+        meetingForm.meeting_date = '';
+        meetingWeekendError.value = 'Weekends are not available. Please select a weekday (Monday – Friday).';
+    } else {
+        meetingWeekendError.value = '';
+    }
+};
+
 const showMeetingModal = ref(false);
 const meetingForm = useForm({
     title: '',
@@ -202,6 +245,7 @@ const openMeetingModal = () => {
 const closeMeetingModal = () => {
     showMeetingModal.value = false;
     meetingForm.reset();
+    meetingWeekendError.value = '';
 };
 
 const submitMeeting = () => {
@@ -744,7 +788,10 @@ const getAudienceLabel = (audience) => {
                     <div class="mb-4">
                         <InputLabel for="event_date" value="Event Date" />
                         <TextInput id="event_date" v-model="eventForm.event_date" type="date" class="mt-1 block w-full"
-                            :class="{ 'border-red-300 dark:border-red-600': eventForm.errors.event_date }" required />
+                            :class="{ 'border-red-300 dark:border-red-600': eventForm.errors.event_date }" required
+                            :min="new Date().toISOString().split('T')[0]"
+                            @change="onEventDateChange" />
+                        <p v-if="eventWeekendError" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ eventWeekendError }}</p>
                         <InputError :message="eventForm.errors.event_date" />
                     </div>
 
@@ -752,16 +799,22 @@ const getAudienceLabel = (audience) => {
                         <!-- Start Time -->
                         <div>
                             <InputLabel for="start_time" value="Start Time" />
-                            <TextInput id="start_time" v-model="eventForm.start_time" type="time"
-                                class="mt-1 block w-full" />
+                            <select id="start_time" v-model="eventForm.start_time"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100">
+                                <option value="">— Select —</option>
+                                <option v-for="h in officeHours" :key="h.value" :value="h.value">{{ h.label }}</option>
+                            </select>
                             <InputError :message="eventForm.errors.start_time" />
                         </div>
 
                         <!-- End Time -->
                         <div>
                             <InputLabel for="end_time" value="End Time" />
-                            <TextInput id="end_time" v-model="eventForm.end_time" type="time"
-                                class="mt-1 block w-full" />
+                            <select id="end_time" v-model="eventForm.end_time"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100">
+                                <option value="">— Select —</option>
+                                <option v-for="h in officeHours" :key="h.value" :value="h.value">{{ h.label }}</option>
+                            </select>
                             <InputError :message="eventForm.errors.end_time" />
                         </div>
                     </div>
@@ -846,7 +899,9 @@ const getAudienceLabel = (audience) => {
                         <InputLabel for="meeting_date" value="Meeting Date" />
                         <TextInput id="meeting_date" v-model="meetingForm.meeting_date" type="date"
                             class="mt-1 block w-full" :class="{ 'border-red-300 dark:border-red-600': meetingForm.errors.meeting_date }"
-                            required />
+                            :min="new Date().toISOString().split('T')[0]"
+                            required @change="onMeetingDateChange" />
+                        <p v-if="meetingWeekendError" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ meetingWeekendError }}</p>
                         <InputError :message="meetingForm.errors.meeting_date" />
                     </div>
 
@@ -854,16 +909,23 @@ const getAudienceLabel = (audience) => {
                         <!-- Start Time -->
                         <div>
                             <InputLabel for="meeting_start_time" value="Start Time" />
-                            <TextInput id="meeting_start_time" v-model="meetingForm.start_time" type="time"
-                                class="mt-1 block w-full" required />
+                            <select id="meeting_start_time" v-model="meetingForm.start_time"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                                required>
+                                <option value="">— Select —</option>
+                                <option v-for="h in officeHours" :key="h.value" :value="h.value">{{ h.label }}</option>
+                            </select>
                             <InputError :message="meetingForm.errors.start_time" />
                         </div>
 
                         <!-- End Time -->
                         <div>
                             <InputLabel for="meeting_end_time" value="End Time" />
-                            <TextInput id="meeting_end_time" v-model="meetingForm.end_time" type="time"
-                                class="mt-1 block w-full" />
+                            <select id="meeting_end_time" v-model="meetingForm.end_time"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100">
+                                <option value="">— Select —</option>
+                                <option v-for="h in officeHours" :key="h.value" :value="h.value">{{ h.label }}</option>
+                            </select>
                             <InputError :message="meetingForm.errors.end_time" />
                         </div>
                     </div>

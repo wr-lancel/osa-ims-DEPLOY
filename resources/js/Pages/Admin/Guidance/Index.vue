@@ -2,28 +2,19 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, router, Link, useForm } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
-import axios from 'axios';
 import DashboardCards from '@/Components/Admin/DashboardCards.vue';
-import GuidanceCaseFormModal from '@/Components/Admin/GuidanceCaseFormModal.vue';
-import GuidanceCaseActionModal from '@/Components/Admin/GuidanceCaseActionModal.vue';
-import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import Textarea from '@/Components/Textarea.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import InputError from '@/Components/InputError.vue';
-import StatusProgressBar from '@/Components/StatusProgressBar.vue';
 import Pagination from '@/Components/Pagination.vue';
 import NotificationDialog from '@/Components/NotificationDialog.vue';
 import { useNotification } from '@/composables/useNotification';
 
-const { notification, notify, confirmAction, closeNotification, handleConfirm } = useNotification();
+const { notification, notify, closeNotification, handleConfirm } = useNotification();
 
 const props = defineProps({
-    cases: {
-        type: Object,
-        default: () => ({ data: [], links: [], meta: {} }),
-    },
     appointments: {
         type: Object,
         default: () => ({ data: [], links: [], meta: {} }),
@@ -36,25 +27,12 @@ const props = defineProps({
         type: Object,
         default: () => ({}),
     },
-    caseTypes: {
-        type: Array,
-        default: () => [],
-    },
-    statuses: {
-        type: Array,
-        default: () => [],
-    },
-    employees: {
-        type: Array,
-        default: () => [],
-    },
     dashboardStats: {
         type: Array,
         default: () => [],
     },
 });
 
-const activeTab = ref('cases');
 const showApproveModal = ref(false);
 const showRejectModal = ref(false);
 const selectedAppointmentForAction = ref(null);
@@ -67,121 +45,7 @@ const rejectForm = useForm({
     admin_remarks: '',
 });
 
-const showCaseModal = ref(false);
-const showActionModal = ref(false);
-const showCaseDetails = ref(false);
-const showAppointmentDetails = ref(false);
-const selectedCase = ref(null);
-const selectedCaseForAction = ref(null);
-const selectedAppointment = ref(null);
-
-const search = ref(props.filters.search || '');
-const status = ref(props.filters.status || '');
-const caseType = ref(props.filters.case_type || '');
-const assignedStaffId = ref(props.filters.assigned_staff_id || '');
-
-const applyFilters = () => {
-    router.get(route('admin.guidance.index'), {
-        search: search.value || undefined,
-        status: status.value || undefined,
-        case_type: caseType.value || undefined,
-        assigned_staff_id: assignedStaffId.value || undefined,
-    }, {
-        preserveState: true,
-        preserveScroll: true,
-        replace: true,
-        showProgress: false,
-        only: ['cases', 'filters', 'caseTypes', 'statuses', 'employees'],
-    });
-};
-
-let searchDebounce = null;
-watch(search, () => {
-    if (searchDebounce) clearTimeout(searchDebounce);
-    searchDebounce = setTimeout(() => applyFilters(), 350);
-});
-watch([status, caseType, assignedStaffId], () => applyFilters());
-
-const openAddModal = () => {
-    selectedCase.value = null;
-    showCaseModal.value = true;
-};
-
-const openEditModal = (caseItem) => {
-    selectedCase.value = { ...caseItem };
-    showCaseModal.value = true;
-};
-
-const closeCaseModal = () => {
-    showCaseModal.value = false;
-    selectedCase.value = null;
-};
-
-const openActionModal = (caseItem) => {
-    selectedCaseForAction.value = caseItem;
-    showActionModal.value = true;
-};
-
-const closeActionModal = () => {
-    showActionModal.value = false;
-    selectedCaseForAction.value = null;
-};
-
-const viewCaseDetails = async (caseItem) => {
-    try {
-        const response = await axios.get(route('admin.guidance.show', caseItem.guidance_case_id));
-        if (response.data.success) {
-            selectedCase.value = response.data.case;
-            showCaseDetails.value = true;
-        }
-    } catch (error) {
-        console.error('Failed to load case details:', error);
-        notify('error', error.response?.data?.message || 'Failed to load case details.');
-    }
-};
-
-const closeCaseDetails = () => {
-    showCaseDetails.value = false;
-    selectedCase.value = null;
-};
-
-const viewAppointmentDetails = (appointment) => {
-    router.visit(route('admin.guidance.appointments.show', appointment.appointment_id));
-};
-
-const handleCaseSaved = () => {
-    router.reload({ only: ['cases'] });
-};
-
-const handleActionSaved = () => {
-    router.reload({ only: ['cases'] });
-    closeActionModal();
-};
-
-const deleteCase = async (caseItem) => {
-    confirmAction(
-        `Are you sure you want to delete case ${caseItem.case_no}?`,
-        'Delete Case',
-        async () => {
-            try {
-                const response = await axios.delete(route('admin.guidance.destroy', caseItem.guidance_case_id));
-                if (response.data.success) {
-                    notify('success', 'Case deleted successfully.');
-                    router.reload({ only: ['cases'] });
-                } else {
-                    notify('error', response.data.message || 'Failed to delete case.');
-                }
-            } catch (error) {
-                console.error('Failed to delete case:', error);
-                notify('error', error.response?.data?.message || 'Failed to delete case.');
-            }
-        },
-        { confirmLabel: 'Delete', cancelLabel: 'Cancel' }
-    );
-};
-
 const getStatusBadgeClass = (status, statusColor = null) => {
-    // If statusColor is provided (for appointments), use it
     if (statusColor) {
         const colorMap = {
             'yellow': 'bg-yellow-100 text-yellow-800',
@@ -193,7 +57,6 @@ const getStatusBadgeClass = (status, statusColor = null) => {
         return colorMap[statusColor] || 'bg-gray-100 text-gray-800';
     }
 
-    // Otherwise, derive from status string (for cases)
     const classes = {
         pending: 'bg-yellow-100 text-yellow-800',
         ongoing: 'bg-blue-100 text-blue-800',
@@ -201,15 +64,6 @@ const getStatusBadgeClass = (status, statusColor = null) => {
         closed: 'bg-gray-100 text-gray-800',
     };
     return classes[status] || 'bg-gray-100 text-gray-800';
-};
-
-const getCaseTypeBadgeClass = (type) => {
-    const classes = {
-        counseling: 'bg-purple-100 text-purple-800',
-        consultation: 'bg-indigo-100 text-indigo-800',
-        referral: 'bg-pink-100 text-pink-800',
-    };
-    return classes[type] || 'bg-gray-100 text-gray-800';
 };
 
 const appointmentSearch = ref(props.filters.appointment_search || '');
@@ -234,6 +88,10 @@ watch(appointmentSearch, () => {
     appointmentSearchDebounce = setTimeout(() => applyAppointmentFilters(), 350);
 });
 watch([appointmentStatus, appointmentType], () => applyAppointmentFilters());
+
+const viewAppointmentDetails = (appointment) => {
+    router.visit(route('admin.guidance.appointments.show', appointment.appointment_id));
+};
 
 const openApproveModal = (appointment) => {
     selectedAppointmentForAction.value = appointment;
@@ -271,37 +129,6 @@ const approveAppointment = () => {
     });
 };
 
-const isExporting = ref(false);
-
-const exportPdf = async () => {
-    isExporting.value = true;
-    try {
-        const params = new URLSearchParams();
-        if (search.value) params.append('search', search.value);
-        if (status.value) params.append('status', status.value);
-        if (caseType.value) params.append('case_type', caseType.value);
-        if (assignedStaffId.value) params.append('assigned_staff_id', assignedStaffId.value);
-
-        const response = await axios.get(route('admin.guidance.export.pdf') + (params.toString() ? '?' + params.toString() : ''), {
-            responseType: 'blob',
-        });
-
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', 'guidance_cases.pdf');
-        document.body.appendChild(link);
-        link.click();
-        link.parentNode.removeChild(link);
-        window.URL.revokeObjectURL(url);
-    } catch (error) {
-        console.error('Failed to export PDF:', error);
-        notify('error', 'Failed to generate PDF.');
-    } finally {
-        isExporting.value = false;
-    }
-};
-
 const rejectAppointment = () => {
     if (!selectedAppointmentForAction.value) return;
 
@@ -316,34 +143,15 @@ const rejectAppointment = () => {
 </script>
 
 <template>
-
-    <Head title="Guidance Cases" />
+    <Head title="Guidance Unit" />
 
     <AdminLayout>
-        <LoadingOverlay :show="isExporting" message="Generating PDF... Please wait." />
         <template #header>
-
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                     Guidance Unit
                 </h2>
-                <div class="flex space-x-3">
-                    <SecondaryButton v-if="activeTab === 'appointments'" @click="activeTab = 'cases'">
-                        View Cases
-                    </SecondaryButton>
-                    <SecondaryButton v-else @click="activeTab = 'appointments'">
-                        View Appointments
-                    </SecondaryButton>
-                    <div>
-                        <SecondaryButton v-if="activeTab === 'cases'" @click="exportPdf">
-                            Export PDF
-                        </SecondaryButton>
-                        <span v-if="activeTab === 'cases'" class="block text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400 mt-0.5 text-center">Uses current filters</span>
-                    </div>
-                    <PrimaryButton v-if="activeTab === 'cases'" @click="openAddModal">
-                        Add Case
-                    </PrimaryButton>
-                </div>
+                <div class="flex space-x-3"></div>
             </div>
         </template>
 
@@ -352,7 +160,7 @@ const rejectAppointment = () => {
             <DashboardCards :cards="dashboardStats" />
 
             <!-- Appointments Tab -->
-            <div v-if="activeTab === 'appointments'">
+            <div>
                 <!-- Pending Appointments Section -->
                 <div v-if="pendingAppointments && pendingAppointments.length > 0"
                     class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
@@ -469,42 +277,33 @@ const rejectAppointment = () => {
                             </select>
                         </div>
                     </div>
-
-
                 </div>
 
                 <!-- Appointments Table -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden mt-4">
                     <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-gray-900">
                                 <tr>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Student
                                     </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Date & Time
                                     </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Type
                                     </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Concern
                                     </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Status
                                     </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Admin Action
                                     </th>
-                                    <th
-                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Actions
                                     </th>
                                 </tr>
@@ -584,187 +383,7 @@ const rejectAppointment = () => {
                 </div>
             </div>
 
-            <!-- Cases Tab -->
-            <div v-if="activeTab === 'cases'">
-                <!-- Filters -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-4">
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                        <!-- Search -->
-                        <div class="md:col-span-2">
-                            <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                                Search
-                            </label>
-                            <input id="search" v-model="search" type="text" placeholder="Case number, student name..."
-                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100" />
-                        </div>
-
-                        <!-- Status -->
-                        <div>
-                            <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                                Status
-                            </label>
-                            <select id="status" v-model="status"
-                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100">
-                                <option value="">All</option>
-                                <option v-for="s in statuses" :key="s" :value="s">
-                                    {{ s.charAt(0).toUpperCase() + s.slice(1) }}
-                                </option>
-                            </select>
-                        </div>
-
-                        <!-- Case Type -->
-                        <div>
-                            <label for="case_type" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                                Case Type
-                            </label>
-                            <select id="case_type" v-model="caseType"
-                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100">
-                                <option value="">All</option>
-                                <option v-for="type in caseTypes" :key="type" :value="type">
-                                    {{ type.charAt(0).toUpperCase() + type.slice(1) }}
-                                </option>
-                            </select>
-                        </div>
-
-                        <!-- Assigned Staff -->
-                        <div>
-                            <label for="assigned_staff_id" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                                Assigned Staff
-                            </label>
-                            <select id="assigned_staff_id" v-model="assignedStaffId"
-                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100">
-                                <option value="">All</option>
-                                <option v-for="employee in employees" :key="employee.employee_id"
-                                    :value="employee.employee_id">
-                                    {{ employee.full_name }}
-                                </option>
-                            </select>
-                        </div>
-                    </div>
-
-
-                </div>
-
-                <!-- Cases Table -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-                    <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead class="bg-gray-50 dark:bg-gray-900">
-                                <tr>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                        Case No
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                        Student
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                        Section
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                        Case Type
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                        Status
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                        Assigned Staff
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                        Requested At
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                        Actions
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                        Options
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                <tr v-if="cases.data.length === 0">
-                                    <td colspan="9" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
-                                        No guidance cases found.
-                                    </td>
-                                </tr>
-                                <tr v-for="caseItem in cases.data" :key="caseItem.guidance_case_id"
-                                    class="hover:bg-gray-50 dark:bg-gray-900 cursor-pointer" @click="viewCaseDetails(caseItem)">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                                        {{ caseItem.case_no }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                        <div v-if="caseItem.student">
-                                            {{ caseItem.student.full_name }}
-                                            <div class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">{{ caseItem.student.student_number }}
-                                            </div>
-                                        </div>
-                                        <span v-else class="text-gray-400 dark:text-gray-500 dark:text-gray-400">N/A</span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
-                                        {{ caseItem.section?.section_name || 'N/A' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                        <span :class="getCaseTypeBadgeClass(caseItem.case_type)"
-                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
-                                            {{ caseItem.case_type.charAt(0).toUpperCase() + caseItem.case_type.slice(1)
-                                            }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm" @click.stop>
-                                        <span :class="getStatusBadgeClass(caseItem.status)"
-                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
-                                            {{ caseItem.status.charAt(0).toUpperCase() + caseItem.status.slice(1) }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
-                                        {{ caseItem.assigned_staff?.full_name || 'Unassigned' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
-                                        {{ caseItem.requested_at ? new Date(caseItem.requested_at).toLocaleDateString()
-                                        : 'N/A'
-                                        }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
-                                        {{ caseItem.actions_count || 0 }} action(s)
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium" @click.stop>
-                                        <button @click.stop="viewCaseDetails(caseItem)"
-                                            class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-4">
-                                            View
-                                        </button>
-                                        <button @click.stop="openActionModal(caseItem)"
-                                            class="text-blue-600 hover:text-blue-900 mr-4">
-                                            Add Action
-                                        </button>
-                                        <button @click.stop="openEditModal(caseItem)"
-                                            class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-4">
-                                            Edit
-                                        </button>
-                                        <button @click.stop="deleteCase(caseItem)"
-                                            class="text-red-600 dark:text-red-400 hover:text-red-900">
-                                            Delete
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Pagination -->
-                    <Pagination :data="cases" />
-                </div>
-            </div>
-        </div>
-
-        <!-- Approve Appointment Modal -->
+            <!-- Approve Appointment Modal -->
         <div v-if="showApproveModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 h-full w-full z-50">
             <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
                 <div class="mt-3">
@@ -815,112 +434,6 @@ const rejectAppointment = () => {
             </div>
         </div>
 
-        <!-- Modals -->
-        <GuidanceCaseFormModal :show="showCaseModal" :case-item="selectedCase" :employees="employees"
-            @close="closeCaseModal" @saved="handleCaseSaved" />
-
-        <GuidanceCaseActionModal :show="showActionModal" :case-item="selectedCaseForAction" @close="closeActionModal"
-            @saved="handleActionSaved" />
-
-        <!-- Case Details Modal -->
-        <div v-if="showCaseDetails && selectedCase" class="fixed inset-0 z-50 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
-            aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"
-                    @click="closeCaseDetails"></div>
-                <div
-                    class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-                    <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                                Case Details: {{ selectedCase.case_no }}
-                            </h3>
-                            <button @click="closeCaseDetails" class="text-gray-400 dark:text-gray-500 dark:text-gray-400 hover:text-gray-500 dark:text-gray-400 dark:text-gray-400">
-                                <span class="sr-only">Close</span>
-                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="space-y-4">
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Student</label>
-                                    <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ selectedCase.student?.full_name || 'N/A' }}
-                                    </p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Case Type</label>
-                                    <p class="mt-1 text-sm text-gray-900 dark:text-white">{{
-                                        selectedCase.case_type?.charAt(0).toUpperCase() +
-                                        selectedCase.case_type?.slice(1) || 'N/A' }}</p>
-                                </div>
-                                <div class="col-span-2">
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Status</label>
-                                    <p class="text-sm text-gray-900 dark:text-white mb-2">{{
-                                        selectedCase.status?.charAt(0).toUpperCase() +
-                                        selectedCase.status?.slice(1) || 'N/A' }}</p>
-                                    <StatusProgressBar :steps="[
-                                        { value: 'pending', label: 'Pending' },
-                                        { value: 'ongoing', label: 'Ongoing' },
-                                        { value: 'resolved', label: 'Resolved' },
-                                        { value: 'closed', label: 'Closed' },
-                                    ]" :current-status="selectedCase.status" />
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Assigned Staff</label>
-                                    <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ selectedCase.assigned_staff?.full_name ||
-                                        'Unassigned' }}</p>
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Concern</label>
-                                <p class="mt-1 text-sm text-gray-900 dark:text-white whitespace-pre-wrap">{{ selectedCase.concern ||
-                                    'N/A' }}
-                                </p>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Actions Timeline</label>
-                                <div class="space-y-2 max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
-                                    <div v-for="action in selectedCase.actions" :key="action.action_id"
-                                        class="border-l-4 border-indigo-500 pl-4 py-2 bg-gray-50 dark:bg-gray-900 rounded">
-                                        <div class="flex justify-between items-start">
-                                            <div class="flex-1">
-                                                <p class="text-sm text-gray-900 dark:text-white">{{ action.note || 'No note' }}</p>
-                                                <p class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 mt-1">
-                                                    By {{ action.action_by_user?.display_name || 'Unknown' }} on {{ new
-                                                    Date(action.created_at).toLocaleString() }}
-                                                </p>
-                                                <p v-if="action.action_status" class="text-xs mt-1">
-                                                    <span :class="getStatusBadgeClass(action.action_status)"
-                                                        class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium">
-                                                        {{ action.action_status.charAt(0).toUpperCase() +
-                                                        action.action_status.slice(1) }}
-                                                    </span>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div v-if="!selectedCase.actions || selectedCase.actions.length === 0"
-                                        class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
-                                        No actions recorded yet.
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-gray-50 dark:bg-gray-900 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                        <SecondaryButton @click="closeCaseDetails" class="w-full sm:w-auto">
-                            Close
-                        </SecondaryButton>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
-
         <NotificationDialog
             :show="notification.show"
             :type="notification.type"
@@ -931,5 +444,6 @@ const rejectAppointment = () => {
             @close="closeNotification"
             @confirm="handleConfirm"
         />
+        </div>
     </AdminLayout>
 </template>

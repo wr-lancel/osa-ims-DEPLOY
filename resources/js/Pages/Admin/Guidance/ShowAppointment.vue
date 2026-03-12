@@ -23,7 +23,7 @@ const terminalStatuses = ['Rejected', 'Cancelled'];
 
 const updateAppointmentStatus = (newStatus) => {
     router.put(route('admin.guidance.appointments.updateStatus', props.appointment.appointment_id), {
-        status: newStatus,
+        status: (newStatus || '').toLowerCase(),
     }, { preserveScroll: true });
 };
 

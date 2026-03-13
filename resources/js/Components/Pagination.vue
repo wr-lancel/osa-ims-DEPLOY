@@ -71,20 +71,21 @@ const pageOptions = computed(() => {
 // Navigate to a specific page
 const goToPage = (page) => {
     if (page < 1 || page > totalPages.value) return;
-    const allLinks = links();
-    // Find the link for this page
-    const targetLink = allLinks.find(l => l.active === false && l.label == String(page)) ||
-                       allLinks[page]; // fallback: links[0] = prev, links[1] = page 1, etc.
 
-    // Build URL from current page URL pattern
-    if (allLinks.length > 0) {
-        // Use the first available link URL as a base and replace page number
+    if (props.routeName) {
+        // Use explicit params so perPage is always preserved across page changes
+        const params = { ...props.filters, perPage: currentPerPage.value };
+        params[props.pageName] = page;
+        router.get(route(props.routeName), params, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    } else {
+        // Fallback: use paginator link URLs, replacing the page param
+        const allLinks = props.data?.links || [];
         let baseUrl = null;
         for (const l of allLinks) {
-            if (l.url) {
-                baseUrl = l.url;
-                break;
-            }
+            if (l.url) { baseUrl = l.url; break; }
         }
         if (baseUrl) {
             const url = new URL(baseUrl, window.location.origin);

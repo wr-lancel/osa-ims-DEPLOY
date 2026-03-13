@@ -37,7 +37,10 @@ class CandidacyController extends Controller
             $query->whereHas('organization', fn($q) => $q->where('type', $request->org_type));
         }
 
-        $applications = $query->orderBy('submitted_at', 'desc')
+        $applications = $query->orderBy(
+                in_array($request->input('sort_by'), ['submitted_at', 'status']) ? $request->input('sort_by') : 'submitted_at',
+                $request->input('sort_dir') === 'asc' ? 'asc' : 'desc'
+            )
             ->paginate($request->input('perPage', 20))
             ->withQueryString();
 
@@ -73,7 +76,7 @@ class CandidacyController extends Controller
         return Inertia::render('Admin/Organizations/CandidaciesIndex', [
             'applications' => $applications,
             'stats' => $stats,
-            'filters' => $request->only(['status', 'org_id', 'acad_id', 'org_type']),
+            'filters' => $request->only(['status', 'org_id', 'acad_id', 'org_type', 'sort_by', 'sort_dir']),
             'organizations' => $organizations,
             'organizationTypes' => StudentOrganization::distinct()->whereNotNull('type')->pluck('type')->sort()->values(),
             'terms' => $terms,

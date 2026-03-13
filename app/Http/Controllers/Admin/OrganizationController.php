@@ -64,7 +64,10 @@ class OrganizationController extends Controller
         }
 
         // Paginate results
-        $organizations = $query->orderBy('org_name', 'asc')
+        $organizations = $query->orderBy(
+                in_array($request->input('sort_by'), ['org_name', 'type', 'status']) ? $request->input('sort_by') : 'org_name',
+                $request->input('sort_dir') === 'desc' ? 'desc' : 'asc'
+            )
             ->paginate($request->input('perPage', 20))
             ->withQueryString();
 
@@ -86,7 +89,7 @@ class OrganizationController extends Controller
 
         return Inertia::render('Admin/Organizations/Index', [
             'organizations' => $organizations,
-            'filters' => $request->only(['search', 'type', 'status']),
+            'filters' => $request->only(['search', 'type', 'status', 'sort_by', 'sort_dir']),
             'organizationTypes' => SystemSetting::getList('organization_types'),
             'dashboardStats' => [
                 [

@@ -60,8 +60,12 @@ class StaffController extends Controller
             });
         }
 
-        $employees = $query->orderBy('employee_id', 'desc')
+        $sortBy = in_array($request->input('sort_by'), ['last_name', 'first_name', 'department', 'position']) ? $request->input('sort_by') : 'employee_id';
+        $sortDir = $request->input('sort_dir') === 'asc' ? 'asc' : 'desc';
+
+        $employees = $query->orderBy($sortBy, $sortDir)
             ->paginate($request->input('perPage', 20))
+            ->withQueryString()
             ->through(function ($employee) {
                 return [
                     'employee_id' => $employee->employee_id,
@@ -102,7 +106,7 @@ class StaffController extends Controller
 
         return Inertia::render('Admin/Staff/Index', [
             'employees' => $employees,
-            'filters' => $request->only(['search', 'department', 'position', 'role_id', 'status']),
+            'filters' => $request->only(['search', 'department', 'position', 'role_id', 'status', 'sort_by', 'sort_dir']),
             'departments' => $departments,
             'positions' => $positions,
             'roles' => $roles,

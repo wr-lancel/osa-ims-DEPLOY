@@ -50,8 +50,10 @@ class DisciplineController extends Controller
         $query = $this->buildFilteredDisciplineQuery($request)
             ->with(['student', 'reportedBy', 'enrollment.academicCalendar']);
 
-        $violations = $query->orderBy('violation_date', 'desc')
-            ->orderBy('created_at', 'desc')
+        $sortBy = in_array($request->input('sort_by'), ['violation_date', 'created_at', 'severity', 'status']) ? $request->input('sort_by') : 'violation_date';
+        $sortDir = $request->input('sort_dir') === 'asc' ? 'asc' : 'desc';
+
+        $violations = $query->orderBy($sortBy, $sortDir)
             ->paginate($request->input('perPage', 20))
             ->withQueryString();
 
@@ -98,7 +100,7 @@ class DisciplineController extends Controller
 
         return Inertia::render('Admin/Discipline/Index', [
             'violations' => $violations,
-            'filters' => $request->only(['search', 'severity', 'status', 'acad_id']),
+            'filters' => $request->only(['search', 'severity', 'status', 'acad_id', 'sort_by', 'sort_dir']),
             'enrollments' => $enrollments,
             'terms' => $terms,
             'workflowSteps' => $workflowSteps,

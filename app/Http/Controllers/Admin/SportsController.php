@@ -140,7 +140,10 @@ class SportsController extends Controller
         }
 
         $borrowings = $borrowingsQuery
-            ->orderBy('borrow_date', 'desc')
+            ->orderBy(
+                in_array($request->input('sort_by'), ['borrow_date', 'due_date', 'status']) ? $request->input('sort_by') : 'borrow_date',
+                $request->input('sort_dir') === 'asc' ? 'asc' : 'desc'
+            )
             ->paginate($request->input('perPage', 20), ['*'], 'borrowings_page')
             ->withQueryString();
 
@@ -262,7 +265,7 @@ class SportsController extends Controller
         return Inertia::render('Admin/Sports/Index', [
             'borrowings' => $borrowings,
             'pendingBorrowings' => $pendingBorrowings,
-            'filters' => $request->only(['borrowing_search', 'borrowing_status']),
+            'filters' => $request->only(['borrowing_search', 'borrowing_status', 'sort_by', 'sort_dir']),
             'students' => $students,
             'employees' => $employees,
             'dashboardStats' => [

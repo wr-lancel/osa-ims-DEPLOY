@@ -45,8 +45,10 @@ class EventController extends Controller
         }
 
         // Paginate results
-        $events = $query->orderBy('event_date', 'desc')
-            ->orderBy('start_time', 'desc')
+        $events = $query->orderBy(
+                in_array($request->input('sort_by'), ['event_date', 'event_name', 'status']) ? $request->input('sort_by') : 'event_date',
+                $request->input('sort_dir') === 'asc' ? 'asc' : 'desc'
+            )
             ->paginate($request->input('perPage', 20))
             ->withQueryString();
 
@@ -76,7 +78,7 @@ class EventController extends Controller
 
         return Inertia::render('Admin/Organizations/Events', [
             'events' => $events,
-            'filters' => $request->only(['search', 'status', 'org_id']),
+            'filters' => $request->only(['search', 'status', 'org_id', 'sort_by', 'sort_dir']),
             'organizations' => $organizations,
             'eventStatuses' => SystemSetting::getList('event_statuses'),
         ]);

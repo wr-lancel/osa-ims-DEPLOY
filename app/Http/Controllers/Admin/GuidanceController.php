@@ -74,9 +74,11 @@ class GuidanceController extends Controller
             $appointmentsQuery->where('appointment_type', $request->appointment_type);
         }
 
+        $sortBy = in_array($request->input('sort_by'), ['appointment_date', 'appointment_time', 'type', 'status']) ? $request->input('sort_by') : 'appointment_date';
+        $sortDir = $request->input('sort_dir') === 'asc' ? 'asc' : 'desc';
+
         $appointments = $appointmentsQuery
-            ->orderBy('appointment_date', 'desc')
-            ->orderBy('appointment_time', 'desc')
+            ->orderBy($sortBy, $sortDir)
             ->paginate($request->input('perPage', 20), ['*'], 'appointments_page')
             ->withQueryString();
 
@@ -87,7 +89,7 @@ class GuidanceController extends Controller
             'cases' => GuidanceCase::with(['enrollment.student', 'assignedStaff'])->paginate($request->input('perPage', 20)),
             'appointments' => $appointments,
             'pendingAppointments' => $pendingAppointments,
-            'filters' => $request->only(['appointment_search', 'appointment_status', 'appointment_type']),
+            'filters' => $request->only(['appointment_search', 'appointment_status', 'appointment_type', 'sort_by', 'sort_dir']),
             'dashboardStats' => [
                 [
                     'title' => 'Total Appointments',

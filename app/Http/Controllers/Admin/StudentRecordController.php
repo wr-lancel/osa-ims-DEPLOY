@@ -43,7 +43,7 @@ class StudentRecordController extends Controller
         if (!$activeAcademicCalendar && $statusFilter === 'enrolled') {
             return Inertia::render('Admin/Students/Index', [
                 'students' => [],
-                'filters' => $request->only(['search', 'year_level', 'course_id', 'status']),
+                'filters' => $request->only(['search', 'year_level', 'course_id', 'status', 'sort_by', 'sort_dir']),
                 'courses' => Course::orderBy('course_name')->get()->map(fn($c) => [
                     'course_id' => $c->course_id,
                     'course_code' => $c->course_code,
@@ -63,8 +63,12 @@ class StudentRecordController extends Controller
         $query = $this->buildFilteredEnrollmentQuery($request, $statusFilter, $activeAcademicCalendar)
             ->with($isActiveTermOnly ? ['student.user', 'course', 'section'] : ['student.user', 'course', 'section', 'academicCalendar']);
 
-        $students = $query->orderBy('enrollment_id', 'desc')
+        $sortBy = in_array($request->input('sort_by'), ['student_number', 'year_level', 'enrollment_status']) ? $request->input('sort_by') : 'enrollment_id';
+        $sortDir = $request->input('sort_dir') === 'asc' ? 'asc' : 'desc';
+
+        $students = $query->orderBy($sortBy, $sortDir)
             ->paginate($request->input('perPage', 20))
+            ->withQueryString()
             ->through(function ($enrollment) use ($isActiveTermOnly) {
                 $student = $enrollment->student;
                 $data = [
@@ -122,7 +126,7 @@ class StudentRecordController extends Controller
 
         return Inertia::render('Admin/Students/Index', [
             'students' => $students,
-            'filters' => $request->only(['search', 'year_level', 'course_id', 'status']),
+            'filters' => $request->only(['search', 'year_level', 'course_id', 'status', 'sort_by', 'sort_dir']),
             'courses' => Course::orderBy('course_name')->get()->map(fn($c) => [
                 'course_id' => $c->course_id,
                 'course_code' => $c->course_code,

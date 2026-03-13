@@ -14,12 +14,27 @@ class NotificationObserver
      */
     public function created(AppNotification $notification): void
     {
+        \Illuminate\Support\Facades\Log::info('NotificationObserver fired', [
+            'notification_id' => $notification->notification_id ?? null,
+            'user_id' => $notification->user_id,
+        ]);
+
         $notification->load('user');
 
         $user = $notification->user;
         if (!$user || !$user->email) {
+            \Illuminate\Support\Facades\Log::warning('NotificationObserver: No user or no email', [
+                'user_exists' => !!$user,
+                'email' => $user?->email,
+                'user_id' => $notification->user_id,
+            ]);
             return;
         }
+
+        \Illuminate\Support\Facades\Log::info('NotificationObserver: Sending email', [
+            'to' => $user->email,
+            'title' => $notification->title,
+        ]);
 
         $viewInSystemUrl = url()->route('student.notifications.index');
 
@@ -31,12 +46,15 @@ class NotificationObserver
                     viewInSystemUrl: $viewInSystemUrl
                 )
             );
+            \Illuminate\Support\Facades\Log::info('NotificationObserver: Email sent successfully', [
+                'to' => $user->email,
+            ]);
         } catch (\Throwable $e) {
-            // Log the error but don't crash, preventing 500 errors when email fails
-            \Illuminate\Support\Facades\Log::error('Failed to queue notification email: ' . $e->getMessage(), [
+            \Illuminate\Support\Facades\Log::error('Failed to send notification email: ' . $e->getMessage(), [
                 'user_id' => $user->user_id,
                 'email' => $user->email,
                 'notification_id' => $notification->notification_id ?? null,
+                'trace' => $e->getTraceAsString(),
             ]);
         }
     }

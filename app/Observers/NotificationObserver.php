@@ -24,7 +24,7 @@ class NotificationObserver
         $viewInSystemUrl = url()->route('student.notifications.index');
 
         try {
-            Mail::to($user->email)->queue(
+            Mail::to($user->email)->send(
                 new NotificationMail(
                     title: $notification->title,
                     body: $notification->message,

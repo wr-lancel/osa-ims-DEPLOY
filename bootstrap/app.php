@@ -14,10 +14,6 @@ return Application::configure(basePath: dirname(__DIR__))
         // Trust all proxies (Railway uses a reverse proxy)
         $middleware->trustProxies(at: '*');
 
-        // Force HTTPS in production
-        if (env('FORCE_HTTPS')) {
-            \Illuminate\Support\Facades\URL::forceScheme('https');
-        }
 
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,

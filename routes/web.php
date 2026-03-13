@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\GuidanceController;
 use App\Http\Controllers\Admin\CandidacyController as AdminCandidacyController;
 use App\Http\Controllers\Admin\OrganizationController;
 use App\Http\Controllers\Admin\PageController;
+use App\Http\Controllers\Admin\PublicationController as AdminPublicationController;
 use App\Http\Controllers\Admin\RoleController;
 
 use App\Http\Controllers\Admin\SettingsController;
@@ -17,14 +18,19 @@ use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\StudentRecordController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicPublicationController;
 use App\Http\Controllers\Student\ComplaintController as StudentComplaintController;
 use App\Http\Controllers\Student\DisciplineController as StudentDisciplineController;
 use App\Http\Controllers\Student\NotificationController as StudentNotificationController;
+use App\Http\Controllers\Student\PublicationController as StudentPublicationController;
 use App\Http\Controllers\Student\SportsController as StudentSportsController;
 use App\Http\Controllers\Student\GuidanceController as StudentGuidanceController;
 use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\StudentCandidacyController;
 use App\Http\Controllers\StudentOrganizationController;
+use App\Http\Controllers\Admin\GoodMoralRequestController as AdminGoodMoralController;
+use App\Http\Controllers\GoodMoralRequestController;
+use App\Http\Controllers\WelcomeController;
 use App\Models\User;
 use App\Services\ModuleAuthorizationService;
 use Illuminate\Foundation\Application;
@@ -33,10 +39,17 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 // Public Routes
-Route::get('/', fn() => Inertia::render('Welcome', [
-    'canLogin' => Route::has('login'),
-    'canRegister' => Route::has('register'),
-]));
+Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
+Route::get('/good-moral-request', [GoodMoralRequestController::class, 'create'])->name('good-moral.create');
+Route::post('/good-moral-request', [GoodMoralRequestController::class, 'store'])->name('good-moral.store');
+
+// Public Publication Routes
+Route::prefix('publications')->name('publications.')->group(function () {
+    Route::get('/', [PublicPublicationController::class, 'index'])->name('index');
+    Route::get('/articles/{article:slug}', [PublicPublicationController::class, 'showArticle'])->name('articles.show');
+    Route::get('/newspapers/{newspaper:slug}', [PublicPublicationController::class, 'showNewspaper'])->name('newspapers.show');
+    Route::get('/galleries/{gallery:slug}', [PublicPublicationController::class, 'showGallery'])->name('galleries.show');
+});
 
 // Authentication Routes
 require __DIR__ . '/auth.php';
@@ -67,7 +80,7 @@ Route::middleware('auth')->group(function () {
 
     // Admin Routes - Allow admin, super_admin, staff, and module admins
     Route::prefix('admin')->name('admin.')->middleware([
-        'role:admin,super_admin,staff,sports_admin,organization_admin,discipline_admin,guidance_admin'
+        'role:admin,super_admin,staff,sports_admin,organization_admin,discipline_admin,guidance_admin,publication_admin'
     ])->group(function () {
         // Dashboard - accessible to all admin roles
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])
@@ -222,6 +235,49 @@ Route::middleware('auth')->group(function () {
                 Route::delete('/sports/{sport}/athletes/{student}', [SportsController::class, 'removeAthlete'])->name('sports.athletes.destroy');
             });
 
+        // Publications Module Routes
+        Route::prefix('publications')->name('publications.')->middleware('module:publications')->group(function () {
+            Route::get('/', [AdminPublicationController::class, 'index'])->name('index');
+
+            // Articles
+            Route::get('/articles/create', [AdminPublicationController::class, 'createArticle'])->name('articles.create');
+            Route::post('/articles', [AdminPublicationController::class, 'storeArticle'])->name('articles.store');
+            Route::get('/articles/{article:slug}', [AdminPublicationController::class, 'showArticle'])->name('articles.show');
+            Route::put('/articles/{article:slug}', [AdminPublicationController::class, 'updateArticle'])->name('articles.update');
+            Route::delete('/articles/{article:slug}', [AdminPublicationController::class, 'destroyArticle'])->name('articles.destroy');
+            Route::post('/articles/{article:slug}/review', [AdminPublicationController::class, 'reviewArticle'])->name('articles.review');
+
+            // Newspapers
+            Route::get('/newspapers/create', [AdminPublicationController::class, 'createNewspaper'])->name('newspapers.create');
+            Route::post('/newspapers', [AdminPublicationController::class, 'storeNewspaper'])->name('newspapers.store');
+            Route::get('/newspapers/{newspaper:slug}', [AdminPublicationController::class, 'showNewspaper'])->name('newspapers.show');
+            Route::put('/newspapers/{newspaper:slug}', [AdminPublicationController::class, 'updateNewspaper'])->name('newspapers.update');
+            Route::delete('/newspapers/{newspaper:slug}', [AdminPublicationController::class, 'destroyNewspaper'])->name('newspapers.destroy');
+            Route::post('/newspapers/{newspaper:slug}/review', [AdminPublicationController::class, 'reviewNewspaper'])->name('newspapers.review');
+
+            // Galleries
+            Route::get('/galleries/create', [AdminPublicationController::class, 'createGallery'])->name('galleries.create');
+            Route::post('/galleries', [AdminPublicationController::class, 'storeGallery'])->name('galleries.store');
+            Route::get('/galleries/{gallery:slug}', [AdminPublicationController::class, 'showGallery'])->name('galleries.show');
+            Route::put('/galleries/{gallery:slug}', [AdminPublicationController::class, 'updateGallery'])->name('galleries.update');
+            Route::delete('/galleries/{gallery:slug}', [AdminPublicationController::class, 'destroyGallery'])->name('galleries.destroy');
+            Route::post('/galleries/{gallery:slug}/review', [AdminPublicationController::class, 'reviewGallery'])->name('galleries.review');
+            Route::post('/galleries/{gallery:slug}/photos', [AdminPublicationController::class, 'uploadPhotos'])->name('galleries.photos.upload');
+            Route::delete('/galleries/{gallery:slug}/photos/{photo}', [AdminPublicationController::class, 'deletePhoto'])->name('galleries.photos.destroy');
+            Route::put('/galleries/{gallery:slug}/photos/reorder', [AdminPublicationController::class, 'reorderPhotos'])->name('galleries.photos.reorder');
+
+            // Settings (admin/super_admin only)
+            Route::post('/settings/toggle-publication-org', [AdminPublicationController::class, 'togglePublicationOrg'])
+                ->middleware('role:admin,super_admin')
+                ->name('settings.toggle-org');
+        });
+
+        // Good Moral Certificate Requests
+        Route::prefix('good-moral')->name('good-moral.')->middleware('module:good_moral')->group(function () {
+            Route::get('/', [AdminGoodMoralController::class, 'index'])->name('index');
+            Route::put('/{goodMoral}', [AdminGoodMoralController::class, 'update'])->name('update');
+        });
+
         // Settings — view & lookup-values open to any settings module role
         Route::middleware('module:settings')->group(function () {
             Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
@@ -285,6 +341,34 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [StudentSportsController::class, 'index'])->name('index');
             Route::post('/borrowings', [StudentSportsController::class, 'store'])->name('borrowings.store');
             Route::get('/borrowings/{borrowing}', [StudentSportsController::class, 'show'])->name('borrowings.show');
+        });
+
+        // Student Publications Module (officers + publication_admin accessible via publication middleware)
+        Route::prefix('publications')->name('publications.')->middleware('publication')->group(function () {
+            Route::get('/', [StudentPublicationController::class, 'index'])->name('index');
+
+            // Articles
+            Route::get('/articles/create', [StudentPublicationController::class, 'createArticle'])->name('articles.create');
+            Route::post('/articles', [StudentPublicationController::class, 'storeArticle'])->name('articles.store');
+            Route::get('/articles/{article:slug}', [StudentPublicationController::class, 'showArticle'])->name('articles.show');
+            Route::put('/articles/{article:slug}', [StudentPublicationController::class, 'updateArticle'])->name('articles.update');
+            Route::delete('/articles/{article:slug}', [StudentPublicationController::class, 'destroyArticle'])->name('articles.destroy');
+
+            // Newspapers
+            Route::get('/newspapers/create', [StudentPublicationController::class, 'createNewspaper'])->name('newspapers.create');
+            Route::post('/newspapers', [StudentPublicationController::class, 'storeNewspaper'])->name('newspapers.store');
+            Route::get('/newspapers/{newspaper:slug}', [StudentPublicationController::class, 'showNewspaper'])->name('newspapers.show');
+            Route::put('/newspapers/{newspaper:slug}', [StudentPublicationController::class, 'updateNewspaper'])->name('newspapers.update');
+            Route::delete('/newspapers/{newspaper:slug}', [StudentPublicationController::class, 'destroyNewspaper'])->name('newspapers.destroy');
+
+            // Galleries
+            Route::get('/galleries/create', [StudentPublicationController::class, 'createGallery'])->name('galleries.create');
+            Route::post('/galleries', [StudentPublicationController::class, 'storeGallery'])->name('galleries.store');
+            Route::get('/galleries/{gallery:slug}', [StudentPublicationController::class, 'showGallery'])->name('galleries.show');
+            Route::put('/galleries/{gallery:slug}', [StudentPublicationController::class, 'updateGallery'])->name('galleries.update');
+            Route::delete('/galleries/{gallery:slug}', [StudentPublicationController::class, 'destroyGallery'])->name('galleries.destroy');
+            Route::post('/galleries/{gallery:slug}/photos', [StudentPublicationController::class, 'uploadPhotos'])->name('galleries.photos.upload');
+            Route::delete('/galleries/{gallery:slug}/photos/{photo}', [StudentPublicationController::class, 'deletePhoto'])->name('galleries.photos.destroy');
         });
 
         // Student Organizations

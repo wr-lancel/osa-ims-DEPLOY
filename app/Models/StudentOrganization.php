@@ -21,6 +21,7 @@ class StudentOrganization extends Model
         'type',
         'status',
         'candidacy_open',
+        'is_publication_org',
         'adviser_name',
         'mission',
         'mission_file',
@@ -34,6 +35,7 @@ class StudentOrganization extends Model
 
     protected $casts = [
         'candidacy_open' => 'boolean',
+        'is_publication_org' => 'boolean',
     ];
 
     /**

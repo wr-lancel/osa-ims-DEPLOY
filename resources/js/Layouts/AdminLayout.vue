@@ -39,7 +39,7 @@ const mobileMenuOpen = ref(false);
                                     <ApplicationLogo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
                                     <span
                                         class="ms-3 hidden sm:inline whitespace-nowrap text-sm font-semibold tracking-tight text-gray-800 dark:text-gray-200">
-                                        Office of the Student Affairs
+                                        Office of the Student Affairs and Services
                                     </span>
                                 </Link>
                             </div>

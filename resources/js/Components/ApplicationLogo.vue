@@ -1,3 +1,3 @@
 <template>
-    <img src="/images/OSA-LOGO.png" alt="OSA Logo" />
+    <img src="/images/OSA-NEW-LOGO.png" alt="OSA Logo" />
 </template>

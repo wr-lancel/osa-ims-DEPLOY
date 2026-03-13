@@ -15,7 +15,7 @@ import { Link } from '@inertiajs/vue3';
             <Link href="/" class="flex items-center gap-3">
                 <ApplicationLogo class="h-20 w-20 fill-current text-gray-500 dark:text-gray-400" />
                 <span class="max-w-[16rem] text-base font-semibold leading-tight tracking-tight text-gray-800 dark:text-gray-200">
-                    Office of the Student Affairs
+                    Office of the Student Affairs and Services
                 </span>
             </Link>
         </div>

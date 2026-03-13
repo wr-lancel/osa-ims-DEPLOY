@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\Role::class,
             'module' => \App\Http\Middleware\ModuleAccess::class,
+            'publication' => \App\Http\Middleware\PublicationAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

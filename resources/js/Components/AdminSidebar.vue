@@ -59,6 +59,18 @@ const allNavItems = [
     module: 'guidance'
   },
   {
+    href: route('admin.publications.index'),
+    label: 'Publications',
+    routeName: 'admin.publications.index',
+    module: 'publications'
+  },
+  {
+    href: route('admin.good-moral.index'),
+    label: 'Good Moral Requests',
+    routeName: 'admin.good-moral.index',
+    module: 'good_moral'
+  },
+  {
     href: route('admin.settings'),
     label: 'Settings',
     routeName: 'admin.settings',
@@ -86,7 +98,7 @@ watch(() => page.url, () => {
       <!-- Brand -->
       <div class="px-5 pt-6 pb-4">
         <div class="flex items-center gap-3">
-          <img src="/images/OSA-LOGO.png" alt="OSA Logo" class="h-10 w-10 rounded-xl object-contain" />
+          <img src="/images/OSA-NEW-LOGO.png" alt="OSA Logo" class="h-10 w-10 rounded-xl object-contain" />
 
           <div class="leading-tight">
             <div class="text-sm font-semibold text-slate-900 dark:text-white transition-colors">Admin Portal</div>
@@ -140,7 +152,7 @@ watch(() => page.url, () => {
           <!-- Header -->
           <div class="px-5 pt-6 pb-4 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <img src="/images/OSA-LOGO.png" alt="OSA Logo" class="h-10 w-10 rounded-xl object-contain" />
+                <img src="/images/OSA-NEW-LOGO.png" alt="OSA Logo" class="h-12 w-12 rounded-xl object-contain" />
               <div class="leading-tight">
                 <div class="text-sm font-semibold text-slate-900 dark:text-white transition-colors">Admin Portal</div>
                 <div class="text-xs text-slate-500 dark:text-slate-400 transition-colors">OSA-IMS</div>

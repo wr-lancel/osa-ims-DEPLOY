@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\Notification;
 use App\Services\ModuleAuthorizationService;
+use App\Services\PublicationAuthorizationService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -34,7 +35,7 @@ class HandleInertiaRequests extends Middleware
         $user = $request->user();
 
         if ($user) {
-            $user->load('roles');
+            $user->load('roles', 'student', 'employee');
         }
 
         // Resolve ModuleAuthorizationService from container
@@ -42,6 +43,9 @@ class HandleInertiaRequests extends Middleware
         $accessibleModules = $user
             ? $moduleAuth->getAccessibleModules($user)
             : [];
+
+        $publicationAuth = app(PublicationAuthorizationService::class);
+        $canManagePublications = $user ? $publicationAuth->canManagePublications($user) : false;
 
         $disciplineNotificationsUnread = 0;
         $complaintNotificationsUnread = 0;
@@ -68,6 +72,7 @@ class HandleInertiaRequests extends Middleware
                     'email' => $user->email,
                     'status' => $user->status,
                     'display_name' => $user->display_name,
+                    'first_name' => $user->student?->first_name ?? $user->employee?->first_name ?? null,
                     'roles' => $user->roles->pluck('role_name')->toArray(),
                 ] : null,
                 'accessible_modules' => $accessibleModules,
@@ -75,6 +80,7 @@ class HandleInertiaRequests extends Middleware
             'discipline_notifications_unread' => $disciplineNotificationsUnread,
             'complaint_notifications_unread' => $complaintNotificationsUnread,
             'unread_notifications_count' => $totalUnreadNotifications,
+            'can_manage_publications' => $canManagePublications,
         ];
     }
 }

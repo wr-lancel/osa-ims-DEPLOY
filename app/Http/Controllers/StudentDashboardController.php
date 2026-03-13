@@ -5,10 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Event;
 use App\Models\OrgOfficer;
 use App\Models\GuidanceAppointment;
+use App\Models\PublicationArticle;
+use App\Models\PublicationNewspaper;
 use App\Models\SportsBorrowing;
 use App\Models\Complaint;
 use App\Models\OrgMeeting;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -190,6 +193,15 @@ class StudentDashboardController extends Controller
                 })->take(4)->values()->all();
         }
 
+        // Latest publication teaser
+        $latestPublication = PublicationArticle::published()
+            ->orderBy('published_at', 'desc')
+            ->first();
+
+        $latestNewspaper = PublicationNewspaper::published()
+            ->orderBy('published_at', 'desc')
+            ->first();
+
         return Inertia::render('Student/Dashboard', [
             'upcomingEvents' => $upcomingEvents,
             'officerOrganizations' => $officerOrganizations,
@@ -198,6 +210,18 @@ class StudentDashboardController extends Controller
             'complaints' => $complaints,
             'notifications' => $notifications,
             'officerActivities' => $officerActivities,
+            'latestPublication' => $latestPublication ? [
+                'title' => $latestPublication->title,
+                'slug' => $latestPublication->slug,
+                'cover_image' => $latestPublication->cover_image ? Storage::url($latestPublication->cover_image) : null,
+                'published_at' => $latestPublication->published_at?->format('M d, Y'),
+            ] : null,
+            'latestNewspaper' => $latestNewspaper ? [
+                'title' => $latestNewspaper->title,
+                'slug' => $latestNewspaper->slug,
+                'issue_number' => $latestNewspaper->issue_number,
+                'published_at' => $latestNewspaper->published_at?->format('M d, Y'),
+            ] : null,
         ]);
     }
 }

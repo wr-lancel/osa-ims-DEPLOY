@@ -21,6 +21,8 @@ class ModuleAuthorizationService
     public const MODULE_DISCIPLINE = 'discipline';
     public const MODULE_GUIDANCE = 'guidance';
     public const MODULE_SETTINGS = 'settings';
+    public const MODULE_PUBLICATIONS = 'publications';
+    public const MODULE_GOOD_MORAL = 'good_moral';
 
     /**
      * Role to module mapping
@@ -40,6 +42,8 @@ class ModuleAuthorizationService
             self::MODULE_DISCIPLINE,
             self::MODULE_GUIDANCE,
             self::MODULE_SETTINGS,
+            self::MODULE_PUBLICATIONS,
+            self::MODULE_GOOD_MORAL,
         ],
         'super_admin' => [
             self::MODULE_DASHBOARD,
@@ -54,6 +58,8 @@ class ModuleAuthorizationService
             self::MODULE_DISCIPLINE,
             self::MODULE_GUIDANCE,
             self::MODULE_SETTINGS,
+            self::MODULE_PUBLICATIONS,
+            self::MODULE_GOOD_MORAL,
         ],
         'staff' => [
             self::MODULE_DASHBOARD,
@@ -61,6 +67,12 @@ class ModuleAuthorizationService
             self::MODULE_ORGANIZATIONS,
             self::MODULE_DISCIPLINE,
             self::MODULE_GUIDANCE,
+            self::MODULE_GOOD_MORAL,
+        ],
+        'publication_admin' => [
+            self::MODULE_DASHBOARD,
+            self::MODULE_PUBLICATIONS,
+            self::MODULE_SETTINGS,
         ],
         'sports_admin' => [
             self::MODULE_DASHBOARD,
@@ -162,6 +174,8 @@ class ModuleAuthorizationService
             self::MODULE_DISCIPLINE,
             self::MODULE_GUIDANCE,
             self::MODULE_SETTINGS,
+            self::MODULE_PUBLICATIONS,
+            self::MODULE_GOOD_MORAL,
         ];
     }
 }

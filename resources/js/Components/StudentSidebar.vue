@@ -13,15 +13,22 @@ const emit = defineEmits(['close']);
 
 const page = usePage();
 const disciplineUnread = computed(() => page.props.discipline_notifications_unread ?? 0);
+const canManagePublications = computed(() => page.props.can_manage_publications ?? false);
 
-const navItems = computed(() => [
-    { href: route('student.dashboard'), label: 'Home', routeName: 'student.dashboard' },
-    { href: route('student.discipline.index'), label: 'Discipline Unit', routeName: 'student.discipline.index' },
-    { href: route('student.sports.index'), label: 'Sports Unit', routeName: 'student.sports.index' },
-    { href: route('student.organizations.index'), label: 'Organization Unit', routeName: 'student.organizations.index' },
-    { href: route('student.guidance.index'), label: 'Guidance Unit', routeName: 'student.guidance.index' },
-    { href: route('student.profile'), label: 'My Profile', routeName: 'student.profile' },
-]);
+const navItems = computed(() => {
+    const items = [
+        { href: route('student.dashboard'), label: 'Home', routeName: 'student.dashboard' },
+        { href: route('student.discipline.index'), label: 'Discipline Unit', routeName: 'student.discipline.index' },
+        { href: route('student.sports.index'), label: 'Sports Unit', routeName: 'student.sports.index' },
+        { href: route('student.organizations.index'), label: 'Organization Unit', routeName: 'student.organizations.index' },
+        { href: route('student.guidance.index'), label: 'Guidance Unit', routeName: 'student.guidance.index' },
+        { href: route('student.profile'), label: 'My Profile', routeName: 'student.profile' },
+    ];
+    if (canManagePublications.value) {
+        items.splice(5, 0, { href: route('student.publications.index'), label: 'Publications', routeName: 'student.publications.index' });
+    }
+    return items;
+});
 
 const isActive = (routeName) => route().current(routeName);
 
@@ -38,7 +45,7 @@ watch(() => page.url, () => {
             <!-- Brand -->
             <div class="px-5 pt-6 pb-4">
                 <div class="flex items-center gap-3">
-                    <img src="/images/OSA-LOGO.png" alt="OSA Logo" class="h-10 w-10 rounded-xl object-contain" />
+                    <img src="/images/OSA-NEW-LOGO.png" alt="OSA Logo" class="h-12 w-12 rounded-xl object-contain" />
                     <div class="leading-tight">
                         <div class="text-sm font-semibold text-slate-900 dark:text-white transition-colors">Student Portal</div>
                         <div class="text-xs text-slate-500 dark:text-slate-400 transition-colors">OSA-IMS</div>
@@ -91,7 +98,7 @@ watch(() => page.url, () => {
                     <!-- Header -->
                     <div class="px-5 pt-6 pb-4 flex items-center justify-between">
                         <div class="flex items-center gap-3">
-                            <img src="/images/OSA-LOGO.png" alt="OSA Logo" class="h-10 w-10 rounded-xl object-contain" />
+                            <img src="/images/OSA-NEW-LOGO.png" alt="OSA Logo" class="h-12 w-12 rounded-xl object-contain" />
                             <div class="leading-tight">
                                 <div class="text-sm font-semibold text-slate-900 dark:text-white transition-colors">Student Portal</div>
                                 <div class="text-xs text-slate-500 dark:text-slate-400 transition-colors">OSA-IMS</div>

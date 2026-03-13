@@ -1,7 +1,10 @@
 <script setup>
 import StudentLayout from '@/Layouts/StudentLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import { getEventBadgeClass, getEventLabel } from '@/utils/eventHelpers';
+
+const firstName = usePage().props.auth?.user?.first_name;
+const canManagePublications = usePage().props.can_manage_publications;
 
 const props = defineProps({
     upcomingEvents: {
@@ -32,6 +35,14 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    latestPublication: {
+        type: Object,
+        default: null,
+    },
+    latestNewspaper: {
+        type: Object,
+        default: null,
+    },
 });
 
 
@@ -52,7 +63,7 @@ const quickActions = [
         <template #header>
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <h2 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
-                    Welcome back 👋
+                    Welcome back, {{ firstName }} 👋
                 </h2>
                 <div class="text-sm font-semibold text-gray-500 dark:text-gray-400 bg-white/50 dark:bg-gray-800/50 backdrop-blur px-4 py-2 rounded-xl border border-gray-100 dark:border-gray-700/50">
                     {{ new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) }}
@@ -310,9 +321,56 @@ const quickActions = [
                         </div>
                     </div>
 
+                    <!-- Publications Teaser -->
+                    <div class="bg-white dark:bg-gray-800/80 backdrop-blur-xl border border-gray-100 dark:border-gray-700/50 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all duration-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">Publications</h3>
+                            <div class="p-2 bg-rose-50 dark:bg-rose-900/30 rounded-lg">
+                                <svg class="w-5 h-5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div v-if="latestPublication" class="group p-3 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700/30 border border-transparent hover:border-gray-100 dark:hover:border-gray-600 transition-colors">
+                                <p class="text-[10px] uppercase tracking-wider font-semibold text-rose-500 dark:text-rose-400 mb-1">Latest Article</p>
+                                <Link :href="route('publications.articles.show', latestPublication.slug)"
+                                    class="text-sm font-semibold text-gray-800 dark:text-gray-200 line-clamp-2 group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
+                                    {{ latestPublication.title }}
+                                </Link>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ latestPublication.published_at }}</p>
+                            </div>
+
+                            <div v-if="latestNewspaper" class="group p-3 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700/30 border border-transparent hover:border-gray-100 dark:hover:border-gray-600 transition-colors">
+                                <p class="text-[10px] uppercase tracking-wider font-semibold text-indigo-500 dark:text-indigo-400 mb-1">Latest Issue</p>
+                                <Link :href="route('publications.newspapers.show', latestNewspaper.slug)"
+                                    class="text-sm font-semibold text-gray-800 dark:text-gray-200 line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                    {{ latestNewspaper.title }}
+                                </Link>
+                                <p v-if="latestNewspaper.issue_number" class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ latestNewspaper.issue_number }}</p>
+                            </div>
+
+                            <div v-if="!latestPublication && !latestNewspaper" class="text-sm text-gray-500 dark:text-gray-400 py-2">
+                                No publications yet.
+                            </div>
+                        </div>
+
+                        <div class="mt-4 flex items-center gap-2">
+                            <Link :href="route('publications.index')"
+                                class="flex-1 text-center py-2 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors">
+                                View All
+                            </Link>
+                            <Link v-if="canManagePublications" :href="route('student.publications.index')"
+                                class="flex-1 text-center py-2 rounded-xl text-xs font-semibold text-white bg-rose-500 hover:bg-rose-400 transition-colors">
+                                My Posts
+                            </Link>
+                        </div>
+                    </div>
+
                 </div>
             </div>
-            
+
         </div>
     </StudentLayout>
 </template>

@@ -2,9 +2,11 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 
 const props = defineProps({ gallery: Object });
 
+const isProcessing = ref(false);
 const showRejectModal = ref(false);
 const lightboxIndex = ref(null);
 const newPhotos = ref([]);
@@ -47,7 +49,10 @@ function uploadPhotos() {
 
 function deletePhoto(photoId) {
     if (confirm('Delete this photo?')) {
-        router.delete(route('admin.publications.galleries.photos.destroy', [props.gallery.slug, photoId]));
+        isProcessing.value = true;
+        router.delete(route('admin.publications.galleries.photos.destroy', [props.gallery.slug, photoId]), {
+            onFinish: () => { isProcessing.value = false; },
+        });
     }
 }
 
@@ -69,7 +74,10 @@ function saveEdit() {
 
 function deleteGallery() {
     if (confirm('Delete this gallery and all its photos?')) {
-        router.delete(route('admin.publications.galleries.destroy', props.gallery.slug));
+        isProcessing.value = true;
+        router.delete(route('admin.publications.galleries.destroy', props.gallery.slug), {
+            onFinish: () => { isProcessing.value = false; },
+        });
     }
 }
 
@@ -84,6 +92,7 @@ const statusColors = {
 <template>
     <Head :title="gallery.title" />
     <AdminLayout>
+        <LoadingOverlay :show="isProcessing || editForm.processing || reviewForm.processing || uploadForm.processing" message="Processing... Please wait." />
         <template #header>
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">

@@ -1,9 +1,11 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 import StatusProgressBar from '@/Components/StatusProgressBar.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 
 const props = defineProps({
     borrowing: {
@@ -11,6 +13,8 @@ const props = defineProps({
         required: true,
     },
 });
+
+const isProcessing = ref(false);
 
 const getStatusBadgeClass = (status, statusColor) => {
     const colorMap = {
@@ -35,6 +39,7 @@ const borrowerLabel = () => {
     <Head title="Borrowing Details" />
 
     <AdminLayout>
+        <LoadingOverlay :show="isProcessing" message="Processing... Please wait." />
         <template #header>
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
@@ -65,7 +70,7 @@ const borrowerLabel = () => {
                     { value: 'borrowed', label: 'Borrowed' },
                     { value: 'returned', label: 'Returned' },
                 ]" :current-status="borrowing.status" :terminal-statuses="['rejected', 'overdue']" :editable="true"
-                    @update:status="(newStatus) => router.put(route('admin.sports.borrowings.updateStatus', borrowing.borrowing_id), { status: newStatus }, { preserveScroll: true })" />
+                    @update:status="(newStatus) => { isProcessing = true; router.put(route('admin.sports.borrowings.updateStatus', borrowing.borrowing_id), { status: newStatus }, { preserveScroll: true, onFinish: () => { isProcessing = false; } }); }" />
             </div>
 
             <!-- Request Information -->
@@ -150,7 +155,7 @@ const borrowerLabel = () => {
 
             <!-- Actions (if borrowed, allow mark returned) -->
             <div v-if="borrowing.status === 'Borrowed' || borrowing.status === 'borrowed'" class="flex justify-end">
-                <PrimaryButton @click="router.put(route('admin.sports.borrowings.update', borrowing.borrowing_id), {
+                <PrimaryButton @click="() => { isProcessing = true; router.put(route('admin.sports.borrowings.update', borrowing.borrowing_id), {
                     item_name: borrowing.item_name,
                     description: borrowing.description,
                     borrow_date: borrowing.borrow_date,
@@ -159,7 +164,7 @@ const borrowerLabel = () => {
                     return_date: new Date().toISOString().split('T')[0],
                     notes: borrowing.notes,
                     admin_remarks: borrowing.admin_remarks,
-                }, { preserveScroll: false })">
+                }, { preserveScroll: false, onFinish: () => { isProcessing = false; } }); }">
                     Mark as Returned
                 </PrimaryButton>
             </div>

@@ -2,9 +2,11 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 
 const props = defineProps({ article: Object });
 
+const isProcessing = ref(false);
 const editing = ref(false);
 const showRejectModal = ref(false);
 
@@ -37,7 +39,10 @@ function reject() {
 
 function destroy() {
     if (confirm('Delete this article? This cannot be undone.')) {
-        router.delete(route('admin.publications.articles.destroy', props.article.slug));
+        isProcessing.value = true;
+        router.delete(route('admin.publications.articles.destroy', props.article.slug), {
+            onFinish: () => { isProcessing.value = false; },
+        });
     }
 }
 </script>
@@ -45,6 +50,7 @@ function destroy() {
 <template>
     <Head :title="article.title" />
     <AdminLayout>
+        <LoadingOverlay :show="isProcessing || editForm.processing || reviewForm.processing" message="Processing... Please wait." />
         <template #header>
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">

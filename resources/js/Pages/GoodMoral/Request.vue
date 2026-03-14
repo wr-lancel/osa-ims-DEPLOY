@@ -1,9 +1,7 @@
 <script setup>
-import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import ThemeToggle from '@/Components/ThemeToggle.vue';
-
-const flash = computed(() => usePage().props.flash || {});
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 
 const form = useForm({
     full_name: '',
@@ -56,19 +54,6 @@ const submit = () => {
                 Back to Home
             </Link>
 
-            <!-- Success Banner -->
-            <div v-if="flash.success" class="mb-8 p-5 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 rounded-2xl">
-                <div class="flex items-start gap-3">
-                    <div class="flex-shrink-0 h-8 w-8 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center">
-                        <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-                    </div>
-                    <div>
-                        <p class="text-sm font-semibold text-emerald-800 dark:text-emerald-300">Request Submitted!</p>
-                        <p class="text-sm text-emerald-700 dark:text-emerald-400 mt-1">{{ flash.success }}</p>
-                    </div>
-                </div>
-            </div>
-
             <!-- Header -->
             <div class="mb-10">
                 <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800/50 mb-4 transition-colors">
@@ -77,7 +62,7 @@ const submit = () => {
                 </div>
                 <h1 class="text-3xl font-bold text-slate-900 dark:text-white">Certificate of Good Moral Character</h1>
                 <p class="mt-3 text-slate-500 dark:text-slate-400 leading-relaxed">
-                    For alumni and former students of CHCC. Fill out the form below, then pay at the Cashier and pick up your certificate at the OSA Office.
+                    For alumni and former students of CHCC. Fill out the form below, then pay at the Cashier and pick up your certificate at the Office of the Student Affairs and Services.
                 </p>
 
                 <!-- Steps -->
@@ -179,5 +164,7 @@ const submit = () => {
                 Office of Student Affairs and Services — Concepcion Holy Cross College, Inc.
             </div>
         </footer>
+
+        <LoadingOverlay :show="form.processing" message="Submitting... Please wait." />
     </div>
 </template>

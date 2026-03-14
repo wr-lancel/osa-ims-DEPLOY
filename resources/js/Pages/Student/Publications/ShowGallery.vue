@@ -2,10 +2,12 @@
 import StudentLayout from '@/Layouts/StudentLayout.vue';
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 
 const props = defineProps({ gallery: Object });
 
 const editing = ref(false);
+const isProcessing = ref(false);
 const lightboxIndex = ref(null);
 const newPhotos = ref([]);
 const newPhotoPreviews = ref([]);
@@ -44,7 +46,10 @@ function uploadPhotos() {
 
 function deletePhoto(photoId) {
     if (confirm('Delete this photo?')) {
-        router.delete(route('student.publications.galleries.photos.destroy', [props.gallery.slug, photoId]));
+        isProcessing.value = true;
+        router.delete(route('student.publications.galleries.photos.destroy', [props.gallery.slug, photoId]), {
+            onFinish: () => { isProcessing.value = false; },
+        });
     }
 }
 
@@ -57,7 +62,10 @@ function saveEdit() {
 
 function deleteGallery() {
     if (confirm('Delete this gallery and all its photos?')) {
-        router.delete(route('student.publications.galleries.destroy', props.gallery.slug));
+        isProcessing.value = true;
+        router.delete(route('student.publications.galleries.destroy', props.gallery.slug), {
+            onFinish: () => { isProcessing.value = false; },
+        });
     }
 }
 
@@ -150,6 +158,8 @@ const statusColors = {
                 </div>
             </div>
         </div>
+
+        <LoadingOverlay :show="editForm.processing || uploadForm.processing || isProcessing" message="Processing... Please wait." />
 
         <!-- Lightbox -->
         <Teleport to="body">

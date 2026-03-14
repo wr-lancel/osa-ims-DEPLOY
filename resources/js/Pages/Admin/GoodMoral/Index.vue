@@ -2,6 +2,7 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 
 const props = defineProps({
     requests: { type: Object, required: true },
@@ -80,6 +81,7 @@ const formatDate = (date) => date ? new Date(date).toLocaleDateString('en-US', {
     <Head title="Good Moral Requests" />
 
     <AdminLayout>
+        <LoadingOverlay :show="updateForm.processing" message="Processing... Please wait." />
         <template #header>
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>

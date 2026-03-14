@@ -332,6 +332,7 @@ Route::middleware('auth')->group(function () {
         // Student Guidance Module
         Route::prefix('guidance')->name('guidance.')->group(function () {
             Route::get('/', [StudentGuidanceController::class, 'index'])->name('index');
+            Route::get('/appointments/taken-slots', [StudentGuidanceController::class, 'takenSlots'])->name('appointments.taken-slots');
             Route::post('/appointments', [StudentGuidanceController::class, 'store'])->name('appointments.store');
             Route::get('/appointments/{appointment}', [StudentGuidanceController::class, 'show'])->name('appointments.show');
         });

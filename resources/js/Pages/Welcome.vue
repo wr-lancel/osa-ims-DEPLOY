@@ -16,6 +16,10 @@ defineProps({
 // Edit this number to update the "Years Serving" stat
 const yearsServing = 20;
 
+const scrollTo = (id) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
 const services = [
     {
         title: 'Discipline Unit',
@@ -64,12 +68,19 @@ const services = [
 
                     <!-- Navigation Links & Theme Toggle -->
                     <nav class="flex items-center gap-4 flex-shrink-0 flex-wrap justify-end">
-                        <Link :href="route('publications.index')" class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors hidden sm:block">
+                        <a href="#publications" @click.prevent="scrollTo('publications')" class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors hidden sm:block">
                             Publications
-                        </Link>
-                        <Link :href="route('good-moral.create')" class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors hidden sm:block">
-                            Good Moral
-                        </Link>
+                        </a>
+                        <a href="#services" @click.prevent="scrollTo('services')" class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors hidden sm:block">
+                            Services
+                        </a>
+                        <a href="#good-moral" @click.prevent="scrollTo('good-moral')" class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors hidden sm:block">
+                            Request Docs
+                        </a>
+                        <a href="#about" @click.prevent="scrollTo('about')" class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors hidden sm:block">
+                            About
+                        </a>
+
                         <!-- Facebook -->
                         <a href="https://www.facebook.com/CHCC.StudentAffairsAndServices" target="_blank" rel="noopener noreferrer"
                             class="text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors hidden sm:block"
@@ -130,18 +141,14 @@ const services = [
                             Go to Dashboard
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
                         </Link>
-                        <Link :href="route('good-moral.create')"
-                            class="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                            Request Good Moral
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                        </Link>
+                        
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- Publications Section -->
-        <section class="py-20 lg:py-24 bg-white dark:bg-slate-900 border-b border-slate-200/70 dark:border-slate-800/70 transition-colors duration-200">
+        <section id="publications" class="py-20 lg:py-24 bg-white dark:bg-slate-900 border-b border-slate-200/70 dark:border-slate-800/70 transition-colors duration-200 scroll-mt-16">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between mb-10">
                     <div>
@@ -228,7 +235,7 @@ const services = [
         </section>
 
         <!-- Our Services Section -->
-        <section id="features" class="py-20 lg:py-28 bg-white dark:bg-slate-900 border-b border-slate-200/70 dark:border-slate-800/70 transition-colors duration-200">
+        <section id="services" class="py-20 lg:py-28 bg-white dark:bg-slate-900 border-b border-slate-200/70 dark:border-slate-800/70 transition-colors duration-200 scroll-mt-16">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center mb-16">
                     <h2 class="text-3xl font-bold text-slate-900 dark:text-white">Our Services</h2>
@@ -255,7 +262,7 @@ const services = [
         </section>
 
         <!-- Good Moral Certificate Section -->
-        <section class="py-20 lg:py-28 bg-slate-50 dark:bg-slate-900 border-b border-slate-200/70 dark:border-slate-800/70 transition-colors duration-200">
+        <section id="good-moral" class="py-20 lg:py-28 bg-slate-50 dark:bg-slate-900 border-b border-slate-200/70 dark:border-slate-800/70 transition-colors duration-200 scroll-mt-16">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                     <div>
@@ -265,7 +272,7 @@ const services = [
                         </div>
                         <h2 class="text-3xl font-bold text-slate-900 dark:text-white transition-colors">Certificate of Good Moral Character</h2>
                         <p class="mt-4 text-base text-slate-500 dark:text-slate-400 leading-relaxed transition-colors">
-                            Alumni and former students of CHCC can now request a Certificate of Good Moral Character online — no need to visit the office first. Fill out the form, pay at the Cashier, and pick up your certificate at the OSA Office.
+                            Alumni and former students of CHCC can now request a Certificate of Good Moral Character online — no need to visit the office first. Fill out the form, pay at the Cashier, and pick up your certificate at the Office of the Student Affairs and Services.
                         </p>
                         <Link :href="route('good-moral.create')"
                             class="mt-8 inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-900 dark:bg-indigo-600 text-white text-sm font-semibold hover:bg-slate-800 dark:hover:bg-indigo-500 shadow-lg shadow-slate-900/10 dark:shadow-indigo-900/20 transition-all hover:shadow-xl">
@@ -293,8 +300,8 @@ const services = [
                         <div class="flex items-start gap-5 p-5 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm transition-colors">
                             <div class="h-12 w-12 rounded-xl bg-emerald-600 text-white font-bold text-lg flex items-center justify-center flex-shrink-0">3</div>
                             <div>
-                                <h4 class="font-semibold text-slate-900 dark:text-white">Pick Up at the OSA Office</h4>
-                                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Your Certificate of Good Moral Character will be prepared and ready for pick-up at the OSA Office.</p>
+                                <h4 class="font-semibold text-slate-900 dark:text-white">Pick Up at the Office of the Student Affairs and Services</h4>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Your Certificate of Good Moral Character will be prepared and ready for pick-up at the Office of the Student Affairs and Services.</p>
                             </div>
                         </div>
                     </div>
@@ -303,7 +310,7 @@ const services = [
         </section>
 
         <!-- About the OSA / Stats Section -->
-        <section class="py-20 lg:py-28 bg-white dark:bg-slate-900 transition-colors duration-200">
+        <section id="about" class="py-20 lg:py-28 bg-white dark:bg-slate-900 transition-colors duration-200 scroll-mt-16">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                     <div>

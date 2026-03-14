@@ -3,6 +3,9 @@ import StudentLayout from '@/Layouts/StudentLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
+
+const isProcessing = ref(false);
 
 const props = defineProps({
     notifications: {
@@ -17,9 +20,13 @@ const props = defineProps({
 
 const markAsRead = (notification) => {
     if (notification.is_read) return;
+    isProcessing.value = true;
     router.post(route('student.discipline.notifications.mark-read'), {
         notification_id: notification.notification_id,
-    }, { preserveScroll: true });
+    }, {
+        preserveScroll: true,
+        onFinish: () => { isProcessing.value = false; },
+    });
 };
 
 const goToCase = (notification) => {
@@ -97,5 +104,7 @@ const goToCase = (notification) => {
                 </div>
             </div>
         </div>
+
+        <LoadingOverlay :show="isProcessing" message="Processing... Please wait." />
     </StudentLayout>
 </template>

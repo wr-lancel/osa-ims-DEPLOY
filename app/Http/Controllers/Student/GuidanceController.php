@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Student\StoreGuidanceAppointmentRequest;
 use App\Models\GuidanceAppointment;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -92,6 +93,22 @@ class GuidanceController extends Controller
 
         return redirect()->route('student.guidance.index')
             ->with('success', 'Appointment request submitted successfully. Waiting for admin approval.');
+    }
+
+    /**
+     * Get taken time slots for a specific date.
+     */
+    public function takenSlots(Request $request): JsonResponse
+    {
+        $request->validate(['date' => 'required|date']);
+
+        $taken = GuidanceAppointment::where('appointment_date', $request->date)
+            ->whereNotIn('status', ['cancelled', 'rejected'])
+            ->pluck('appointment_time')
+            ->map(fn($t) => substr($t, 0, 5))
+            ->values();
+
+        return response()->json($taken);
     }
 
     /**

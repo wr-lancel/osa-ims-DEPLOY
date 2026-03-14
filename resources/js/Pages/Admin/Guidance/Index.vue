@@ -10,6 +10,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import InputError from '@/Components/InputError.vue';
 import Pagination from '@/Components/Pagination.vue';
 import NotificationDialog from '@/Components/NotificationDialog.vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 import { useNotification } from '@/composables/useNotification';
 
 const { notification, notify, closeNotification, handleConfirm } = useNotification();
@@ -146,6 +147,7 @@ const rejectAppointment = () => {
     <Head title="Guidance Unit" />
 
     <AdminLayout>
+        <LoadingOverlay :show="approveForm.processing || rejectForm.processing" message="Processing... Please wait." />
         <template #header>
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">

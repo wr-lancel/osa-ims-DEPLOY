@@ -6,6 +6,7 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import InputError from '@/Components/InputError.vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 
 const props = defineProps({
     organizations: {
@@ -169,5 +170,6 @@ watch(
                 </form>
             </div>
         </div>
+        <LoadingOverlay :show="form.processing" message="Submitting... Please wait." />
     </StudentLayout>
 </template>

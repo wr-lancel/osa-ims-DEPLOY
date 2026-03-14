@@ -40,6 +40,7 @@ const props = defineProps({
 });
 
 
+const isProcessing = ref(false);
 const showModal = ref(false);
 const selectedBorrowing = ref(null);
 const showApproveModal = ref(false);
@@ -101,6 +102,7 @@ const openEditModal = (borrowing) => {
 };
 
 const markAsReturned = (borrowing) => {
+    isProcessing.value = true;
     router.put(route('admin.sports.borrowings.update', borrowing.borrowing_id), {
         ...borrowing,
         status: 'returned',
@@ -108,6 +110,7 @@ const markAsReturned = (borrowing) => {
     }, {
         preserveScroll: true,
         preserveState: true,
+        onFinish: () => { isProcessing.value = false; },
     });
 };
 
@@ -223,7 +226,7 @@ const exportPdf = async () => {
     <Head title="Sports Unit" />
 
     <AdminLayout>
-        <LoadingOverlay :show="isExporting" message="Generating PDF... Please wait." />
+        <LoadingOverlay :show="isProcessing || isExporting" :message="isExporting ? 'Generating PDF... Please wait.' : 'Processing... Please wait.'" />
         <template #header>
 
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">

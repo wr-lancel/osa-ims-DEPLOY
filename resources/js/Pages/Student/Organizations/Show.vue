@@ -9,6 +9,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import InputError from '@/Components/InputError.vue';
 import Modal from '@/Components/Modal.vue';
 import HybridTextFileInput from '@/Components/HybridTextFileInput.vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 
 const props = defineProps({
     organization: {
@@ -970,5 +971,7 @@ const getAudienceLabel = (audience) => {
                 </form>
             </div>
         </Modal>
+
+        <LoadingOverlay :show="editProcessing || eventForm.processing || meetingForm.processing" message="Processing... Please wait." />
     </StudentLayout>
 </template>

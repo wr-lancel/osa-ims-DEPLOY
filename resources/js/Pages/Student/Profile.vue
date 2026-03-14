@@ -1,8 +1,9 @@
 <script setup>
 import StudentLayout from '@/Layouts/StudentLayout.vue';
-import { Head, useForm, usePage } from '@inertiajs/vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 import { ref, watch, computed } from 'vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 
 const props = defineProps({
     student: { type: Object, default: null },
@@ -12,8 +13,6 @@ const props = defineProps({
     emergencyContact: { type: Object, default: null },
     enrollmentHistory: { type: Array, default: () => [] },
 });
-
-const flash = computed(() => usePage().props.flash || {});
 
 const form = useForm({
     // Editable student fields
@@ -107,14 +106,6 @@ const submit = () => {
         </div>
 
         <form v-else @submit.prevent="submit" class="space-y-6">
-            <!-- Success / Error Messages -->
-            <div v-if="flash.success" class="bg-green-50 border border-green-200 rounded-lg p-4">
-                <p class="text-sm text-green-800">{{ flash.success }}</p>
-            </div>
-            <div v-if="flash.error" class="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p class="text-sm text-red-800">{{ flash.error }}</p>
-            </div>
-
             <!-- ======================== STUDENT'S INFORMATION ======================== -->
             <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
                 <div class="bg-gray-800 px-6 py-3">
@@ -541,5 +532,7 @@ const submit = () => {
                 </PrimaryButton>
             </div>
         </form>
+
+        <LoadingOverlay :show="form.processing" message="Saving... Please wait." />
     </StudentLayout>
 </template>

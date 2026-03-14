@@ -7,6 +7,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import InputError from '@/Components/InputError.vue';
 import { useForm, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 
 const weekendError = ref('');
 
@@ -107,6 +108,7 @@ const close = () => {
 </script>
 
 <template>
+    <LoadingOverlay :show="isProcessing" message="Saving... Please wait." />
     <Modal :show="show" @close="close">
         <div class="p-6">
             <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">

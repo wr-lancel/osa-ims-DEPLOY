@@ -2,6 +2,7 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 
 const props = defineProps({
     articles: Object,
@@ -13,6 +14,7 @@ const props = defineProps({
     organizations: Array,
 });
 
+const isProcessing = ref(false);
 const activeTab = ref(props.filters?.tab || 'articles');
 const search = ref(props.filters?.search || '');
 const statusFilter = ref(props.filters?.status || '');
@@ -41,9 +43,11 @@ function setTab(tab) {
 }
 
 function togglePublicationOrg(orgId) {
+    isProcessing.value = true;
     router.post(route('admin.publications.settings.toggle-org'), { org_id: orgId }, {
         preserveState: true,
         onSuccess: () => {},
+        onFinish: () => { isProcessing.value = false; },
     });
 }
 
@@ -59,6 +63,7 @@ const statusColors = {
 <template>
     <Head title="Publications" />
     <AdminLayout>
+        <LoadingOverlay :show="isProcessing" message="Processing... Please wait." />
         <template #header>
             <div class="flex items-center justify-between">
                 <h2 class="text-xl font-semibold text-slate-900 dark:text-white">Publications</h2>

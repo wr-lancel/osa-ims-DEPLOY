@@ -1,9 +1,13 @@
 <script setup>
 import StudentLayout from '@/Layouts/StudentLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 import Pagination from '@/Components/Pagination.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
+
+const isProcessing = ref(false);
 
 const props = defineProps({
     notifications: {
@@ -18,14 +22,20 @@ const props = defineProps({
 
 const markAsRead = (notification) => {
     if (notification.is_read) return;
+    isProcessing.value = true;
     router.post(route('student.notifications.mark-read'), {
         notification_id: notification.notification_id,
-    }, { preserveScroll: true });
+    }, {
+        preserveScroll: true,
+        onFinish: () => { isProcessing.value = false; },
+    });
 };
 
 const markAllAsRead = () => {
+    isProcessing.value = true;
     router.post(route('student.notifications.mark-all-read'), {}, {
         preserveScroll: true,
+        onFinish: () => { isProcessing.value = false; },
     });
 };
 
@@ -113,5 +123,7 @@ const getNotificationLink = (notification) => {
                 <Pagination :data="notifications" />
             </div>
         </div>
+
+        <LoadingOverlay :show="isProcessing" message="Processing... Please wait." />
     </StudentLayout>
 </template>

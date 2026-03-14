@@ -20,7 +20,7 @@ class UpdateSportsBorrowingRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'borrow_date' => ['required', 'date'],
             'return_date' => ['nullable', 'date', 'after_or_equal:borrow_date'],
-            'expected_return_date' => ['required', 'date', 'after:borrow_date'],
+            'expected_return_date' => ['required', 'date', 'after_or_equal:borrow_date'],
             'status' => ['required', 'in:pending,approved,rejected,borrowed,returned'],
             'notes' => ['nullable', 'string'],
             'admin_remarks' => ['nullable', 'string'],

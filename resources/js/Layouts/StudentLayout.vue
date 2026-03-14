@@ -1,13 +1,28 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch, computed } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import StudentSidebar from '@/Components/StudentSidebar.vue';
 import ThemeToggle from '@/Components/ThemeToggle.vue';
-import { Link } from '@inertiajs/vue3';
+import NotificationDialog from '@/Components/NotificationDialog.vue';
+import { Link, usePage } from '@inertiajs/vue3';
 
 const mobileMenuOpen = ref(false);
+
+// Global flash-to-toast
+const toast = ref({ show: false, type: 'success', title: '', message: '' });
+const flash = computed(() => usePage().props.flash || {});
+
+watch(flash, (f) => {
+    if (f.success) {
+        toast.value = { show: true, type: 'success', title: 'Success', message: f.success };
+    } else if (f.error) {
+        toast.value = { show: true, type: 'error', title: 'Error', message: f.error };
+    } else if (f.warning) {
+        toast.value = { show: true, type: 'warning', title: 'Warning', message: f.warning };
+    }
+}, { deep: true, immediate: true });
 </script>
 
 <template>
@@ -122,5 +137,13 @@ const mobileMenuOpen = ref(false);
                 </main>
             </div>
         </div>
+        <!-- Global Toast -->
+        <NotificationDialog
+            :show="toast.show"
+            :type="toast.type"
+            :title="toast.title"
+            :message="toast.message"
+            @close="toast.show = false"
+        />
     </div>
 </template>

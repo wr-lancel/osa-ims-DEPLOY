@@ -2,10 +2,12 @@
 import StudentLayout from '@/Layouts/StudentLayout.vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 
 const props = defineProps({ article: Object });
 
 const editing = ref(false);
+const isProcessing = ref(false);
 
 const editForm = useForm({
     title: props.article.title,
@@ -27,7 +29,10 @@ function resubmit() {
 
 function destroy() {
     if (confirm('Delete this article?')) {
-        router.delete(route('student.publications.articles.destroy', props.article.slug));
+        isProcessing.value = true;
+        router.delete(route('student.publications.articles.destroy', props.article.slug), {
+            onFinish: () => { isProcessing.value = false; },
+        });
     }
 }
 </script>
@@ -115,5 +120,7 @@ function destroy() {
                 </div>
             </form>
         </div>
+
+        <LoadingOverlay :show="editForm.processing || isProcessing" message="Processing... Please wait." />
     </StudentLayout>
 </template>

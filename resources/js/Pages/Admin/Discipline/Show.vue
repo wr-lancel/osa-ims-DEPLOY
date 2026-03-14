@@ -8,6 +8,7 @@ import DisciplineFormModal from '@/Components/Admin/DisciplineFormModal.vue';
 import DisciplineMeetingModal from '@/Components/Admin/DisciplineMeetingModal.vue';
 import StatusProgressBar from '@/Components/StatusProgressBar.vue';
 import HybridTextFileInput from '@/Components/HybridTextFileInput.vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 
 const props = defineProps({
     violation: {
@@ -40,6 +41,7 @@ const props = defineProps({
     },
 });
 
+const isProcessing = ref(false);
 const showEditModal = ref(false);
 const showMeetingModal = ref(false);
 const selectedMeeting = ref(null);
@@ -147,6 +149,7 @@ const saveNarrative = () => {
     <Head :title="`Case #${violation.discipline_id} - Discipline`" />
 
     <AdminLayout>
+        <LoadingOverlay :show="isProcessing || narrativeProcessing" message="Processing... Please wait." />
         <template #header>
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -208,7 +211,7 @@ const saveNarrative = () => {
                         <StatusProgressBar :steps="workflowSteps"
                             :current-status="violation.status" :editable="true"
                             :terminal-statuses="terminalStatuses"
-                            @update:status="(newStatus) => router.put(route('admin.discipline.updateStatus', violation.discipline_id), { status: newStatus }, { preserveScroll: true })" />
+                            @update:status="(newStatus) => { isProcessing = true; router.put(route('admin.discipline.updateStatus', violation.discipline_id), { status: newStatus }, { preserveScroll: true, onFinish: () => { isProcessing = false; } }); }" />
                     </div>
                     <div v-if="violation.date_resolved">
                         <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Date Resolved</label>

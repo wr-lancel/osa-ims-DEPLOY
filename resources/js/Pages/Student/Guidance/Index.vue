@@ -1,13 +1,15 @@
 <script setup>
 import StudentLayout from '@/Layouts/StudentLayout.vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, computed, watch } from 'vue';
+import axios from 'axios';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import TextInput from '@/Components/TextInput.vue';
 import Textarea from '@/Components/Textarea.vue';
 import InputError from '@/Components/InputError.vue';
 import Pagination from '@/Components/Pagination.vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 
 const props = defineProps({
     appointments: {
@@ -43,6 +45,28 @@ const officeHours = [
     { value: '16:00', label: '4:00 PM' },
 ];
 
+const takenSlots = ref([]);
+const loadingSlots = ref(false);
+
+const fetchTakenSlots = async (date) => {
+    if (!date) {
+        takenSlots.value = [];
+        return;
+    }
+    loadingSlots.value = true;
+    try {
+        const { data } = await axios.get(route('student.guidance.appointments.taken-slots'), { params: { date } });
+        takenSlots.value = data;
+    } catch {
+        takenSlots.value = [];
+    } finally {
+        loadingSlots.value = false;
+    }
+};
+
+const isSlotTaken = (timeValue) => takenSlots.value.includes(timeValue);
+const availableCount = computed(() => officeHours.filter(h => !isSlotTaken(h.value)).length);
+
 const onDateChange = () => {
     if (!form.appointment_date) return;
     const [year, month, day] = form.appointment_date.split('-').map(Number);
@@ -50,10 +74,23 @@ const onDateChange = () => {
     if (d.getDay() === 0 || d.getDay() === 6) {
         form.appointment_date = '';
         weekendError.value = 'Weekends are not available. Please select a weekday (Monday – Friday).';
+        takenSlots.value = [];
     } else {
         weekendError.value = '';
+        fetchTakenSlots(form.appointment_date);
     }
+    // Reset time selection when date changes
+    form.appointment_time = '';
 };
+
+// Fetch taken slots on initial load if date is set
+if (form.appointment_date) {
+    const [y, m, d] = form.appointment_date.split('-').map(Number);
+    const initDate = new Date(y, m - 1, d);
+    if (initDate.getDay() !== 0 && initDate.getDay() !== 6) {
+        fetchTakenSlots(form.appointment_date);
+    }
+}
 
 const submitForm = () => {
     form.post(route('student.guidance.appointments.store'), {
@@ -103,16 +140,6 @@ const goToDetail = (appointment) => {
         </template>
 
         <div class="space-y-6">
-            <!-- Success Message -->
-            <div v-if="$page.props.flash?.success" class="bg-green-50 border border-green-200 rounded-lg p-4">
-                <p class="text-sm text-green-800">{{ $page.props.flash.success }}</p>
-            </div>
-
-            <!-- Error Message -->
-            <div v-if="$page.props.flash?.error || form.errors.error" class="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p class="text-sm text-red-800">{{ $page.props.flash?.error || form.errors.error }}</p>
-            </div>
-
             <!-- Appointment Request Form -->
             <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                 <div class="p-6">
@@ -137,15 +164,28 @@ const goToDetail = (appointment) => {
 
                             <div>
                                 <InputLabel for="appointment_time" value="Appointment Time *" />
-                                <select
-                                    id="appointment_time"
-                                    v-model="form.appointment_time"
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
-                                    required
-                                >
-                                    <option value="" disabled>— Select Time —</option>
-                                    <option v-for="h in officeHours" :key="h.value" :value="h.value">{{ h.label }}</option>
-                                </select>
+                                <p v-if="form.appointment_date && !loadingSlots" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                    {{ availableCount }} of {{ officeHours.length }} slots available
+                                </p>
+                                <p v-if="loadingSlots" class="mt-1 text-xs text-gray-400 dark:text-gray-500 animate-pulse">Loading available slots...</p>
+                                <div class="mt-2 grid grid-cols-4 gap-2">
+                                    <button
+                                        v-for="h in officeHours"
+                                        :key="h.value"
+                                        type="button"
+                                        :disabled="isSlotTaken(h.value)"
+                                        @click="form.appointment_time = h.value"
+                                        class="px-3 py-2 text-sm font-medium rounded-lg border-2 transition-all duration-150 text-center"
+                                        :class="isSlotTaken(h.value)
+                                            ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-400 dark:text-red-500 cursor-not-allowed line-through'
+                                            : form.appointment_time === h.value
+                                                ? 'bg-indigo-600 border-indigo-600 text-white shadow-md'
+                                                : 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/40 hover:border-green-300 dark:hover:border-green-700 cursor-pointer'"
+                                    >
+                                        {{ h.label }}
+                                        <span v-if="isSlotTaken(h.value)" class="block text-[10px] font-normal">Taken</span>
+                                    </button>
+                                </div>
                                 <InputError :message="form.errors.appointment_time" class="mt-2" />
                             </div>
                         </div>
@@ -299,5 +339,7 @@ const goToDetail = (appointment) => {
                 </div>
             </div>
         </div>
+
+        <LoadingOverlay :show="form.processing" message="Submitting... Please wait." />
     </StudentLayout>
 </template>

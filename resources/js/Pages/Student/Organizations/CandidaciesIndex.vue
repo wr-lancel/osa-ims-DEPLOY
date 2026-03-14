@@ -1,11 +1,15 @@
 <script setup>
 import StudentLayout from '@/Layouts/StudentLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import NotificationDialog from '@/Components/NotificationDialog.vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 import { useNotification } from '@/composables/useNotification';
 
 const { notification, confirmAction, closeNotification, handleConfirm } = useNotification();
+
+const isProcessing = ref(false);
 
 const props = defineProps({
     candidacies: {
@@ -36,7 +40,10 @@ const withdraw = (application) => {
         'Are you sure you want to withdraw this candidacy? This action cannot be undone.',
         'Withdraw Candidacy',
         () => {
-            router.post(route('student.organizations.candidacy.withdraw', application.application_id));
+            isProcessing.value = true;
+            router.post(route('student.organizations.candidacy.withdraw', application.application_id), {}, {
+                onFinish: () => { isProcessing.value = false; },
+            });
         },
         { confirmLabel: 'Withdraw', cancelLabel: 'Cancel' }
     );
@@ -144,6 +151,8 @@ const withdraw = (application) => {
             </div>
         </div>
     </StudentLayout>
+
+    <LoadingOverlay :show="isProcessing" message="Processing... Please wait." />
 
     <NotificationDialog
         :show="notification.show"

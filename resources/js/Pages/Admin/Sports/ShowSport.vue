@@ -6,6 +6,7 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import Pagination from '@/Components/Pagination.vue';
 import SearchableSelect from '@/Components/SearchableSelect.vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 
 const props = defineProps({
     sport: {
@@ -26,6 +27,7 @@ const props = defineProps({
     },
 });
 
+const isProcessing = ref(false);
 const showAddModal = ref(false);
 const searchQuery = ref(props.filters.search || '');
 const showConfirmRemove = ref(false);
@@ -85,11 +87,13 @@ const cancelRemove = () => {
 
 const removeAthlete = () => {
     if (!athleteToRemove.value) return;
+    isProcessing.value = true;
     router.delete(
         route('admin.sports.sports.athletes.destroy', [props.sport.sport_id, athleteToRemove.value.student_number]),
         {
             preserveScroll: true,
             onSuccess: () => cancelRemove(),
+            onFinish: () => { isProcessing.value = false; },
         }
     );
 };
@@ -100,6 +104,7 @@ const removeAthlete = () => {
     <Head :title="sport.name" />
 
     <AdminLayout>
+        <LoadingOverlay :show="isProcessing" message="Processing... Please wait." />
         <template #header>
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-3">

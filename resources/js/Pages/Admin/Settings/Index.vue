@@ -12,6 +12,7 @@ import Modal from '@/Components/Modal.vue';
 import StatusProgressBar from '@/Components/StatusProgressBar.vue';
 import Pagination from '@/Components/Pagination.vue';
 import NotificationDialog from '@/Components/NotificationDialog.vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 import { useNotification } from '@/composables/useNotification';
 import { formatLabel } from '@/utils/formatLabel.js';
 import axios from 'axios';
@@ -558,6 +559,7 @@ const saveLookupValues = (key, values) => {
     <Head title="Settings" />
 
     <AdminLayout>
+        <LoadingOverlay :show="stepProcessing || typeProcessing || roleProcessing || lookupProcessing" message="Processing... Please wait." />
         <template #header>
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">

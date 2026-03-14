@@ -7,6 +7,7 @@ import TextInput from '@/Components/TextInput.vue';
 import Textarea from '@/Components/Textarea.vue';
 import InputError from '@/Components/InputError.vue';
 import Pagination from '@/Components/Pagination.vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 
 const props = defineProps({
     borrowings: {
@@ -133,14 +134,6 @@ const goToDetail = (borrowing) => {
         </template>
 
         <div class="space-y-6">
-            <!-- Flash Messages -->
-            <div v-if="$page.props.flash?.success" class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-                <p class="text-sm text-green-800 dark:text-green-300">{{ $page.props.flash.success }}</p>
-            </div>
-            <div v-if="$page.props.flash?.error" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                <p class="text-sm text-red-800 dark:text-red-300">{{ $page.props.flash.error }}</p>
-            </div>
-
             <!-- Borrow Equipment Card -->
             <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
 
@@ -409,5 +402,7 @@ const goToDetail = (borrowing) => {
                 </div>
             </div>
         </div>
+
+        <LoadingOverlay :show="form.processing" message="Submitting... Please wait." />
     </StudentLayout>
 </template>

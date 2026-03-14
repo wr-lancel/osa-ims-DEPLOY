@@ -102,7 +102,7 @@ watch(() => page.url, () => {
 
           <div class="leading-tight">
             <div class="text-sm font-semibold text-slate-900 dark:text-white transition-colors">Admin Portal</div>
-            <div class="text-xs text-slate-500 dark:text-slate-400 transition-colors">OSA-IMS</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400 transition-colors">OSAS-IMS</div>
           </div>
         </div>
       </div>

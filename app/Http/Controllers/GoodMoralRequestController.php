@@ -19,6 +19,6 @@ class GoodMoralRequestController extends Controller
         GoodMoralRequest::create($request->validated());
 
         return redirect()->route('good-moral.create')
-            ->with('success', 'Your request has been submitted successfully. Please proceed to the CHCC Cashier to pay the processing fee, then pick up your certificate at the OSA Office.');
+            ->with('success', 'Your request has been submitted successfully. Please proceed to the CHCC Cashier to pay the processing fee, then pick up your certificate at the Office of the Student Affairs and Services.');
     }
 }

@@ -5,6 +5,7 @@ import { ref, watch } from 'vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import StatusProgressBar from '@/Components/StatusProgressBar.vue';
 import HybridTextFileInput from '@/Components/HybridTextFileInput.vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 
 const props = defineProps({
     appointment: {
@@ -21,10 +22,13 @@ const statusSteps = [
 
 const terminalStatuses = ['Rejected', 'Cancelled'];
 
+const isProcessing = ref(false);
+
 const updateAppointmentStatus = (newStatus) => {
+    isProcessing.value = true;
     router.put(route('admin.guidance.appointments.updateStatus', props.appointment.appointment_id), {
         status: (newStatus || '').toLowerCase(),
-    }, { preserveScroll: true });
+    }, { preserveScroll: true, onFinish: () => { isProcessing.value = false; } });
 };
 
 const getStatusBadgeClass = (status) => {
@@ -103,6 +107,7 @@ const saveNarrative = () => {
     <Head :title="`Appointment Details - Guidance`" />
 
     <AdminLayout>
+        <LoadingOverlay :show="isProcessing || narrativeProcessing" message="Processing... Please wait." />
         <template #header>
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>

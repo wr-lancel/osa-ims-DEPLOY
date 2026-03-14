@@ -122,7 +122,7 @@ const exportPdf = async () => {
     <Head title="Candidacy Applications" />
 
     <AdminLayout>
-        <LoadingOverlay :show="isExporting" message="Generating PDF... Please wait." />
+        <LoadingOverlay :show="toggling || isExporting" :message="isExporting ? 'Generating PDF... Please wait.' : 'Processing... Please wait.'" />
         <template #header>
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>

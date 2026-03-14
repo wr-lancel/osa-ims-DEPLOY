@@ -10,6 +10,7 @@ import axios from 'axios';
 import NotificationDialog from '@/Components/NotificationDialog.vue';
 import { useNotification } from '@/composables/useNotification';
 import { formatLabel } from '@/utils/formatLabel.js';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 
 const { notification, notify, closeNotification } = useNotification();
 
@@ -175,6 +176,7 @@ const close = () => {
 </script>
 
 <template>
+    <LoadingOverlay :show="isProcessing" message="Saving... Please wait." />
     <Modal :show="show" @close="close" max-width="2xl">
         <div class="p-6">
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">

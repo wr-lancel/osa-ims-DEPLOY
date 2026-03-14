@@ -19,7 +19,7 @@ class StoreSportsBorrowingRequest extends FormRequest
             'item_name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'borrow_date' => ['required', 'date'],
-            'expected_return_date' => ['required', 'date', 'after:borrow_date'],
+            'expected_return_date' => ['required', 'date', 'after_or_equal:borrow_date'],
             'status' => ['required', 'in:borrowed,returned'],
             'notes' => ['nullable', 'string'],
         ];
@@ -30,7 +30,7 @@ class StoreSportsBorrowingRequest extends FormRequest
         return [
             'student_number.exists' => 'The selected student does not exist.',
             'employee_id.exists' => 'The selected employee does not exist.',
-            'expected_return_date.after' => 'Expected return date must be after borrow date.',
+            'expected_return_date.after_or_equal' => 'Expected return date must be on or after borrow date.',
         ];
     }
 }

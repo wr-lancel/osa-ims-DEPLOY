@@ -78,10 +78,6 @@ const formatStatus = (s) => s ? s.replace(/_/g, ' ') : '';
         </template>
 
         <div class="space-y-6">
-            <div v-if="$page.props.flash?.success" class="bg-green-50 border border-green-200 rounded-lg p-4">
-                <p class="text-sm text-green-800">{{ $page.props.flash.success }}</p>
-            </div>
-
             <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
                 <div class="flex flex-wrap gap-4 mb-4">
                     <div>

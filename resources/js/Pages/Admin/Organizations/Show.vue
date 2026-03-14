@@ -3,6 +3,7 @@ import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import NotificationDialog from '@/Components/NotificationDialog.vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 import { useNotification } from '@/composables/useNotification';
 
 const { notification, notify, confirmAction, closeNotification, handleConfirm } = useNotification();
@@ -30,6 +31,8 @@ const props = defineProps({
         default: () => ['Academic', 'Cultural', 'Governance', 'Special Interest'],
     },
 });
+
+const isProcessing = ref(false);
 
 // Officer form
 const showOfficerModal = ref(false);
@@ -78,8 +81,10 @@ const removeOfficer = (officer) => {
         `Are you sure you want to remove ${officer.student_name} as ${officer.position}?`,
         'Remove Officer',
         () => {
+            isProcessing.value = true;
             router.delete(route('admin.organizations.officers.remove', [props.organization.org_id, officer.officer_id]), {
                 preserveScroll: true,
+                onFinish: () => { isProcessing.value = false; },
             });
         },
         { confirmLabel: 'Remove', cancelLabel: 'Cancel' }
@@ -288,10 +293,12 @@ const updateMeetingStatus = (meeting, status) => {
         `Are you sure you want to ${label} this meeting?`,
         status === 'completed' ? 'Complete Meeting' : 'Cancel Meeting',
         () => {
+            isProcessing.value = true;
             router.put(route('admin.organizations.meetings.updateStatus', [props.organization.org_id, meeting.meeting_id]), {
                 status: status,
             }, {
                 preserveScroll: true,
+                onFinish: () => { isProcessing.value = false; },
             });
         },
         { confirmLabel: status === 'completed' ? 'Complete' : 'Cancel Meeting', cancelLabel: 'Go Back' }
@@ -329,6 +336,7 @@ const hasAboutContent = computed(() => {
     <Head :title="`${organization.org_name} - Organization Details`" />
 
     <AdminLayout>
+        <LoadingOverlay :show="isProcessing || editFormProcessing || officerForm.processing || adviserForm.processing || meetingForm.processing" message="Processing... Please wait." />
         <template #header>
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-4">

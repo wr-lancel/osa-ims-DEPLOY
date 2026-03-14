@@ -2,6 +2,7 @@
 import StudentLayout from '@/Layouts/StudentLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 
 const form = useForm({
     title: '',
@@ -89,5 +90,7 @@ function submit() {
                 </Link>
             </div>
         </div>
+
+        <LoadingOverlay :show="form.processing" message="Submitting... Please wait." />
     </StudentLayout>
 </template>

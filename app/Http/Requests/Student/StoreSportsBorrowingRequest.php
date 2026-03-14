@@ -25,7 +25,7 @@ class StoreSportsBorrowingRequest extends FormRequest
             'item_name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'borrow_date' => ['required', 'date'],
-            'expected_return_date' => ['required', 'date', 'after:borrow_date'],
+            'expected_return_date' => ['required', 'date', 'after_or_equal:borrow_date'],
             'notes' => ['nullable', 'string'],
         ];
     }
@@ -44,7 +44,7 @@ class StoreSportsBorrowingRequest extends FormRequest
             'borrow_date.date' => 'The borrow date must be a valid date.',
             'expected_return_date.required' => 'The expected return date is required.',
             'expected_return_date.date' => 'The expected return date must be a valid date.',
-            'expected_return_date.after' => 'The expected return date must be after the borrow date.',
+            'expected_return_date.after_or_equal' => 'The expected return date must be on or after the borrow date.',
         ];
     }
 }

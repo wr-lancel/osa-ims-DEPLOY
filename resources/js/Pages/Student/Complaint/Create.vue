@@ -7,6 +7,7 @@ import TextInput from '@/Components/TextInput.vue';
 import Textarea from '@/Components/Textarea.vue';
 import InputError from '@/Components/InputError.vue';
 import Checkbox from '@/Components/Checkbox.vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 
 const props = defineProps({
     categories: {
@@ -52,10 +53,6 @@ const submit = () => {
         </template>
 
         <div class="space-y-6 max-w-3xl">
-            <div v-if="$page.props.flash?.success" class="bg-green-50 border border-green-200 rounded-lg p-4">
-                <p class="text-sm text-green-800">{{ $page.props.flash.success }}</p>
-            </div>
-
             <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
                 <form @submit.prevent="submit" class="space-y-4">
                     <div>
@@ -164,5 +161,6 @@ const submit = () => {
                 </form>
             </div>
         </div>
+        <LoadingOverlay :show="form.processing" message="Submitting... Please wait." />
     </StudentLayout>
 </template>

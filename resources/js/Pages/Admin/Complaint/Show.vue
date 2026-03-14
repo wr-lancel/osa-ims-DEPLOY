@@ -5,6 +5,7 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import Textarea from '@/Components/Textarea.vue';
 import InputError from '@/Components/InputError.vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 
 const props = defineProps({
     complaint: {
@@ -48,6 +49,7 @@ const formatStatus = (s) => s ? s.replace(/_/g, ' ') : '';
     <Head :title="`Complaint #${complaint.complaint_id}`" />
 
     <AdminLayout>
+        <LoadingOverlay :show="form.processing" message="Processing... Please wait." />
         <template #header>
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>

@@ -4,6 +4,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import Pagination from '@/Components/Pagination.vue';
+import SortableHeader from '@/Components/SortableHeader.vue';
 
 const props = defineProps({
     complaints: {
@@ -26,15 +27,33 @@ const props = defineProps({
 
 const category = ref(props.filters.category || '');
 const status = ref(props.filters.status || '');
+const sortBy = ref(props.filters.sort_by || '');
+const sortDir = ref(props.filters.sort_dir || 'desc');
 
 const applyFilters = () => {
     router.get(route('student.discipline.complaints.index'), {
         category: category.value || undefined,
         status: status.value || undefined,
-    }, { 
-        preserveState: true, 
+        sort_by: sortBy.value || undefined,
+        sort_dir: sortDir.value || undefined,
+    }, {
+        preserveState: true,
         preserveScroll: true,
         showProgress: false,
+    });
+};
+
+const handleSort = ({ column, dir }) => {
+    sortBy.value = column;
+    sortDir.value = dir;
+    router.get(route('student.discipline.complaints.index'), {
+        category: category.value || undefined,
+        status: status.value || undefined,
+        sort_by: column,
+        sort_dir: dir,
+    }, {
+        preserveState: true,
+        preserveScroll: true,
     });
 };
 
@@ -120,9 +139,9 @@ const formatStatus = (s) => s ? s.replace(/_/g, ' ') : '';
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">ID</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Subject</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Category</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Date Submitted</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Status</th>
+                                <SortableHeader column="category" label="Category" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
+                                <SortableHeader column="created_at" label="Date Submitted" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
+                                <SortableHeader column="status" label="Status" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Actions</th>
                             </tr>
                         </thead>

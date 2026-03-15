@@ -2,6 +2,7 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, router, Link, useForm } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
+import SortableHeader from '@/Components/SortableHeader.vue';
 import DashboardCards from '@/Components/Admin/DashboardCards.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
@@ -70,12 +71,22 @@ const getStatusBadgeClass = (status, statusColor = null) => {
 const appointmentSearch = ref(props.filters.appointment_search || '');
 const appointmentStatus = ref(props.filters.appointment_status || '');
 const appointmentType = ref(props.filters.appointment_type || '');
+const sortBy = ref(props.filters.sort_by || '');
+const sortDir = ref(props.filters.sort_dir || 'desc');
+
+const handleSort = ({ column, dir }) => {
+    sortBy.value = column;
+    sortDir.value = dir;
+    applyAppointmentFilters();
+};
 
 const applyAppointmentFilters = () => {
     router.get(route('admin.guidance.index'), {
         appointment_search: appointmentSearch.value || undefined,
         appointment_status: appointmentStatus.value || undefined,
         appointment_type: appointmentType.value || undefined,
+        sort_by: sortBy.value || undefined,
+        sort_dir: sortDir.value || undefined,
     }, {
         preserveState: true,
         preserveScroll: true,
@@ -290,18 +301,15 @@ const rejectAppointment = () => {
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Student
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                        Date & Time
-                                    </th>
+                                    <SortableHeader column="appointment_date" label="Date" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
+                                    <SortableHeader column="appointment_time" label="Time" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Type
                                     </th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Concern
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                        Status
-                                    </th>
+                                    <SortableHeader column="status" label="Status" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Admin Action
                                     </th>
@@ -312,7 +320,7 @@ const rejectAppointment = () => {
                             </thead>
                             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                 <tr v-if="appointments.data && appointments.data.length === 0">
-                                    <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
+                                    <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                         No appointments found.
                                     </td>
                                 </tr>
@@ -324,8 +332,10 @@ const rejectAppointment = () => {
                                         <div class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">{{ appointment.student_id }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
-                                        <div>{{ appointment.appointment_date }}</div>
-                                        <div class="text-xs">{{ appointment.appointment_time }}</div>
+                                        {{ appointment.appointment_date }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
+                                        {{ appointment.appointment_time }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 capitalize">
                                         {{ appointment.appointment_type }}

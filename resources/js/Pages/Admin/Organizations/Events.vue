@@ -3,6 +3,7 @@ import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 import axios from 'axios';
+import SortableHeader from '@/Components/SortableHeader.vue';
 import EventFormModal from '@/Components/Admin/EventFormModal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
@@ -33,6 +34,14 @@ const selectedEvent = ref(null);
 const search = ref(props.filters.search || '');
 const status = ref(props.filters.status || '');
 const orgId = ref(props.filters.org_id || '');
+const sortBy = ref(props.filters.sort_by || '');
+const sortDir = ref(props.filters.sort_dir || 'desc');
+
+const handleSort = ({ column, dir }) => {
+    sortBy.value = column;
+    sortDir.value = dir;
+    applyFilters();
+};
 
 const statusOptions = [
     { value: '', label: 'All Statuses' },
@@ -46,6 +55,8 @@ const applyFilters = () => {
         search: search.value || undefined,
         status: status.value || undefined,
         org_id: orgId.value || undefined,
+        sort_by: sortBy.value || undefined,
+        sort_dir: sortDir.value || undefined,
     }, {
         preserveState: true,
         preserveScroll: true,
@@ -207,24 +218,18 @@ const exportPdf = async () => {
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead class="bg-gray-50 dark:bg-gray-900">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                    Event Name
-                                </th>
+                                <SortableHeader column="event_name" label="Event Name" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                     Organization
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                    Date & Time
-                                </th>
+                                <SortableHeader column="event_date" label="Date & Time" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                     Location
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                     Created By
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                    Status
-                                </th>
+                                <SortableHeader column="status" label="Status" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                     Actions
                                 </th>

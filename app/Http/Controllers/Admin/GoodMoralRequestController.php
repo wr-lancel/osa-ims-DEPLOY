@@ -12,7 +12,10 @@ class GoodMoralRequestController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = GoodMoralRequest::orderBy('created_at', 'desc');
+        $sortBy = in_array($request->input('sort_by'), ['created_at', 'status', 'full_name']) ? $request->input('sort_by') : 'created_at';
+        $sortDir = $request->input('sort_dir') === 'asc' ? 'asc' : 'desc';
+
+        $query = GoodMoralRequest::orderBy($sortBy, $sortDir);
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -31,7 +34,7 @@ class GoodMoralRequestController extends Controller
 
         return Inertia::render('Admin/GoodMoral/Index', [
             'requests' => $requests,
-            'filters'  => $request->only('status', 'search'),
+            'filters'  => $request->only('status', 'search', 'sort_by', 'sort_dir'),
             'counts'   => [
                 'all'              => GoodMoralRequest::count(),
                 'pending'          => GoodMoralRequest::where('status', 'pending')->count(),

@@ -8,6 +8,7 @@ import Textarea from '@/Components/Textarea.vue';
 import InputError from '@/Components/InputError.vue';
 import Pagination from '@/Components/Pagination.vue';
 import LoadingOverlay from '@/Components/LoadingOverlay.vue';
+import SortableHeader from '@/Components/SortableHeader.vue';
 
 const props = defineProps({
     borrowings: {
@@ -35,6 +36,8 @@ const form = useForm({
 const selectedEquipment = ref('');
 const formRef = ref(null);
 const statusFilter = ref(props.filters.status || '');
+const sortBy = ref(props.filters.sort_by || '');
+const sortDir = ref(props.filters.sort_dir || 'desc');
 
 const selectEquipment = (name) => {
     if (selectedEquipment.value === name) {
@@ -100,10 +103,27 @@ const submitForm = () => {
 
 const filterByStatus = (status) => {
     statusFilter.value = status;
-    router.get(route('student.sports.index'), { status: status || null }, {
+    router.get(route('student.sports.index'), {
+        status: status || null,
+        sort_by: sortBy.value || undefined,
+        sort_dir: sortDir.value || undefined,
+    }, {
         preserveState: true,
         preserveScroll: true,
         showProgress: false,
+    });
+};
+
+const handleSort = ({ column, dir }) => {
+    sortBy.value = column;
+    sortDir.value = dir;
+    router.get(route('student.sports.index'), {
+        status: statusFilter.value || undefined,
+        sort_by: column,
+        sort_dir: dir,
+    }, {
+        preserveState: true,
+        preserveScroll: true,
     });
 };
 
@@ -348,9 +368,9 @@ const goToDetail = (borrowing) => {
                                 <thead class="bg-gray-50 dark:bg-gray-900/50">
                                     <tr>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Item Name</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Borrow Date</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Expected Return</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                                        <SortableHeader column="borrow_date" label="Borrow Date" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
+                                        <SortableHeader column="expected_return_date" label="Expected Return" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
+                                        <SortableHeader column="status" label="Status" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                                     </tr>
                                 </thead>

@@ -3,6 +3,7 @@ import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 import axios from 'axios';
+import SortableHeader from '@/Components/SortableHeader.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import Pagination from '@/Components/Pagination.vue';
 import LoadingOverlay from '@/Components/LoadingOverlay.vue';
@@ -45,6 +46,14 @@ const statusFilter = ref(props.filters.status || '');
 const orgFilter = ref(props.filters.org_id || '');
 const termFilter = ref(props.filters.acad_id || '');
 const orgTypeFilter = ref(props.filters.org_type || '');
+const sortBy = ref(props.filters.sort_by || '');
+const sortDir = ref(props.filters.sort_dir || 'desc');
+
+const handleSort = ({ column, dir }) => {
+    sortBy.value = column;
+    sortDir.value = dir;
+    applyFilters();
+};
 
 function applyFilters() {
     router.get(route('admin.organizations.candidacies.index'), {
@@ -52,6 +61,8 @@ function applyFilters() {
         org_id: orgFilter.value || undefined,
         acad_id: termFilter.value || undefined,
         org_type: orgTypeFilter.value || undefined,
+        sort_by: sortBy.value || undefined,
+        sort_dir: sortDir.value || undefined,
     }, {
         preserveState: true,
         preserveScroll: true,
@@ -265,9 +276,8 @@ const exportPdf = async () => {
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Position
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Term</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Submitted
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Status</th>
+                                <SortableHeader column="submitted_at" label="Submitted" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
+                                <SortableHeader column="status" label="Status" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Actions
                                 </th>
                             </tr>

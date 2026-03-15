@@ -2,6 +2,7 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
+import SortableHeader from '@/Components/SortableHeader.vue';
 import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 
 const props = defineProps({
@@ -15,14 +16,29 @@ const flash = computed(() => usePage().props.flash || {});
 // Search & filter
 const search = ref(props.filters.search || '');
 const activeStatus = ref(props.filters.status || '');
+const sortBy = ref(props.filters.sort_by || '');
+const sortDir = ref(props.filters.sort_dir || 'desc');
+
+const buildParams = () => ({
+    status: activeStatus.value || undefined,
+    search: search.value || undefined,
+    sort_by: sortBy.value || undefined,
+    sort_dir: sortDir.value || undefined,
+});
 
 const applyFilter = (status) => {
     activeStatus.value = status;
-    router.get(route('admin.good-moral.index'), { status: status || undefined, search: search.value || undefined }, { preserveState: true, replace: true });
+    router.get(route('admin.good-moral.index'), buildParams(), { preserveState: true, replace: true });
 };
 
 const applySearch = () => {
-    router.get(route('admin.good-moral.index'), { status: activeStatus.value || undefined, search: search.value || undefined }, { preserveState: true, replace: true });
+    router.get(route('admin.good-moral.index'), buildParams(), { preserveState: true, replace: true });
+};
+
+const handleSort = ({ column, dir }) => {
+    sortBy.value = column;
+    sortDir.value = dir;
+    router.get(route('admin.good-moral.index'), buildParams(), { preserveState: true, replace: true });
 };
 
 // Update modal
@@ -127,12 +143,12 @@ const formatDate = (date) => date ? new Date(date).toLocaleDateString('en-US', {
                     <table class="w-full text-sm text-left">
                         <thead class="text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/80 uppercase border-b border-slate-200 dark:border-slate-700">
                             <tr>
-                                <th class="px-5 py-3 font-semibold whitespace-nowrap">Name</th>
+                                <SortableHeader column="full_name" label="Name" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
                                 <th class="px-5 py-3 font-semibold whitespace-nowrap">Student No.</th>
                                 <th class="px-5 py-3 font-semibold whitespace-nowrap">Course</th>
                                 <th class="px-5 py-3 font-semibold whitespace-nowrap">Year Grad.</th>
-                                <th class="px-5 py-3 font-semibold whitespace-nowrap">Submitted</th>
-                                <th class="px-5 py-3 font-semibold whitespace-nowrap">Status</th>
+                                <SortableHeader column="created_at" label="Submitted" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
+                                <SortableHeader column="status" label="Status" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
                                 <th class="px-5 py-3 font-semibold whitespace-nowrap">Action</th>
                             </tr>
                         </thead>

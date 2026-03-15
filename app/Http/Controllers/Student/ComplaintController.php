@@ -113,11 +113,14 @@ class ComplaintController extends Controller
         $user = Auth::user();
         $studentNumber = $user->student_number;
 
+        $sortBy = in_array($request->input('sort_by'), ['created_at', 'category', 'status']) ? $request->input('sort_by') : 'created_at';
+        $sortDir = $request->input('sort_dir') === 'asc' ? 'asc' : 'desc';
+
         $query = Complaint::with(['complainantEnrollment.academicCalendar'])
             ->whereHas('complainantEnrollment', function ($q) use ($studentNumber) {
                 $q->where('student_number', $studentNumber);
             })
-            ->orderBy('created_at', 'desc');
+            ->orderBy($sortBy, $sortDir);
 
         if ($request->filled('category')) {
             $query->where('category', $request->category);
@@ -154,7 +157,7 @@ class ComplaintController extends Controller
 
         return Inertia::render('Student/Complaint/Index', [
             'complaints' => $complaints,
-            'filters' => $request->only(['category', 'status']),
+            'filters' => $request->only(['category', 'status', 'sort_by', 'sort_dir']),
             'categories' => $categories,
             'statusOptions' => $statusOptions,
         ]);

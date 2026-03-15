@@ -2,6 +2,7 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
+import SortableHeader from '@/Components/SortableHeader.vue';
 import DashboardCards from '@/Components/Admin/DashboardCards.vue';
 import OrganizationFormModal from '@/Components/Admin/OrganizationFormModal.vue';
 import LoadingOverlay from '@/Components/LoadingOverlay.vue';
@@ -37,6 +38,14 @@ const selectedOrganization = ref(null);
 const search = ref(props.filters.search || '');
 const type = ref(props.filters.type || '');
 const status = ref(props.filters.status || '');
+const sortBy = ref(props.filters.sort_by || '');
+const sortDir = ref(props.filters.sort_dir || 'desc');
+
+const handleSort = ({ column, dir }) => {
+    sortBy.value = column;
+    sortDir.value = dir;
+    applyFilters();
+};
 
 const typeOptions = computed(() => [
     { value: '', label: 'All Types' },
@@ -54,6 +63,8 @@ const applyFilters = () => {
         search: search.value || undefined,
         type: type.value || undefined,
         status: status.value || undefined,
+        sort_by: sortBy.value || undefined,
+        sort_dir: sortDir.value || undefined,
     }, {
         preserveState: true,
         preserveScroll: true,
@@ -216,14 +227,8 @@ const exportPdf = async () => {
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 transition-colors">
                             <thead class="bg-gray-50 dark:bg-gray-700/50 transition-colors">
                                 <tr>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">
-                                        Organization Name
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">
-                                        Type
-                                    </th>
+                                    <SortableHeader column="org_name" label="Organization Name" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
+                                    <SortableHeader column="type" label="Type" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">
                                         Leadership
@@ -236,10 +241,7 @@ const exportPdf = async () => {
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">
                                         Established
                                     </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">
-                                        Status
-                                    </th>
+                                    <SortableHeader column="status" label="Status" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
                                     <th
                                         class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">
                                         Actions

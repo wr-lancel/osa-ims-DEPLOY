@@ -35,8 +35,11 @@ class SportsController extends Controller
             }
         }
 
+        $sortBy = in_array($request->input('sort_by'), ['borrow_date', 'expected_return_date', 'status', 'created_at']) ? $request->input('sort_by') : 'created_at';
+        $sortDir = $request->input('sort_dir') === 'asc' ? 'asc' : 'desc';
+
         $borrowings = $borrowingsQuery
-            ->orderBy('created_at', 'desc')
+            ->orderBy($sortBy, $sortDir)
             ->paginate($request->input('perPage', 20))
             ->withQueryString();
 
@@ -63,7 +66,7 @@ class SportsController extends Controller
 
         return Inertia::render('Student/Sports/Index', [
             'borrowings' => $borrowings,
-            'filters' => $request->only(['status']),
+            'filters' => $request->only(['status', 'sort_by', 'sort_dir']),
             'equipmentList' => SystemSetting::getList('sports_equipment'),
         ]);
     }

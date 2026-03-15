@@ -30,8 +30,11 @@ class GuidanceController extends Controller
             $appointmentsQuery->where('status', $request->status);
         }
 
+        $sortBy = in_array($request->input('sort_by'), ['appointment_date', 'appointment_time', 'appointment_type', 'status', 'created_at']) ? $request->input('sort_by') : 'created_at';
+        $sortDir = $request->input('sort_dir') === 'asc' ? 'asc' : 'desc';
+
         $appointments = $appointmentsQuery
-            ->orderBy('created_at', 'desc')
+            ->orderBy($sortBy, $sortDir)
             ->paginate($request->input('perPage', 20))
             ->withQueryString();
 
@@ -56,7 +59,7 @@ class GuidanceController extends Controller
 
         return Inertia::render('Student/Guidance/Index', [
             'appointments' => $appointments,
-            'filters' => $request->only(['status']),
+            'filters' => $request->only(['status', 'sort_by', 'sort_dir']),
         ]);
     }
 

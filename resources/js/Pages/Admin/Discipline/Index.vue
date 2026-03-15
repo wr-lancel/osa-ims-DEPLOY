@@ -4,6 +4,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, watch, computed } from 'vue';
 import axios from 'axios';
 import { useNotification } from '@/composables/useNotification';
+import SortableHeader from '@/Components/SortableHeader.vue';
 import DashboardCards from '@/Components/Admin/DashboardCards.vue';
 import DisciplineFormModal from '@/Components/Admin/DisciplineFormModal.vue';
 import LoadingOverlay from '@/Components/LoadingOverlay.vue';
@@ -51,6 +52,14 @@ const search = ref(props.filters.search || '');
 const severity = ref(props.filters.severity || '');
 const status = ref(props.filters.status || '');
 const acadId = ref(props.filters.acad_id || '');
+const sortBy = ref(props.filters.sort_by || '');
+const sortDir = ref(props.filters.sort_dir || 'desc');
+
+const handleSort = ({ column, dir }) => {
+    sortBy.value = column;
+    sortDir.value = dir;
+    applyFilters();
+};
 
 const severityOptions = [
     { value: '', label: 'All Severities' },
@@ -70,6 +79,8 @@ function applyFilters() {
         severity: severity.value || undefined,
         status: status.value || undefined,
         acad_id: acadId.value || undefined,
+        sort_by: sortBy.value || undefined,
+        sort_dir: sortDir.value || undefined,
     }, {
         preserveState: true,
         preserveScroll: true,
@@ -237,18 +248,9 @@ const exportPdf = async () => {
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     Violation Type
                                 </th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Date
-                                </th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Severity
-                                </th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Status
-                                </th>
+                                <SortableHeader column="violation_date" label="Date" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
+                                <SortableHeader column="severity" label="Severity" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
+                                <SortableHeader column="status" label="Status" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
                                 <th
                                     class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     Actions

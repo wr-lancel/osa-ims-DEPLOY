@@ -3,6 +3,7 @@ import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
 import axios from 'axios';
+import SortableHeader from '@/Components/SortableHeader.vue';
 import StaffFormModal from '@/Components/Admin/StaffFormModal.vue';
 import RoleFormModal from '@/Components/Admin/RoleFormModal.vue';
 import LoadingOverlay from '@/Components/LoadingOverlay.vue';
@@ -49,6 +50,14 @@ const department = ref(props.filters.department || '');
 const position = ref(props.filters.position || '');
 const roleId = ref(props.filters.role_id || '');
 const status = ref(props.filters.status || '');
+const sortBy = ref(props.filters.sort_by || '');
+const sortDir = ref(props.filters.sort_dir || 'desc');
+
+const handleSort = ({ column, dir }) => {
+    sortBy.value = column;
+    sortDir.value = dir;
+    applyFilters();
+};
 
 const statusOptions = [
     { value: 'active', label: 'Active' },
@@ -62,6 +71,8 @@ const applyFilters = () => {
         position: position.value || undefined,
         role_id: roleId.value || undefined,
         status: status.value || undefined,
+        sort_by: sortBy.value || undefined,
+        sort_dir: sortDir.value || undefined,
     }, {
         preserveState: true,
         preserveScroll: true,
@@ -288,22 +299,14 @@ const exportPdf = async () => {
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     Employee ID
                                 </th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Name
-                                </th>
+                                <SortableHeader column="last_name" label="Last Name" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
+                                <SortableHeader column="first_name" label="First Name" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
                                 <th
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     Email
                                 </th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Department
-                                </th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Position
-                                </th>
+                                <SortableHeader column="department" label="Department" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
+                                <SortableHeader column="position" label="Position" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
                                 <th
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     Role
@@ -320,7 +323,7 @@ const exportPdf = async () => {
                         </thead>
                         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             <tr v-if="employees.data.length === 0">
-                                <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                                <td colspan="9" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
                                     No staff members found.
                                 </td>
                             </tr>
@@ -329,7 +332,10 @@ const exportPdf = async () => {
                                     {{ employee.employee_number }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                    {{ employee.full_name }}
+                                    {{ employee.last_name }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                    {{ employee.first_name }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                     {{ employee.email || 'N/A' }}

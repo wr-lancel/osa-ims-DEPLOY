@@ -4,6 +4,7 @@ import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
+import SortableHeader from '@/Components/SortableHeader.vue';
 import DashboardCards from '@/Components/Admin/DashboardCards.vue';
 import StudentFormModal from '@/Components/Admin/StudentFormModal.vue';
 import ImportStudentsModal from '@/Components/Admin/ImportStudentsModal.vue';
@@ -67,6 +68,15 @@ const status = ref(props.filters.status || 'enrolled');
 let debounceTimer = null;
 const DEBOUNCE_DELAY = 400; // ms
 
+const sortBy = ref(props.filters.sort_by || '');
+const sortDir = ref(props.filters.sort_dir || 'desc');
+
+const handleSort = ({ column, dir }) => {
+    sortBy.value = column;
+    sortDir.value = dir;
+    applyFilters();
+};
+
 const yearLevels = ['1', '2', '3', '4', '5'];
 const statusOptions = [
     { value: 'enrolled', label: 'Enrolled' },
@@ -80,6 +90,8 @@ const applyFilters = () => {
         year_level: yearLevel.value || undefined,
         course_id: courseId.value || undefined,
         status: status.value || undefined,
+        sort_by: sortBy.value || undefined,
+        sort_dir: sortDir.value || undefined,
     }, {
         preserveState: true,
         preserveScroll: true,
@@ -768,18 +780,12 @@ const graduateSelected = () => {
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead class="bg-gray-50 dark:bg-gray-900">
                             <tr>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                    Student ID
-                                </th>
+                                <SortableHeader column="student_number" label="Student ID" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
                                 <th
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                     Name
                                 </th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                    Year Level
-                                </th>
+                                <SortableHeader column="year_level" label="Year Level" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
                                 <th
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                     Section
@@ -788,10 +794,7 @@ const graduateSelected = () => {
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                     Course
                                 </th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                    Status
-                                </th>
+                                <SortableHeader column="enrollment_status" label="Status" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
                                 <th
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                     <div class="flex items-center gap-2">

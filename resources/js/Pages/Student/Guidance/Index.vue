@@ -10,6 +10,7 @@ import Textarea from '@/Components/Textarea.vue';
 import InputError from '@/Components/InputError.vue';
 import Pagination from '@/Components/Pagination.vue';
 import LoadingOverlay from '@/Components/LoadingOverlay.vue';
+import SortableHeader from '@/Components/SortableHeader.vue';
 
 const props = defineProps({
     appointments: {
@@ -31,6 +32,8 @@ const form = useForm({
 });
 
 const statusFilter = ref(props.filters.status || '');
+const sortBy = ref(props.filters.sort_by || '');
+const sortDir = ref(props.filters.sort_dir || 'desc');
 
 const weekendError = ref('');
 
@@ -106,10 +109,27 @@ const submitForm = () => {
 
 const filterByStatus = (status) => {
     statusFilter.value = status;
-    router.get(route('student.guidance.index'), { status: status || null }, {
+    router.get(route('student.guidance.index'), {
+        status: status || null,
+        sort_by: sortBy.value || undefined,
+        sort_dir: sortDir.value || undefined,
+    }, {
         preserveState: true,
         preserveScroll: true,
         showProgress: false,
+    });
+};
+
+const handleSort = ({ column, dir }) => {
+    sortBy.value = column;
+    sortDir.value = dir;
+    router.get(route('student.guidance.index'), {
+        status: statusFilter.value || undefined,
+        sort_by: column,
+        sort_dir: dir,
+    }, {
+        preserveState: true,
+        preserveScroll: true,
     });
 };
 
@@ -270,18 +290,12 @@ const goToDetail = (appointment) => {
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-gray-900">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                        Date & Time
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                        Type
-                                    </th>
+                                    <SortableHeader column="appointment_date" label="Date & Time" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
+                                    <SortableHeader column="appointment_type" label="Type" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Concern
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                        Status
-                                    </th>
+                                    <SortableHeader column="status" label="Status" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Actions
                                     </th>

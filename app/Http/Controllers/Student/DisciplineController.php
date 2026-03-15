@@ -25,10 +25,12 @@ class DisciplineController extends Controller
         $user = Auth::user();
         $studentNumber = $user->student_number;
 
+        $sortBy = in_array($request->input('sort_by'), ['violation_date', 'created_at', 'severity', 'status']) ? $request->input('sort_by') : 'violation_date';
+        $sortDir = $request->input('sort_dir') === 'asc' ? 'asc' : 'desc';
+
         $query = Discipline::with(['enrollment.academicCalendar'])
             ->where('student_number', $studentNumber)
-            ->orderBy('violation_date', 'desc')
-            ->orderBy('created_at', 'desc');
+            ->orderBy($sortBy, $sortDir);
 
         if ($request->filled('acad_id')) {
             $query->whereHas('enrollment', function ($q) use ($request) {
@@ -69,7 +71,7 @@ class DisciplineController extends Controller
             'violations' => $violations,
             'unreadNotificationsCount' => $unreadCount,
             'complaintUnreadCount' => $complaintUnreadCount,
-            'filters' => $request->only(['acad_id']),
+            'filters' => $request->only(['acad_id', 'sort_by', 'sort_dir']),
             'terms' => $terms,
             'codeOfConductSections' => $codeOfConductSections,
         ]);

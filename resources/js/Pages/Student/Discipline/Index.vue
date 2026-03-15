@@ -4,6 +4,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import Pagination from '@/Components/Pagination.vue';
+import SortableHeader from '@/Components/SortableHeader.vue';
 
 const props = defineProps({
     violations: {
@@ -33,14 +34,31 @@ const props = defineProps({
 });
 
 const acadId = ref(props.filters.acad_id || '');
+const sortBy = ref(props.filters.sort_by || '');
+const sortDir = ref(props.filters.sort_dir || 'desc');
 
 const applyTermFilter = () => {
     router.get(route('student.discipline.index'), {
         acad_id: acadId.value || undefined,
-    }, { 
-        preserveState: true, 
+        sort_by: sortBy.value || undefined,
+        sort_dir: sortDir.value || undefined,
+    }, {
+        preserveState: true,
         preserveScroll: true,
         showProgress: false,
+    });
+};
+
+const handleSort = ({ column, dir }) => {
+    sortBy.value = column;
+    sortDir.value = dir;
+    router.get(route('student.discipline.index'), {
+        acad_id: acadId.value || undefined,
+        sort_by: column,
+        sort_dir: dir,
+    }, {
+        preserveState: true,
+        preserveScroll: true,
     });
 };
 
@@ -171,9 +189,9 @@ const goToDetail = (v) => {
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Case ID</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Offense</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Term</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Date</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Severity</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Status</th>
+                                    <SortableHeader column="violation_date" label="Date" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
+                                    <SortableHeader column="severity" label="Severity" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
+                                    <SortableHeader column="status" label="Status" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
                                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Actions</th>
                                 </tr>
                             </thead>

@@ -2,6 +2,7 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
+import SortableHeader from '@/Components/SortableHeader.vue';
 import DashboardCards from '@/Components/Admin/DashboardCards.vue';
 import SportsBorrowingFormModal from '@/Components/Admin/SportsBorrowingFormModal.vue';
 import LoadingOverlay from '@/Components/LoadingOverlay.vue';
@@ -59,6 +60,14 @@ const rejectForm = useForm({
 
 const borrowingSearch = ref(props.filters.borrowing_search || '');
 const borrowingStatus = ref(props.filters.borrowing_status || '');
+const sortBy = ref(props.filters.sort_by || '');
+const sortDir = ref(props.filters.sort_dir || 'desc');
+
+const handleSort = ({ column, dir }) => {
+    sortBy.value = column;
+    sortDir.value = dir;
+    applyFilters();
+};
 
 const statusOptions = [
     { value: '', label: 'All Statuses' },
@@ -74,6 +83,8 @@ const applyFilters = () => {
     const params = {};
     if (borrowingSearch.value) params.borrowing_search = borrowingSearch.value;
     if (borrowingStatus.value) params.borrowing_status = borrowingStatus.value;
+    if (sortBy.value) params.sort_by = sortBy.value;
+    if (sortDir.value) params.sort_dir = sortDir.value;
 
     router.get(route('admin.sports.index'), params, {
         preserveState: true,
@@ -370,22 +381,13 @@ const exportPdf = async () => {
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Equipment
                                     </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                        Borrow Date
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                        Due Date
-                                    </th>
+                                    <SortableHeader column="borrow_date" label="Borrow Date" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
+                                    <SortableHeader column="due_date" label="Due Date" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Return Date
                                     </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                        Status
-                                    </th>
+                                    <SortableHeader column="status" label="Status" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
                                         Admin Action

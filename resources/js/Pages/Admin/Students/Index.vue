@@ -172,6 +172,8 @@ onUnmounted(() => {
 
 
 const isExporting = ref(false);
+const isBulkProcessing = ref(false);
+const bulkProcessingMessage = ref('Processing... Please wait.');
 
 const exportPdf = async () => {
     isExporting.value = true;
@@ -206,11 +208,14 @@ const exportPdf = async () => {
 };
 
 const updateStudentStatus = (studentNumber, newStatus) => {
+    isBulkProcessing.value = true;
+    bulkProcessingMessage.value = `Updating student status to ${newStatus}...`;
     router.patch(route('admin.students.updateStatus', studentNumber), {
         status: newStatus,
     }, {
         preserveScroll: true,
         preserveState: true,
+        onFinish: () => { isBulkProcessing.value = false; },
     });
 };
 
@@ -225,6 +230,8 @@ const bulkUpdateStudentStatus = async (newStatus) => {
         `Mark ${selectedStudentsForBulk.value.length} selected student(s) as ${label}?`,
         `${label} Students`,
         async () => {
+            isBulkProcessing.value = true;
+            bulkProcessingMessage.value = `Marking ${selectedStudentsForBulk.value.length} student(s) as ${label}... This may take a moment.`;
             try {
                 const response = await axios.post(route('admin.students.bulk-status'), {
                     student_numbers: selectedStudentsForBulk.value,
@@ -241,6 +248,8 @@ const bulkUpdateStudentStatus = async (newStatus) => {
             } catch (error) {
                 console.error('Bulk status update failed:', error);
                 notify('error', error.response?.data?.message || 'Failed to update statuses. Please try again.');
+            } finally {
+                isBulkProcessing.value = false;
             }
         },
         { confirmLabel: label, cancelLabel: 'Cancel' }
@@ -278,6 +287,8 @@ const bulkCreateAccounts = async () => {
         `Create accounts for ${selectedStudentsForBulk.value.length} selected student(s)?`,
         'Bulk Create Accounts',
         async () => {
+            isBulkProcessing.value = true;
+            bulkProcessingMessage.value = `Creating accounts for ${selectedStudentsForBulk.value.length} student(s)... This may take a moment.`;
             try {
                 const response = await axios.post(route('admin.students.accounts.bulk-create'), {
                     student_numbers: selectedStudentsForBulk.value,
@@ -293,6 +304,8 @@ const bulkCreateAccounts = async () => {
             } catch (error) {
                 console.error('Bulk account creation failed:', error);
                 notify('error', error.response?.data?.message || 'Failed to create accounts. Please try again.');
+            } finally {
+                isBulkProcessing.value = false;
             }
         },
         { confirmLabel: 'Create Accounts', cancelLabel: 'Cancel' }
@@ -528,6 +541,7 @@ const graduateSelected = () => {
 
     <AdminLayout>
         <LoadingOverlay :show="isExporting" message="Generating PDF... Please wait." />
+        <LoadingOverlay :show="isBulkProcessing" :message="bulkProcessingMessage" />
         <template #header>
 
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">

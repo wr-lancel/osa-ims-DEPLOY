@@ -30,6 +30,7 @@ use App\Http\Controllers\StudentCandidacyController;
 use App\Http\Controllers\StudentOrganizationController;
 use App\Http\Controllers\Admin\GoodMoralRequestController as AdminGoodMoralController;
 use App\Http\Controllers\GoodMoralRequestController;
+use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\WelcomeController;
 use App\Models\User;
 use App\Services\ModuleAuthorizationService;
@@ -56,6 +57,14 @@ require __DIR__ . '/auth.php';
 
 // Authenticated Routes
 Route::middleware('auth')->group(function () {
+    // Onboarding Routes (no onboarding middleware — these ARE the onboarding pages)
+    Route::prefix('onboarding')->name('onboarding.')->group(function () {
+        Route::get('/change-password', [OnboardingController::class, 'showChangePassword'])->name('change-password');
+        Route::post('/change-password', [OnboardingController::class, 'changePassword'])->name('change-password.update');
+        Route::get('/complete-profile', [OnboardingController::class, 'showCompleteProfile'])->middleware('role:student')->name('complete-profile');
+        Route::post('/complete-profile', [OnboardingController::class, 'completeProfile'])->middleware('role:student')->name('complete-profile.update');
+    });
+
     // Legacy Dashboard Redirect
     Route::get('/dashboard', function () {
         /** @var User $user */
@@ -80,7 +89,8 @@ Route::middleware('auth')->group(function () {
 
     // Admin Routes - Allow admin, super_admin, staff, and module admins
     Route::prefix('admin')->name('admin.')->middleware([
-        'role:admin,super_admin,staff,sports_admin,organization_admin,discipline_admin,guidance_admin,publication_admin'
+        'role:admin,super_admin,staff,sports_admin,organization_admin,discipline_admin,guidance_admin,publication_admin',
+        'onboarding',
     ])->group(function () {
         // Dashboard - accessible to all admin roles
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])
@@ -302,7 +312,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // Student Routes
-    Route::prefix('student')->name('student.')->middleware('role:student')->group(function () {
+    Route::prefix('student')->name('student.')->middleware(['role:student', 'onboarding'])->group(function () {
         Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('dashboard');
         Route::get('/profile', [\App\Http\Controllers\Student\ProfileController::class, 'show'])->name('profile');
         Route::put('/profile', [\App\Http\Controllers\Student\ProfileController::class, 'update'])->name('profile.update');

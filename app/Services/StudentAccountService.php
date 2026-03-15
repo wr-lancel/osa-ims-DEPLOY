@@ -60,6 +60,7 @@ class StudentAccountService
                 'password' => $password,
                 'student_number' => $student->student_number,
                 'status' => 'active',
+                'must_change_password' => true,
             ]);
 
             // Assign student role
@@ -241,6 +242,7 @@ class StudentAccountService
 
         $user->update([
             'password' => $password,
+            'must_change_password' => true,
         ]);
 
         Log::info("Student password reset: student_number={$student->student_number}");

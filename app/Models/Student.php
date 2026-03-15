@@ -22,10 +22,12 @@ class Student extends Model
         'birth_date',
         'address',
         'status',
+        'profile_completed',
     ];
 
     protected $casts = [
         'birth_date' => 'date',
+        'profile_completed' => 'boolean',
     ];
 
     /**

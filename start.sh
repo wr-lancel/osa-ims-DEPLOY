@@ -40,8 +40,8 @@ fi
 
 # Configure Apache port based on Railway's injected $PORT variable
 # Default to 80 if PORT is not set (e.g. local matching)
-PORT="${PORT:-80}"
-echo "Configuring Apache to listen on port $PORT..."
+PORT=$(echo "${PORT:-80}" | tr -d '[:space:]')
+echo "Configuring Apache to listen on port: '$PORT'"
 sed -i "s/Listen 80/Listen ${PORT}/g" /etc/apache2/ports.conf
 sed -i "s/<VirtualHost \*:80>/<VirtualHost \*:${PORT}>/g" /etc/apache2/sites-available/000-default.conf
 sed -i "s/Listen 80/Listen ${PORT}/g" /etc/apache2/apache2.conf || true

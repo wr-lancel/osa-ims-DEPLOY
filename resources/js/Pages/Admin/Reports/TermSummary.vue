@@ -4,6 +4,7 @@ import { Head, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import axios from 'axios';
 import LoadingOverlay from '@/Components/LoadingOverlay.vue';
+import ExportConfirmDialog from '@/Components/ExportConfirmDialog.vue';
 
 const props = defineProps({
     calendars: {
@@ -35,8 +36,10 @@ function pdfUrl() {
 }
 
 const isExporting = ref(false);
+const showExportDialog = ref(false);
 
 const exportPdf = async () => {
+    showExportDialog.value = false;
     isExporting.value = true;
     try {
         const response = await axios.get(pdfUrl(), {
@@ -64,6 +67,7 @@ const exportPdf = async () => {
 
     <AdminLayout>
         <LoadingOverlay :show="isExporting" message="Generating PDF... Please wait." />
+        <ExportConfirmDialog :show="showExportDialog" @confirm="exportPdf" @cancel="showExportDialog = false" />
         <template #header>
 
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -71,11 +75,15 @@ const exportPdf = async () => {
                     Term Summary Report
                 </h2>
                 <button
-                    @click="exportPdf()"
-                    class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    @click="showExportDialog = true"
+                    title="Download PDF report for selected term"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                     :disabled="isExporting"
                 >
-                    {{ isExporting ? 'Generating PDF...' : 'Download PDF' }}
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Download PDF
                 </button>
             </div>
         </template>

@@ -3,6 +3,7 @@ import OnboardingLayout from '@/Layouts/OnboardingLayout.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import InputError from '@/Components/InputError.vue';
 import LoadingOverlay from '@/Components/LoadingOverlay.vue';
+import LocationAutocomplete from '@/Components/LocationAutocomplete.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
@@ -137,10 +138,12 @@ const submit = () => {
                         <label for="address" class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                             Address <span class="text-red-500">*</span>
                         </label>
-                        <input id="address" v-model="form.address" type="text"
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100"
-                            placeholder="e.g. Brgy. San Isidro, Concepcion, Tarlac" />
-                        <InputError class="mt-1" :message="form.errors.address" />
+                        <LocationAutocomplete
+                            id="address"
+                            v-model="form.address"
+                            placeholder="e.g. Brgy. San Isidro, Concepcion, Tarlac"
+                            :error="form.errors.address"
+                        />
                     </div>
 
                     <!-- Contact Info -->
@@ -331,10 +334,12 @@ const submit = () => {
                         <label for="elementary_address" class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                             Elementary Address <span class="text-red-500">*</span>
                         </label>
-                        <input id="elementary_address" v-model="form.elementary_address" type="text"
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100"
-                            placeholder="Enter school address" />
-                        <InputError class="mt-1" :message="form.errors.elementary_address" />
+                        <LocationAutocomplete
+                            id="elementary_address"
+                            v-model="form.elementary_address"
+                            placeholder="Enter school address"
+                            :error="form.errors.elementary_address"
+                        />
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -362,10 +367,12 @@ const submit = () => {
                             <label for="senior_high_address" class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                                 Senior High Address <span class="text-red-500">*</span>
                             </label>
-                            <input id="senior_high_address" v-model="form.senior_high_address" type="text"
-                                class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100"
-                                placeholder="Enter school address" />
-                            <InputError class="mt-1" :message="form.errors.senior_high_address" />
+                            <LocationAutocomplete
+                                id="senior_high_address"
+                                v-model="form.senior_high_address"
+                                placeholder="Enter school address"
+                                :error="form.errors.senior_high_address"
+                            />
                         </div>
                         <div>
                             <label for="senior_high_graduated" class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
@@ -505,10 +512,12 @@ const submit = () => {
                             <label for="contact_address" class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                                 Address <span class="text-red-500">*</span>
                             </label>
-                            <input id="contact_address" v-model="form.contact_address" type="text"
-                                class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100"
-                                placeholder="Enter contact address" />
-                            <InputError class="mt-1" :message="form.errors.contact_address" />
+                            <LocationAutocomplete
+                                id="contact_address"
+                                v-model="form.contact_address"
+                                placeholder="Enter contact address"
+                                :error="form.errors.contact_address"
+                            />
                         </div>
                     </div>
                 </div>

@@ -41,6 +41,10 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    voidedCount: {
+        type: Number,
+        default: 0,
+    },
 });
 
 const { notify } = useNotification();
@@ -54,6 +58,7 @@ const status = ref(props.filters.status || '');
 const acadId = ref(props.filters.acad_id || '');
 const sortBy = ref(props.filters.sort_by || '');
 const sortDir = ref(props.filters.sort_dir || 'desc');
+const showVoided = ref(props.filters.show_voided === '1' || props.filters.show_voided === true);
 
 const handleSort = ({ column, dir }) => {
     sortBy.value = column;
@@ -81,6 +86,7 @@ function applyFilters() {
         acad_id: acadId.value || undefined,
         sort_by: sortBy.value || undefined,
         sort_dir: sortDir.value || undefined,
+        show_voided: showVoided.value ? '1' : undefined,
     }, {
         preserveState: true,
         preserveScroll: true,
@@ -95,7 +101,7 @@ watch(search, (val) => {
     if (searchDebounce) clearTimeout(searchDebounce);
     searchDebounce = setTimeout(() => applyFilters(), 350);
 });
-watch([severity, status, acadId], () => applyFilters());
+watch([severity, status, acadId, showVoided], () => applyFilters());
 
 
 
@@ -167,18 +173,48 @@ const exportPdf = async () => {
                 <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                     Discipline Unit
                 </h2>
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2">
+                    <!-- Secondary actions group -->
                     <Link :href="route('admin.discipline.complaints.index')"
-                        class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-sm font-medium">
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                        </svg>
                         Complaints Inbox
                     </Link>
-                    <div class="flex flex-col items-start gap-0.5">
-                        <SecondaryButton @click="exportPdf">
-                            Export PDF
-                        </SecondaryButton>
-                        <span class="text-xs text-gray-400 dark:text-gray-500 px-1">Uses current filters</span>
-                    </div>
-                    <PrimaryButton @click="openAddModal">
+
+                    <button type="button"
+                        title="Show voided (invalidated) records"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border text-sm font-medium transition-colors"
+                        :class="showVoided
+                            ? 'bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700 text-red-700 dark:text-red-300'
+                            : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'"
+                        @click="showVoided = !showVoided">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                        </svg>
+                        Voided
+                        <span class="inline-flex items-center justify-center h-5 w-5 rounded-full text-xs font-bold"
+                            :class="showVoided ? 'bg-red-200 dark:bg-red-800 text-red-700 dark:text-red-300' : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300'">
+                            {{ voidedCount }}
+                        </span>
+                    </button>
+
+                    <button type="button"
+                        title="Export current filtered results to PDF"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                        :disabled="isExporting"
+                        @click="exportPdf">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Export PDF
+                    </button>
+
+                    <!-- Divider -->
+                    <div class="h-6 w-px bg-gray-300 dark:bg-gray-600 mx-1"></div>
+
+                    <PrimaryButton v-if="!showVoided" @click="openAddModal">
                         Add Violation
                     </PrimaryButton>
                 </div>
@@ -230,6 +266,12 @@ const exportPdf = async () => {
 
             </div>
 
+            <!-- Voided notice banner -->
+            <div v-if="showVoided" class="flex items-center gap-2 px-4 py-3 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 text-sm text-red-700 dark:text-red-300">
+                <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+                Showing voided (invalidated) violation records. These are kept for transparency only.
+            </div>
+
             <!-- Violations Table -->
             <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
                 <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
@@ -251,6 +293,9 @@ const exportPdf = async () => {
                                 <SortableHeader column="violation_date" label="Date" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
                                 <SortableHeader column="severity" label="Severity" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
                                 <SortableHeader column="status" label="Status" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
+                                <th v-if="showVoided" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Void Reason
+                                </th>
                                 <th
                                     class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     Actions
@@ -294,7 +339,11 @@ const exportPdf = async () => {
                                     <span v-else class="text-gray-400 dark:text-gray-500 text-xs">-</span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap" @click.stop>
-                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                                    <span v-if="violation.voided_at"
+                                        class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300">
+                                        Voided
+                                    </span>
+                                    <span v-else class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
                                         :class="violation.status_color === 'green'
                                             ? 'bg-green-100 text-green-800'
                                             : violation.status_color === 'yellow'
@@ -302,6 +351,9 @@ const exportPdf = async () => {
                                                 : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100'">
                                         {{ violation.status }}
                                     </span>
+                                </td>
+                                <td v-if="showVoided" class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400" @click.stop>
+                                    {{ violation.void_reason || '—' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2"
                                     @click.stop>

@@ -4,6 +4,7 @@ import { Head, useForm } from '@inertiajs/vue3';
 import { ref, watch, computed } from 'vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import LoadingOverlay from '@/Components/LoadingOverlay.vue';
+import LocationAutocomplete from '@/Components/LocationAutocomplete.vue';
 
 const props = defineProps({
     student: { type: Object, default: null },
@@ -153,11 +154,13 @@ const submit = () => {
 
                     <!-- Address (editable) -->
                     <div class="mb-4">
-                        <label for="address" class="block text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Address</label>
-                        <input id="address" v-model="form.address" type="text"
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100"
-                            placeholder="e.g. Brgy. San Isidro, Concepcion, Tarlac" />
-                        <p v-if="form.errors.address" class="mt-1 text-xs text-red-600 dark:text-red-400">{{ form.errors.address }}</p>
+                        <label for="address" class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Address</label>
+                        <LocationAutocomplete
+                            id="address"
+                            v-model="form.address"
+                            placeholder="e.g. Brgy. San Isidro, Concepcion, Tarlac"
+                            :error="form.errors.address"
+                        />
                     </div>
 
                     <!-- Contact Info -->
@@ -358,12 +361,13 @@ const submit = () => {
                         </div>
                     </div>
                     <div>
-                        <label for="elementary_address"
-                            class="block text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Elementary
-                            Address</label>
-                        <input id="elementary_address" v-model="form.elementary_address" type="text"
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100"
-                            placeholder="Enter school address" />
+                        <label for="elementary_address" class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Elementary Address</label>
+                        <LocationAutocomplete
+                            id="elementary_address"
+                            v-model="form.elementary_address"
+                            placeholder="Enter school address"
+                            :error="form.errors.elementary_address"
+                        />
                     </div>
 
                     <!-- Senior High -->
@@ -386,12 +390,13 @@ const submit = () => {
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label for="senior_high_address"
-                                class="block text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Senior
-                                High Address</label>
-                            <input id="senior_high_address" v-model="form.senior_high_address" type="text"
-                                class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100"
-                                placeholder="Enter school address" />
+                            <label for="senior_high_address" class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Senior High Address</label>
+                            <LocationAutocomplete
+                                id="senior_high_address"
+                                v-model="form.senior_high_address"
+                                placeholder="Enter school address"
+                                :error="form.errors.senior_high_address"
+                            />
                         </div>
                         <div>
                             <label for="senior_high_graduated"
@@ -515,11 +520,13 @@ const submit = () => {
                                 placeholder="Enter contact number" />
                         </div>
                         <div>
-                            <label for="contact_address"
-                                class="block text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Address</label>
-                            <input id="contact_address" v-model="form.contact_address" type="text"
-                                class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100"
-                                placeholder="Enter contact address" />
+                            <label for="contact_address" class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Address</label>
+                            <LocationAutocomplete
+                                id="contact_address"
+                                v-model="form.contact_address"
+                                placeholder="Enter contact address"
+                                :error="form.errors.contact_address"
+                            />
                         </div>
                     </div>
                 </div>

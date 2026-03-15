@@ -79,18 +79,22 @@ const formatStatus = (s) => s ? s.replace(/_/g, ' ') : '';
                 <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                     My Complaints
                 </h2>
-                <div class="flex items-center gap-3 text-sm">
-                    <Link
-                        :href="route('student.discipline.complaints.create')"
-                        class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700"
-                    >
-                        Submit Complaint
-                    </Link>
+                <div class="flex items-center gap-2">
                     <Link
                         :href="route('student.discipline.index')"
-                        class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                     >
-                        ← Discipline Unit
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Discipline Unit
+                    </Link>
+                    <div class="h-6 w-px bg-gray-300 dark:bg-gray-600 mx-1"></div>
+                    <Link
+                        :href="route('student.discipline.complaints.create')"
+                        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-sm font-medium text-white transition-colors"
+                    >
+                        Submit Complaint
                     </Link>
                 </div>
             </div>

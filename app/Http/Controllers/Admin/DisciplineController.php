@@ -22,6 +22,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -42,13 +43,16 @@ class DisciplineController extends Controller
      */
     public function index(Request $request): Response
     {
-        $totalViolations = Discipline::count();
-        $pendingCases = Discipline::where('status', 'pending')->count();
-        $resolvedCases = Discipline::where('status', 'resolved')->count();
-        $majorCases = Discipline::where('severity', 'Major')->count();
+        $showVoided = $request->boolean('show_voided', false);
+
+        $totalViolations = Discipline::whereNull('voided_at')->count();
+        $pendingCases = Discipline::whereNull('voided_at')->where('status', 'pending')->count();
+        $resolvedCases = Discipline::whereNull('voided_at')->where('status', 'resolved')->count();
+        $majorCases = Discipline::whereNull('voided_at')->where('severity', 'Major')->count();
+        $voidedCount = Discipline::whereNotNull('voided_at')->count();
 
         $query = $this->buildFilteredDisciplineQuery($request)
-            ->with(['student', 'reportedBy', 'enrollment.academicCalendar']);
+            ->with(['student', 'reportedBy', 'enrollment.academicCalendar', 'voidedBy']);
 
         $sortBy = in_array($request->input('sort_by'), ['violation_date', 'created_at', 'severity', 'status']) ? $request->input('sort_by') : 'violation_date';
         $sortDir = $request->input('sort_dir') === 'asc' ? 'asc' : 'desc';
@@ -73,6 +77,9 @@ class DisciplineController extends Controller
                 'reported_by' => $violation->reportedBy->email ?? null,
                 'severity_color' => $violation->severity_color,
                 'status_color' => $violation->status_color,
+                'voided_at' => $violation->voided_at?->format('Y-m-d H:i'),
+                'void_reason' => $violation->void_reason,
+                'voided_by' => $violation->voidedBy->email ?? null,
             ];
         });
 
@@ -100,12 +107,13 @@ class DisciplineController extends Controller
 
         return Inertia::render('Admin/Discipline/Index', [
             'violations' => $violations,
-            'filters' => $request->only(['search', 'severity', 'status', 'acad_id', 'sort_by', 'sort_dir']),
+            'filters' => $request->only(['search', 'severity', 'status', 'acad_id', 'sort_by', 'sort_dir', 'show_voided']),
             'enrollments' => $enrollments,
             'terms' => $terms,
             'workflowSteps' => $workflowSteps,
             'violationTypes' => DisciplineViolationType::getAllForDropdown(),
             'violationSeverities' => SystemSetting::getList('violation_severities'),
+            'voidedCount' => $voidedCount,
             'dashboardStats' => [
                 ['title' => 'Total Violations', 'value' => $totalViolations, 'color' => 'blue'],
                 ['title' => 'Pending Cases', 'value' => $pendingCases, 'color' => 'yellow'],
@@ -190,6 +198,7 @@ class DisciplineController extends Controller
         $discipline->load([
             'student',
             'reportedBy',
+            'voidedBy',
             'enrollment.academicCalendar',
             'meetings',
             'disciplineHistories.changedBy',
@@ -223,6 +232,13 @@ class DisciplineController extends Controller
             ] : null,
             'created_at' => $discipline->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $discipline->updated_at->format('Y-m-d H:i:s'),
+            'voided_at' => $discipline->voided_at?->format('Y-m-d H:i'),
+            'void_reason' => $discipline->void_reason,
+            'void_notes' => $discipline->void_notes,
+            'voided_by' => $discipline->voidedBy ? [
+                'user_id' => $discipline->voidedBy->user_id,
+                'email' => $discipline->voidedBy->email,
+            ] : null,
         ];
 
         $meetings = $discipline->meetings->map(fn($m) => [
@@ -531,11 +547,80 @@ class DisciplineController extends Controller
     }
 
     /**
+     * Void a violation record (soft invalidation with reason).
+     */
+    public function void(Request $request, Discipline $discipline): RedirectResponse
+    {
+        $request->validate([
+            'void_reason' => ['required', 'string', 'in:Wrong Student,Wrong Violation Type,Duplicate Entry,Data Entry Error,Other'],
+            'void_notes'  => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        if ($discipline->voided_at) {
+            return back()->with('error', 'This violation is already voided.');
+        }
+
+        DB::transaction(function () use ($discipline, $request) {
+            $discipline->update([
+                'voided_at'   => now(),
+                'voided_by'   => Auth::id(),
+                'void_reason' => $request->void_reason,
+                'void_notes'  => $request->void_notes,
+            ]);
+
+            DisciplineHistory::create([
+                'case_id'             => $discipline->discipline_id,
+                'changed_by_user_id'  => Auth::id(),
+                'old_status'          => $discipline->status,
+                'new_status'          => 'voided',
+                'note'                => 'Voided — ' . $request->void_reason
+                    . ($request->void_notes ? ': ' . $request->void_notes : ''),
+            ]);
+        });
+
+        return back()->with('success', 'Violation voided successfully.');
+    }
+
+    /**
+     * Permanently delete a violation record (requires admin password confirmation).
+     */
+    public function destroy(Request $request, Discipline $discipline): RedirectResponse
+    {
+        $request->validate([
+            'password' => ['required', 'string'],
+        ]);
+
+        if (!Hash::check($request->password, Auth::user()->password)) {
+            return back()->withErrors(['password' => 'Incorrect password. Deletion cancelled.']);
+        }
+
+        $disciplineId = $discipline->discipline_id;
+
+        if ($discipline->narrative_report_file) {
+            Storage::disk('public')->delete($discipline->narrative_report_file);
+        }
+
+        $discipline->disciplineHistories()->delete();
+        $discipline->meetings()->delete();
+        $discipline->delete();
+
+        return redirect()->route('admin.discipline.index')
+            ->with('success', "Violation record #{$disciplineId} permanently deleted.");
+    }
+
+    /**
      * Build a Discipline query with search, severity, status, and acad_id filters applied.
      */
     private function buildFilteredDisciplineQuery(Request $request)
     {
         $query = Discipline::query();
+
+        // By default show only active (non-voided) records; toggle with show_voided=1
+        if ($request->boolean('show_voided', false)) {
+            $query->whereNotNull('voided_at');
+        } else {
+            $query->whereNull('voided_at');
+        }
 
         if ($request->filled('search')) {
             $search = $request->search;

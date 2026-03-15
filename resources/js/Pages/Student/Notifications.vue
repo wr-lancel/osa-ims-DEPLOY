@@ -75,13 +75,19 @@ const getNotificationLink = (notification) => {
                 <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                     Notifications
                 </h2>
-                <div class="flex items-center space-x-3">
-                    <span v-if="unreadCount > 0" class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
+                <div v-if="unreadCount > 0" class="flex items-center gap-2">
+                    <span class="text-sm text-gray-500 dark:text-gray-400">
                         {{ unreadCount }} unread
                     </span>
-                    <SecondaryButton v-if="unreadCount > 0" @click="markAllAsRead">
+                    <button
+                        @click="markAllAsRead"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                    >
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
                         Mark All as Read
-                    </SecondaryButton>
+                    </button>
                 </div>
             </div>
         </template>

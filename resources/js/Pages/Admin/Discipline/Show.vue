@@ -1,7 +1,7 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { ref, watch, computed } from 'vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import DisciplineFormModal from '@/Components/Admin/DisciplineFormModal.vue';
@@ -45,6 +45,43 @@ const isProcessing = ref(false);
 const showEditModal = ref(false);
 const showMeetingModal = ref(false);
 const selectedMeeting = ref(null);
+
+const isVoided = computed(() => !!props.violation.voided_at);
+
+// --- Void modal ---
+const showVoidModal = ref(false);
+const voidForm = useForm({
+    void_reason: '',
+    void_notes: '',
+});
+const voidReasons = [
+    'Wrong Student',
+    'Wrong Violation Type',
+    'Duplicate Entry',
+    'Data Entry Error',
+    'Other',
+];
+const submitVoid = () => {
+    voidForm.post(route('admin.discipline.void', props.violation.discipline_id), {
+        preserveScroll: true,
+        onSuccess: () => {
+            showVoidModal.value = false;
+            voidForm.reset();
+        },
+    });
+};
+
+// --- Delete modal ---
+const showDeleteModal = ref(false);
+const deleteForm = useForm({ password: '' });
+const submitDelete = () => {
+    deleteForm.delete(route('admin.discipline.destroy', props.violation.discipline_id), {
+        onError: () => {},
+        onSuccess: () => {
+            showDeleteModal.value = false;
+        },
+    });
+};
 
 const editViolation = ref({ ...props.violation });
 
@@ -167,12 +204,23 @@ const saveNarrative = () => {
                     </p>
                 </div>
                 <div class="flex items-center space-x-3">
-                    <SecondaryButton type="button" @click="openEditModal">
-                        Edit Violation
-                    </SecondaryButton>
-                    <PrimaryButton type="button" @click="openScheduleMeeting">
-                        Schedule Meeting
-                    </PrimaryButton>
+                    <template v-if="!isVoided">
+                        <SecondaryButton type="button" @click="openEditModal">
+                            Edit Violation
+                        </SecondaryButton>
+                        <PrimaryButton type="button" @click="openScheduleMeeting">
+                            Schedule Meeting
+                        </PrimaryButton>
+                        <button type="button"
+                            class="text-sm text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 border border-amber-300 dark:border-amber-600 rounded px-3 py-1.5 transition-colors"
+                            @click="showVoidModal = true">
+                            Void Violation
+                        </button>
+                    </template>
+                    <span v-else class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+                        Voided
+                    </span>
                     <Link :href="route('admin.discipline.index')" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-sm">
                         ← Back to List
                     </Link>
@@ -181,6 +229,23 @@ const saveNarrative = () => {
         </template>
 
         <div class="space-y-6">
+            <!-- Voided banner -->
+            <div v-if="isVoided" class="rounded-lg border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20 p-4 flex items-start gap-3">
+                <svg class="h-5 w-5 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                </svg>
+                <div>
+                    <p class="font-semibold text-red-700 dark:text-red-300">This violation has been voided</p>
+                    <p class="mt-0.5 text-sm text-red-600 dark:text-red-400">
+                        Reason: <span class="font-medium">{{ violation.void_reason }}</span>
+                        <span v-if="violation.void_notes"> — {{ violation.void_notes }}</span>
+                    </p>
+                    <p class="mt-0.5 text-xs text-red-500 dark:text-red-500">
+                        Voided on {{ violation.voided_at }} by {{ violation.voided_by?.email ?? 'unknown' }}
+                    </p>
+                </div>
+            </div>
+
             <!-- Violation details -->
             <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Violation Details</h3>
@@ -319,10 +384,107 @@ const saveNarrative = () => {
             </div>
         </div>
 
+        <!-- Subtle permanent delete link -->
+        <div class="flex justify-end pt-2">
+            <button type="button"
+                class="text-xs text-gray-300 dark:text-gray-600 hover:text-red-400 dark:hover:text-red-500 transition-colors"
+                @click="showDeleteModal = true">
+                Permanently remove record
+            </button>
+        </div>
+
         <DisciplineFormModal :show="showEditModal" :violation="editViolation" :enrollments="[]"
             @close="showEditModal = false" @saved="handleSaved" />
         <DisciplineMeetingModal :show="showMeetingModal" :discipline-id="violation.discipline_id"
             :meeting="selectedMeeting" @close="showMeetingModal = false; selectedMeeting = null"
             @saved="handleMeetingSaved" />
+
+        <!-- Void Modal -->
+        <Teleport to="body">
+            <div v-if="showVoidModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Void Violation</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                        Voiding keeps the record for transparency but marks it as invalid. Please provide a reason.
+                    </p>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                                Reason <span class="text-red-500">*</span>
+                            </label>
+                            <select v-model="voidForm.void_reason"
+                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:ring-amber-500 focus:border-amber-500 dark:bg-gray-700 dark:text-gray-100">
+                                <option value="">Select a reason...</option>
+                                <option v-for="r in voidReasons" :key="r" :value="r">{{ r }}</option>
+                            </select>
+                            <p v-if="voidForm.errors.void_reason" class="mt-1 text-xs text-red-600">{{ voidForm.errors.void_reason }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Additional Notes</label>
+                            <textarea v-model="voidForm.void_notes" rows="3"
+                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:ring-amber-500 focus:border-amber-500 dark:bg-gray-700 dark:text-gray-100 text-sm"
+                                placeholder="Optional — provide more context..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex justify-end gap-3">
+                        <SecondaryButton type="button" @click="showVoidModal = false; voidForm.reset()">
+                            Cancel
+                        </SecondaryButton>
+                        <button type="button"
+                            class="px-4 py-2 rounded-md text-sm font-medium bg-amber-500 hover:bg-amber-600 text-white transition-colors disabled:opacity-50"
+                            :disabled="!voidForm.void_reason || voidForm.processing"
+                            @click="submitVoid">
+                            {{ voidForm.processing ? 'Voiding...' : 'Void Violation' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
+
+        <!-- Delete Modal -->
+        <Teleport to="body">
+            <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md p-6">
+                    <div class="flex items-start gap-3 mb-4">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center">
+                            <svg class="h-5 w-5 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Permanently Delete Record</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                This will permanently erase Case #{{ violation.discipline_id }} and all related meetings and history. <strong>This cannot be undone.</strong>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                            Enter your password to confirm
+                        </label>
+                        <input v-model="deleteForm.password" type="password"
+                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-gray-100"
+                            placeholder="Your admin password"
+                            @keydown.enter="submitDelete" />
+                        <p v-if="deleteForm.errors.password" class="mt-1 text-xs text-red-600 dark:text-red-400">{{ deleteForm.errors.password }}</p>
+                    </div>
+
+                    <div class="mt-6 flex justify-end gap-3">
+                        <SecondaryButton type="button" @click="showDeleteModal = false; deleteForm.reset()">
+                            Cancel
+                        </SecondaryButton>
+                        <button type="button"
+                            class="px-4 py-2 rounded-md text-sm font-medium bg-red-600 hover:bg-red-700 text-white transition-colors disabled:opacity-50"
+                            :disabled="!deleteForm.password || deleteForm.processing"
+                            @click="submitDelete">
+                            {{ deleteForm.processing ? 'Deleting...' : 'Permanently Delete' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
     </AdminLayout>
 </template>

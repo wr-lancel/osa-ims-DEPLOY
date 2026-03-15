@@ -32,11 +32,16 @@ class Discipline extends Model
         'narrative_report',
         'narrative_report_file',
         'reported_by',
+        'voided_at',
+        'voided_by',
+        'void_reason',
+        'void_notes',
     ];
 
     protected $casts = [
         'violation_date' => 'date',
-        'date_resolved' => 'date',
+        'date_resolved'  => 'date',
+        'voided_at'      => 'datetime',
     ];
 
     /**
@@ -61,6 +66,14 @@ class Discipline extends Model
     public function reportedBy()
     {
         return $this->belongsTo(User::class, 'reported_by', 'user_id');
+    }
+
+    /**
+     * Get the user who voided this violation.
+     */
+    public function voidedBy()
+    {
+        return $this->belongsTo(User::class, 'voided_by', 'user_id');
     }
 
     /**

@@ -59,8 +59,11 @@ const withdraw = (application) => {
                 <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                     My Candidacies
                 </h2>
-                <Link :href="route('student.organizations.candidacy.create')">
-                    <PrimaryButton>Submit Candidacy</PrimaryButton>
+                <Link
+                    :href="route('student.organizations.candidacy.create')"
+                    class="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-sm font-medium text-white transition-colors"
+                >
+                    Submit Candidacy
                 </Link>
             </div>
         </template>

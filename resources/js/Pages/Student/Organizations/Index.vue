@@ -54,16 +54,20 @@ const filteredOrganizations = computed(() => {
                 <h2 class="text-2xl font-semibold text-gray-900 dark:text-white transition-colors">
                     Student Organizations
                 </h2>
-                <div class="flex items-center gap-3 text-sm">
+                <div class="flex items-center gap-2">
                     <Link
                         :href="route('student.organizations.candidacies.index')"
-                        class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 font-medium transition-colors"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                     >
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
                         My Candidacies
                     </Link>
+                    <div class="h-6 w-px bg-gray-300 dark:bg-gray-600 mx-1"></div>
                     <Link
                         :href="route('student.organizations.candidacy.create')"
-                        class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 font-medium transition-colors"
+                        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-sm font-medium text-white transition-colors"
                     >
                         Run for Position
                     </Link>

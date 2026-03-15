@@ -10,6 +10,7 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import Pagination from '@/Components/Pagination.vue';
 import { useNotification } from '@/composables/useNotification';
+import ExportConfirmDialog from '@/Components/ExportConfirmDialog.vue';
 import axios from 'axios';
 
 const props = defineProps({
@@ -103,8 +104,10 @@ const handleSaved = () => {
 
 const { notify } = useNotification();
 const isExporting = ref(false);
+const showExportDialog = ref(false);
 
 const exportPdf = async () => {
+    showExportDialog.value = false;
     isExporting.value = true;
     try {
         const params = new URLSearchParams();
@@ -139,27 +142,55 @@ const exportPdf = async () => {
 
     <AdminLayout>
         <LoadingOverlay :show="isExporting" message="Generating PDF... Please wait." />
+        <ExportConfirmDialog :show="showExportDialog" @confirm="exportPdf" @cancel="showExportDialog = false" />
         <template #header>
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 transition-colors">
                     Organization Unit
                 </h2>
-                <div class="flex space-x-3">
-                    <SecondaryButton v-if="activeTab === 'organizations'" @click="activeTab = 'events'">
+                <div class="flex items-center gap-2">
+                    <button
+                        v-if="activeTab === 'organizations'"
+                        @click="activeTab = 'events'"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                    >
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
                         View Events
-                    </SecondaryButton>
-                    <SecondaryButton v-else @click="activeTab = 'organizations'">
+                    </button>
+                    <button
+                        v-else
+                        @click="activeTab = 'organizations'"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                    >
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
                         View Organizations
-                    </SecondaryButton>
-                    <Link v-if="activeTab === 'organizations'" :href="route('admin.organizations.candidacies.index')">
-                        <SecondaryButton type="button">Candidacy Applications</SecondaryButton>
+                    </button>
+                    <Link
+                        v-if="activeTab === 'organizations'"
+                        :href="route('admin.organizations.candidacies.index')"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                    >
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Candidacy Applications
                     </Link>
-                    <div>
-                        <SecondaryButton v-if="activeTab === 'organizations'" @click="exportPdf">
-                            Export PDF
-                        </SecondaryButton>
-                        <span v-if="activeTab === 'organizations'" class="block text-xs text-gray-400 dark:text-gray-500 mt-0.5 text-center">Uses current filters</span>
-                    </div>
+                    <button
+                        v-if="activeTab === 'organizations'"
+                        title="Export current filtered results to PDF"
+                        @click="showExportDialog = true"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                    >
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Export PDF
+                    </button>
+                    <div class="h-6 w-px bg-gray-300 dark:bg-gray-600 mx-1"></div>
                     <PrimaryButton v-if="activeTab === 'organizations'" @click="openAddModal">
                         Add Organization
                     </PrimaryButton>

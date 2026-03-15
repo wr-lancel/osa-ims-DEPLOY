@@ -200,11 +200,14 @@ const goToBorrowingDetail = (borrowing) => {
 };
 
 import { useNotification } from '@/composables/useNotification';
+import ExportConfirmDialog from '@/Components/ExportConfirmDialog.vue';
 
 const { notify } = useNotification();
 const isExporting = ref(false);
+const showExportDialog = ref(false);
 
 const exportPdf = async () => {
+    showExportDialog.value = false;
     isExporting.value = true;
     try {
         const params = new URLSearchParams();
@@ -238,22 +241,34 @@ const exportPdf = async () => {
 
     <AdminLayout>
         <LoadingOverlay :show="isProcessing || isExporting" :message="isExporting ? 'Generating PDF... Please wait.' : 'Processing... Please wait.'" />
+        <ExportConfirmDialog :show="showExportDialog" @confirm="exportPdf" @cancel="showExportDialog = false" />
         <template #header>
 
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                     Sports Unit
                 </h2>
-                <div class="flex space-x-3">
-                    <SecondaryButton @click="router.visit(route('admin.sports.athletes'))">
+                <div class="flex items-center gap-2">
+                    <button
+                        @click="router.visit(route('admin.sports.athletes'))"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                    >
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
                         View Athletes
-                    </SecondaryButton>
-                    <div class="flex flex-col items-start gap-0.5">
-                        <SecondaryButton @click="exportPdf">
-                            Export PDF
-                        </SecondaryButton>
-                        <span class="text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400 px-1">Uses current filters</span>
-                    </div>
+                    </button>
+                    <button
+                        title="Export current filtered results to PDF"
+                        @click="showExportDialog = true"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                    >
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Export PDF
+                    </button>
+                    <div class="h-6 w-px bg-gray-300 dark:bg-gray-600 mx-1"></div>
                     <PrimaryButton @click="openAddModal">
                         New Borrowing
                     </PrimaryButton>

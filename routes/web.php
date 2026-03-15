@@ -183,6 +183,8 @@ Route::middleware('auth')->group(function () {
                 Route::get('/{discipline}', [DisciplineController::class, 'show'])->name('show');
                 Route::put('/{discipline}', [DisciplineController::class, 'update'])->name('update');
                 Route::put('/{discipline}/status', [DisciplineController::class, 'updateStatus'])->name('updateStatus');
+                Route::post('/{discipline}/void', [DisciplineController::class, 'void'])->name('void');
+                Route::delete('/{discipline}', [DisciplineController::class, 'destroy'])->name('destroy');
             });
 
         // Organization Module Routes

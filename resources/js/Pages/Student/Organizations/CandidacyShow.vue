@@ -55,17 +55,20 @@ const withdraw = () => {
                 <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                     Candidacy Details
                 </h2>
-                <div class="flex items-center space-x-3">
+                <div class="flex items-center gap-2">
                     <Link
                         :href="route('student.organizations.candidacies.index')"
-                        class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-sm"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                     >
-                        ← My Candidacies
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        My Candidacies
                     </Link>
                     <button
                         v-if="canWithdraw()"
                         type="button"
-                        class="text-red-600 dark:text-red-400 hover:text-red-900 text-sm font-medium"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-red-300 dark:border-red-700 bg-white dark:bg-gray-700 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                         @click="withdraw"
                     >
                         Withdraw

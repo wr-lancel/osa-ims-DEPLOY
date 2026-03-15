@@ -8,6 +8,7 @@ import SecondaryButton from '@/Components/SecondaryButton.vue';
 import Pagination from '@/Components/Pagination.vue';
 import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 import { useNotification } from '@/composables/useNotification';
+import ExportConfirmDialog from '@/Components/ExportConfirmDialog.vue';
 
 const { notify } = useNotification();
 
@@ -97,8 +98,10 @@ const toggleCandidacy = () => {
 };
 
 const isExporting = ref(false);
+const showExportDialog = ref(false);
 
 const exportPdf = async () => {
+    showExportDialog.value = false;
     isExporting.value = true;
     try {
         const params = new URLSearchParams();
@@ -134,24 +137,35 @@ const exportPdf = async () => {
 
     <AdminLayout>
         <LoadingOverlay :show="toggling || isExporting" :message="isExporting ? 'Generating PDF... Please wait.' : 'Processing... Please wait.'" />
+        <ExportConfirmDialog :show="showExportDialog" @confirm="exportPdf" @cancel="showExportDialog = false" />
         <template #header>
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                         Candidacy Applications
                     </h2>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 mt-1">All candidacy applications across organizations</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">All candidacy applications across organizations</p>
                 </div>
-                <div class="flex items-center space-x-3">
-                    <div>
-                        <SecondaryButton @click="exportPdf">
-                            Export PDF
-                        </SecondaryButton>
-                        <span class="block text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400 mt-0.5 text-center">Uses current filters</span>
-                    </div>
-                    <Link :href="route('admin.organizations.index')">
-                        <SecondaryButton type="button">← Back to Organizations</SecondaryButton>
+                <div class="flex items-center gap-2">
+                    <Link
+                        :href="route('admin.organizations.index')"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                    >
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Back to Organizations
                     </Link>
+                    <button
+                        title="Export current filtered results to PDF"
+                        @click="showExportDialog = true"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                    >
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Export PDF
+                    </button>
                 </div>
             </div>
         </template>

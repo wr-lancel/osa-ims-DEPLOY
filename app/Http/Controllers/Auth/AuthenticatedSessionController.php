@@ -41,6 +41,11 @@ class AuthenticatedSessionController extends Controller
         $moduleAuth = app(ModuleAuthorizationService::class);
         $hasAdminAccess = $moduleAuth->hasAccess($user, ModuleAuthorizationService::MODULE_DASHBOARD);
 
+        // Always redirect to change-password first if required
+        if ($user->must_change_password) {
+            return redirect()->route('onboarding.change-password');
+        }
+
         $redirectRoute = match (true) {
             $hasAdminAccess => 'admin.dashboard',
             $user->hasRole('student') => 'student.dashboard',

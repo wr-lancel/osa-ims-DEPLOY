@@ -1,11 +1,26 @@
 <script setup>
+import { ref, watch, computed } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import ThemeToggle from '@/Components/ThemeToggle.vue';
-import { Link, router } from '@inertiajs/vue3';
+import NotificationDialog from '@/Components/NotificationDialog.vue';
+import { Link, router, usePage } from '@inertiajs/vue3';
 
 const logout = () => {
     router.post(route('logout'));
 };
+
+const toast = ref({ show: false, type: 'success', title: '', message: '' });
+const flash = computed(() => usePage().props.flash || {});
+
+watch(flash, (f) => {
+    if (f.success) {
+        toast.value = { show: true, type: 'success', title: 'Success', message: f.success };
+    } else if (f.error) {
+        toast.value = { show: true, type: 'error', title: 'Error', message: f.error };
+    } else if (f.warning) {
+        toast.value = { show: true, type: 'warning', title: 'Warning', message: f.warning };
+    }
+}, { deep: true, immediate: true });
 </script>
 
 <template>
@@ -35,5 +50,14 @@ const logout = () => {
                 <slot />
             </div>
         </main>
+
+        <!-- Global Toast -->
+        <NotificationDialog
+            :show="toast.show"
+            :type="toast.type"
+            :title="toast.title"
+            :message="toast.message"
+            @close="toast.show = false"
+        />
     </div>
 </template>

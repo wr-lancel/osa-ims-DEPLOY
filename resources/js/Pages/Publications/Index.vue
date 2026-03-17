@@ -10,7 +10,7 @@ defineProps({
 </script>
 
 <template>
-    <Head title="Publications — OSA-IMS" />
+    <Head title="Publications — OSAS-IMS" />
 
     <div class="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-200">
         <!-- Navbar -->
@@ -21,7 +21,7 @@ defineProps({
                         <div class="h-8 w-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 flex items-center justify-center transition-colors">
                             <div class="h-3 w-3 rounded bg-slate-900 dark:bg-slate-100 transition-colors"></div>
                         </div>
-                        <span class="text-sm font-bold text-slate-900 dark:text-white">OSA-IMS</span>
+                        <span class="text-sm font-bold text-slate-900 dark:text-white">OSAS-IMS</span>
                     </Link>
                     <div class="flex items-center gap-3">
                         <ThemeToggle />

@@ -68,7 +68,18 @@ const fetchTakenSlots = async (date) => {
 };
 
 const isSlotTaken = (timeValue) => takenSlots.value.includes(timeValue);
-const availableCount = computed(() => officeHours.filter(h => !isSlotTaken(h.value)).length);
+
+const isSlotPast = (timeValue) => {
+    if (!form.appointment_date) return false;
+    const today = new Date().toISOString().split('T')[0];
+    if (form.appointment_date !== today) return false;
+    const [slotHour, slotMinute] = timeValue.split(':').map(Number);
+    const now = new Date();
+    return now.getHours() > slotHour || (now.getHours() === slotHour && now.getMinutes() >= slotMinute);
+};
+
+const isSlotDisabled = (timeValue) => isSlotTaken(timeValue) || isSlotPast(timeValue);
+const availableCount = computed(() => officeHours.filter(h => !isSlotDisabled(h.value)).length);
 
 const onDateChange = () => {
     if (!form.appointment_date) return;
@@ -193,10 +204,10 @@ const goToDetail = (appointment) => {
                                         v-for="h in officeHours"
                                         :key="h.value"
                                         type="button"
-                                        :disabled="isSlotTaken(h.value)"
-                                        @click="form.appointment_time = h.value"
+                                        :disabled="isSlotDisabled(h.value)"
+                                        @click="!isSlotDisabled(h.value) && (form.appointment_time = h.value)"
                                         class="px-3 py-2 text-sm font-medium rounded-lg border-2 transition-all duration-150 text-center"
-                                        :class="isSlotTaken(h.value)
+                                        :class="isSlotDisabled(h.value)
                                             ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-400 dark:text-red-500 cursor-not-allowed line-through'
                                             : form.appointment_time === h.value
                                                 ? 'bg-indigo-600 border-indigo-600 text-white shadow-md'
@@ -204,6 +215,7 @@ const goToDetail = (appointment) => {
                                     >
                                         {{ h.label }}
                                         <span v-if="isSlotTaken(h.value)" class="block text-[10px] font-normal">Taken</span>
+                                        <span v-else-if="isSlotPast(h.value)" class="block text-[10px] font-normal">Past</span>
                                     </button>
                                 </div>
                                 <InputError :message="form.errors.appointment_time" class="mt-2" />

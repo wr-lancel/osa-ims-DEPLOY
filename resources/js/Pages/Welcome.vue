@@ -61,7 +61,7 @@ const services = [
                     <div class="flex items-center gap-3 flex-shrink-0 min-w-0">
                         <img src="/images/OSA-NEW-LOGO.png" alt="OSA Logo" class="h-11 w-11 rounded-xl object-contain border border-slate-200 dark:border-slate-700" />
                         <div class="leading-tight">
-                            <div class="text-sm font-bold text-slate-900 dark:text-white">OSA-IMS</div>
+                            <div class="text-sm font-bold text-slate-900 dark:text-white">OSAS-IMS</div>
                             <div class="text-[11px] text-slate-500 dark:text-slate-400">Information Management System</div>
                         </div>
                     </div>
@@ -362,7 +362,7 @@ const services = [
                 <div class="flex flex-col md:flex-row items-center justify-between gap-4">
                     <div class="flex items-center gap-3">
                         <img src="/images/OSA-NEW-LOGO.png" alt="OSA Logo" class="h-8 w-8 rounded-xl object-contain border border-slate-200 dark:border-slate-700" />
-                        <span class="text-sm font-semibold text-slate-900 dark:text-white transition-colors">OSA-IMS</span>
+                        <span class="text-sm font-semibold text-slate-900 dark:text-white transition-colors">OSAS-IMS</span>
                     </div>
                     <p class="text-sm text-slate-500 text-center">
                         Office of Student Affairs and Services — Concepcion Holy Cross College, Inc.

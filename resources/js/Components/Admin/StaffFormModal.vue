@@ -259,8 +259,9 @@ const close = () => {
                         <!-- Phone -->
                         <div>
                             <InputLabel for="phone" value="Phone" />
-                            <TextInput id="phone" v-model="formData.phone" type="text" class="mt-1 block w-full"
-                                :class="{ 'border-red-500': errors.phone }" />
+                            <TextInput id="phone" v-model="formData.phone" type="tel" class="mt-1 block w-full"
+                                :class="{ 'border-red-500': errors.phone }"
+                                @input="formData.phone = $event.target.value.replace(/\D/g, '')" />
                             <InputError :message="errors.phone?.[0]" class="mt-2" />
                         </div>
                     </div>

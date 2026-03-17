@@ -101,11 +101,11 @@ class ProfileController extends Controller
             'educationalBackground' => $educationalBackground ? [
                 'elementary_school' => $educationalBackground->elementary_school,
                 'elementary_address' => $educationalBackground->elementary_address,
-                'elementary_graduated' => $educationalBackground->elementary_graduated?->format('Y-m-d'),
+                'elementary_graduated' => $educationalBackground->elementary_graduated?->format('Y-m'),
                 'senior_high_school' => $educationalBackground->senior_high_school,
                 'senior_high_strand' => $educationalBackground->senior_high_strand,
                 'senior_high_address' => $educationalBackground->senior_high_address,
-                'senior_high_graduated' => $educationalBackground->senior_high_graduated?->format('Y-m-d'),
+                'senior_high_graduated' => $educationalBackground->senior_high_graduated?->format('Y-m'),
                 'honors_received' => $educationalBackground->honors_received,
             ] : null,
             'familyInfo' => $familyInfo ? [
@@ -149,48 +149,48 @@ class ProfileController extends Controller
         // Validate all sections
         $validated = $request->validate([
             // Student basic info (editable fields only)
-            'phone' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:255',
-            'address' => 'nullable|string|max:500',
-            'birth_date' => 'nullable|date',
+            'phone'      => 'required|string|max:20',
+            'email'      => 'required|email|max:255',
+            'address'    => 'required|string|max:500',
+            'birth_date' => 'required|date',
 
             // Profile
-            'birth_place' => 'nullable|string|max:255',
-            'gender' => 'nullable|in:male,female,other',
-            'citizenship' => 'nullable|string|max:255',
-            'civil_status' => 'nullable|in:single,married,widowed',
-            'spouse_name' => 'nullable|string|max:255',
-            'is_single_parent' => 'boolean',
-            'has_disability' => 'boolean',
+            'birth_place'        => 'required|string|max:255',
+            'gender'             => 'required|in:male,female,other',
+            'citizenship'        => 'required|string|max:255',
+            'civil_status'       => 'required|in:single,married,widowed',
+            'spouse_name'        => 'nullable|string|max:255',
+            'is_single_parent'   => 'boolean',
+            'has_disability'     => 'boolean',
             'disability_details' => 'nullable|string|max:255',
-            'is_employed' => 'boolean',
-            'company_name' => 'nullable|string|max:255',
+            'is_employed'        => 'boolean',
+            'company_name'       => 'nullable|string|max:255',
 
             // Educational Background
-            'elementary_school' => 'nullable|string|max:255',
-            'elementary_address' => 'nullable|string|max:255',
-            'elementary_graduated' => 'nullable|date',
-            'senior_high_school' => 'nullable|string|max:255',
-            'senior_high_strand' => 'nullable|string|max:255',
-            'senior_high_address' => 'nullable|string|max:255',
-            'senior_high_graduated' => 'nullable|date',
-            'honors_received' => 'nullable|string|max:1000',
+            'elementary_school'     => 'required|string|max:255',
+            'elementary_address'    => 'required|string|max:255',
+            'elementary_graduated'  => 'required|date_format:Y-m',
+            'senior_high_school'    => 'required|string|max:255',
+            'senior_high_strand'    => 'required|string|max:255',
+            'senior_high_address'   => 'required|string|max:255',
+            'senior_high_graduated' => 'required|date_format:Y-m',
+            'honors_received'       => 'nullable|string|max:1000',
 
             // Family Info
-            'father_last_name' => 'nullable|string|max:255',
-            'father_first_name' => 'nullable|string|max:255',
-            'father_middle_initial' => 'nullable|string|max:10',
-            'father_occupation' => 'nullable|string|max:255',
-            'mother_maiden_last_name' => 'nullable|string|max:255',
-            'mother_first_name' => 'nullable|string|max:255',
-            'mother_middle_initial' => 'nullable|string|max:10',
-            'mother_occupation' => 'nullable|string|max:255',
+            'father_last_name'        => 'required|string|max:255',
+            'father_first_name'       => 'required|string|max:255',
+            'father_middle_initial'   => 'nullable|string|max:10',
+            'father_occupation'       => 'required|string|max:255',
+            'mother_maiden_last_name' => 'required|string|max:255',
+            'mother_first_name'       => 'required|string|max:255',
+            'mother_middle_initial'   => 'nullable|string|max:10',
+            'mother_occupation'       => 'required|string|max:255',
 
             // Emergency Contact
-            'contact_name' => 'nullable|string|max:255',
-            'relationship' => 'nullable|string|max:255',
-            'contact_number' => 'nullable|string|max:20',
-            'contact_address' => 'nullable|string|max:500',
+            'contact_name'    => 'required|string|max:255',
+            'relationship'    => 'required|string|max:255',
+            'contact_number'  => 'required|string|max:20',
+            'contact_address' => 'required|string|max:500',
         ]);
 
         try {
@@ -225,11 +225,11 @@ class ProfileController extends Controller
                 [
                     'elementary_school' => $validated['elementary_school'] ?? null,
                     'elementary_address' => $validated['elementary_address'] ?? null,
-                    'elementary_graduated' => $validated['elementary_graduated'] ?? null,
+                    'elementary_graduated' => isset($validated['elementary_graduated']) ? $validated['elementary_graduated'] . '-01' : null,
                     'senior_high_school' => $validated['senior_high_school'] ?? null,
                     'senior_high_strand' => $validated['senior_high_strand'] ?? null,
                     'senior_high_address' => $validated['senior_high_address'] ?? null,
-                    'senior_high_graduated' => $validated['senior_high_graduated'] ?? null,
+                    'senior_high_graduated' => isset($validated['senior_high_graduated']) ? $validated['senior_high_graduated'] . '-01' : null,
                     'honors_received' => $validated['honors_received'] ?? null,
                 ]
             );

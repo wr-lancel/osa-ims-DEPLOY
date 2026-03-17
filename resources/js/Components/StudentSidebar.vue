@@ -48,7 +48,7 @@ watch(() => page.url, () => {
                     <img src="/images/OSA-NEW-LOGO.png" alt="OSA Logo" class="h-12 w-12 rounded-xl object-contain" />
                     <div class="leading-tight">
                         <div class="text-sm font-semibold text-slate-900 dark:text-white transition-colors">Student Portal</div>
-                        <div class="text-xs text-slate-500 dark:text-slate-400 transition-colors">OSA-IMS</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400 transition-colors">OSAS-IMS</div>
                     </div>
                 </div>
             </div>
@@ -101,7 +101,7 @@ watch(() => page.url, () => {
                             <img src="/images/OSA-NEW-LOGO.png" alt="OSA Logo" class="h-12 w-12 rounded-xl object-contain" />
                             <div class="leading-tight">
                                 <div class="text-sm font-semibold text-slate-900 dark:text-white transition-colors">Student Portal</div>
-                                <div class="text-xs text-slate-500 dark:text-slate-400 transition-colors">OSA-IMS</div>
+                                <div class="text-xs text-slate-500 dark:text-slate-400 transition-colors">OSAS-IMS</div>
                             </div>
                         </div>
                         <!-- Close button -->

@@ -372,7 +372,7 @@ const calculateAge = (birthDate) => {
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Occupation/Trabajo</label>
+                                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Occupation/Trabaho</label>
                                 <p class="mt-1 text-sm text-gray-900 dark:text-white border-b border-gray-300 dark:border-gray-600 pb-1 pt-4">{{ familyInfo.father_occupation || 'N/A' }}</p>
                             </div>
                         </div>
@@ -397,7 +397,7 @@ const calculateAge = (birthDate) => {
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Occupation/Trabajo</label>
+                                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Occupation/Trabaho</label>
                                 <p class="mt-1 text-sm text-gray-900 dark:text-white border-b border-gray-300 dark:border-gray-600 pb-1 pt-4">{{ familyInfo.mother_occupation || 'N/A' }}</p>
                             </div>
                         </div>

@@ -10,6 +10,7 @@ use App\Models\StudentProfile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -117,11 +118,11 @@ class OnboardingController extends Controller
             'educationalBackground' => $student->educationalBackground ? [
                 'elementary_school' => $student->educationalBackground->elementary_school,
                 'elementary_address' => $student->educationalBackground->elementary_address,
-                'elementary_graduated' => $student->educationalBackground->elementary_graduated?->format('Y-m-d'),
+                'elementary_graduated' => $student->educationalBackground->elementary_graduated?->format('Y-m'),
                 'senior_high_school' => $student->educationalBackground->senior_high_school,
                 'senior_high_strand' => $student->educationalBackground->senior_high_strand,
                 'senior_high_address' => $student->educationalBackground->senior_high_address,
-                'senior_high_graduated' => $student->educationalBackground->senior_high_graduated?->format('Y-m-d'),
+                'senior_high_graduated' => $student->educationalBackground->senior_high_graduated?->format('Y-m'),
                 'honors_received' => $student->educationalBackground->honors_received,
             ] : null,
             'familyInfo' => $student->familyInfo ? [
@@ -184,11 +185,11 @@ class OnboardingController extends Controller
             // Educational background
             'elementary_school'      => 'required|string|max:255',
             'elementary_address'     => 'required|string|max:255',
-            'elementary_graduated'   => 'required|date',
+            'elementary_graduated'   => 'required|date_format:Y-m',
             'senior_high_school'     => 'required|string|max:255',
             'senior_high_strand'     => 'required|string|max:255',
             'senior_high_address'    => 'required|string|max:255',
-            'senior_high_graduated'  => 'required|date',
+            'senior_high_graduated'  => 'required|date_format:Y-m',
             'honors_received'        => 'nullable|string|max:1000',
 
             // Family info
@@ -209,6 +210,8 @@ class OnboardingController extends Controller
         ]);
 
         try {
+            DB::beginTransaction();
+
             $student->update([
                 'phone'      => $validated['phone'],
                 'email'      => $validated['email'],
@@ -238,11 +241,11 @@ class OnboardingController extends Controller
                 [
                     'elementary_school'     => $validated['elementary_school'],
                     'elementary_address'    => $validated['elementary_address'],
-                    'elementary_graduated'  => $validated['elementary_graduated'],
+                    'elementary_graduated'  => $validated['elementary_graduated'] . '-01',
                     'senior_high_school'    => $validated['senior_high_school'],
                     'senior_high_strand'    => $validated['senior_high_strand'],
                     'senior_high_address'   => $validated['senior_high_address'],
-                    'senior_high_graduated' => $validated['senior_high_graduated'],
+                    'senior_high_graduated' => $validated['senior_high_graduated'] . '-01',
                     'honors_received'       => $validated['honors_received'] ?? null,
                 ]
             );
@@ -271,12 +274,15 @@ class OnboardingController extends Controller
                 ]
             );
 
+            DB::commit();
+
             Log::info("Student completed profile onboarding: student_number={$studentNumber}");
 
             return redirect()->route('student.dashboard')
                 ->with('success', 'Profile completed successfully. Welcome!');
 
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error("Failed to complete student profile: " . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to save profile. Please try again.');
         }

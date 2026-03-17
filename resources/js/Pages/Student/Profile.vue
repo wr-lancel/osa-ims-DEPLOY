@@ -168,9 +168,10 @@ const submit = () => {
                         <div>
                             <label for="phone" class="block text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Mobile
                                 Number</label>
-                            <input id="phone" v-model="form.phone" type="text"
+                            <input id="phone" v-model="form.phone" type="tel"
                                 class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100"
-                                placeholder="e.g. 09123456789" />
+                                placeholder="e.g. 09123456789"
+                                @input="form.phone = $event.target.value.replace(/\D/g, '')" />
                             <p v-if="form.errors.phone" class="mt-1 text-xs text-red-600 dark:text-red-400">{{ form.errors.phone }}</p>
                         </div>
                         <div>
@@ -189,6 +190,7 @@ const submit = () => {
                             <label for="birth_date" class="block text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Birth
                                 Date</label>
                             <input id="birth_date" v-model="form.birth_date" type="date"
+                                :max="new Date().toISOString().split('T')[0]"
                                 class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100" />
                             <p v-if="form.errors.birth_date" class="mt-1 text-xs text-red-600 dark:text-red-400">{{ form.errors.birth_date
                                 }}</p>
@@ -356,7 +358,7 @@ const submit = () => {
                             <label for="elementary_graduated"
                                 class="block text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Date
                                 Graduated</label>
-                            <input id="elementary_graduated" v-model="form.elementary_graduated" type="date"
+                            <input id="elementary_graduated" v-model="form.elementary_graduated" type="month"
                                 class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100" />
                         </div>
                     </div>
@@ -402,7 +404,7 @@ const submit = () => {
                             <label for="senior_high_graduated"
                                 class="block text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Date
                                 Graduated</label>
-                            <input id="senior_high_graduated" v-model="form.senior_high_graduated" type="date"
+                            <input id="senior_high_graduated" v-model="form.senior_high_graduated" type="month"
                                 class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100" />
                         </div>
                     </div>
@@ -424,65 +426,58 @@ const submit = () => {
                 </div>
                 <div class="p-6 space-y-4">
                     <!-- Father -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase mb-1">Father's Name</label>
-                            <div class="grid grid-cols-3 gap-2">
-                                <div>
-                                    <span class="text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400">(Last Name)</span>
-                                    <input v-model="form.father_last_name" type="text"
-                                        class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100" />
-                                </div>
-                                <div>
-                                    <span class="text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400">(First Name)</span>
-                                    <input v-model="form.father_first_name" type="text"
-                                        class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100" />
-                                </div>
-                                <div>
-                                    <span class="text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400">(M.I.)</span>
-                                    <input v-model="form.father_middle_initial" type="text" maxlength="10"
-                                        class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100" />
-                                </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Father's Name</label>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                            <div>
+                                <span class="text-xs text-gray-400 dark:text-gray-500">(Last Name)</span>
+                                <input v-model="form.father_last_name" type="text"
+                                    class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100" />
                             </div>
-                        </div>
-                        <div>
-                            <label for="father_occupation"
-                                class="block text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Occupation/Trabajo</label>
-                            <input id="father_occupation" v-model="form.father_occupation" type="text"
-                                class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm pt-4 dark:bg-gray-700 dark:text-gray-100"
-                                placeholder="Enter occupation" />
+                            <div>
+                                <span class="text-xs text-gray-400 dark:text-gray-500">(First Name)</span>
+                                <input v-model="form.father_first_name" type="text"
+                                    class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100" />
+                            </div>
+                            <div>
+                                <span class="text-xs text-gray-400 dark:text-gray-500">(M.I.)</span>
+                                <input v-model="form.father_middle_initial" type="text" maxlength="10"
+                                    class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100" />
+                            </div>
+                            <div>
+                                <span class="text-xs text-gray-400 dark:text-gray-500">(Occupation)</span>
+                                <input id="father_occupation" v-model="form.father_occupation" type="text"
+                                    class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100"
+                                    placeholder="Enter occupation" />
+                            </div>
                         </div>
                     </div>
 
                     <!-- Mother -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase mb-1">Mother's Maiden
-                                Name</label>
-                            <div class="grid grid-cols-3 gap-2">
-                                <div>
-                                    <span class="text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400">(Last Name)</span>
-                                    <input v-model="form.mother_maiden_last_name" type="text"
-                                        class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100" />
-                                </div>
-                                <div>
-                                    <span class="text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400">(First Name)</span>
-                                    <input v-model="form.mother_first_name" type="text"
-                                        class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100" />
-                                </div>
-                                <div>
-                                    <span class="text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400">(M.I.)</span>
-                                    <input v-model="form.mother_middle_initial" type="text" maxlength="10"
-                                        class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100" />
-                                </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Mother's Maiden Name</label>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                            <div>
+                                <span class="text-xs text-gray-400 dark:text-gray-500">(Last Name)</span>
+                                <input v-model="form.mother_maiden_last_name" type="text"
+                                    class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100" />
                             </div>
-                        </div>
-                        <div>
-                            <label for="mother_occupation"
-                                class="block text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Occupation/Trabajo</label>
-                            <input id="mother_occupation" v-model="form.mother_occupation" type="text"
-                                class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm pt-4 dark:bg-gray-700 dark:text-gray-100"
-                                placeholder="Enter occupation" />
+                            <div>
+                                <span class="text-xs text-gray-400 dark:text-gray-500">(First Name)</span>
+                                <input v-model="form.mother_first_name" type="text"
+                                    class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100" />
+                            </div>
+                            <div>
+                                <span class="text-xs text-gray-400 dark:text-gray-500">(M.I.)</span>
+                                <input v-model="form.mother_middle_initial" type="text" maxlength="10"
+                                    class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100" />
+                            </div>
+                            <div>
+                                <span class="text-xs text-gray-400 dark:text-gray-500">(Occupation)</span>
+                                <input id="mother_occupation" v-model="form.mother_occupation" type="text"
+                                    class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100"
+                                    placeholder="Enter occupation" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -515,9 +510,10 @@ const submit = () => {
                             <label for="contact_number"
                                 class="block text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase">Contact
                                 Number</label>
-                            <input id="contact_number" v-model="form.contact_number" type="text"
+                            <input id="contact_number" v-model="form.contact_number" type="tel"
                                 class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100"
-                                placeholder="Enter contact number" />
+                                placeholder="Enter contact number"
+                                @input="form.contact_number = $event.target.value.replace(/\D/g, '')" />
                         </div>
                         <div>
                             <label for="contact_address" class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Address</label>

@@ -16,7 +16,7 @@ const lightboxIndex = ref(null);
                 <div class="flex items-center justify-between h-16">
                     <Link href="/" class="flex items-center gap-3">
                         <div class="h-8 w-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 flex items-center justify-center"><div class="h-3 w-3 rounded bg-slate-900 dark:bg-slate-100"></div></div>
-                        <span class="text-sm font-bold text-slate-900 dark:text-white">OSA-IMS</span>
+                        <span class="text-sm font-bold text-slate-900 dark:text-white">OSAS-IMS</span>
                     </Link>
                     <div class="flex items-center gap-3">
                         <ThemeToggle />

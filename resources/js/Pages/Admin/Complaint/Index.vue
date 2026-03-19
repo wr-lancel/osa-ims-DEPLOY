@@ -3,6 +3,7 @@ import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
+import SortableHeader from '@/Components/SortableHeader.vue';
 
 const props = defineProps({
     complaints: {
@@ -26,14 +27,18 @@ const props = defineProps({
 const search = ref(props.filters.search || '');
 const category = ref(props.filters.category || '');
 const status = ref(props.filters.status || '');
+const sortBy = ref(props.filters.sort_by || 'created_at');
+const sortDir = ref(props.filters.sort_dir || 'desc');
 
 const applyFilters = () => {
     router.get(route('admin.discipline.complaints.index'), {
         search: search.value || undefined,
         category: category.value || undefined,
         status: status.value || undefined,
-    }, { 
-        preserveState: true, 
+        sort_by: sortBy.value || undefined,
+        sort_dir: sortDir.value || undefined,
+    }, {
+        preserveState: true,
         preserveScroll: true,
         replace: true,
         showProgress: false,
@@ -41,8 +46,14 @@ const applyFilters = () => {
     });
 };
 
+const handleSort = ({ column, dir }) => {
+    sortBy.value = column;
+    sortDir.value = dir;
+    applyFilters();
+};
+
 let searchDebounce = null;
-watch(search, (val) => {
+watch(search, () => {
     if (searchDebounce) clearTimeout(searchDebounce);
     searchDebounce = setTimeout(() => applyFilters(), 350);
 });
@@ -173,31 +184,15 @@ const exportPdf = async () => {
             <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
                 <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead class="bg-gray-50 dark:bg-gray-900">
+                        <thead class="bg-gray-50 dark:bg-gray-900 text-xs text-gray-500 dark:text-gray-400 uppercase">
                             <tr>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                    ID
-                                </th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                    Complainant</th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                    Category</th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                    Subject</th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                    Date
-                                    Submitted</th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                    Status</th>
-                                <th
-                                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-                                    Actions</th>
+                                <SortableHeader column="complaint_id" label="ID" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
+                                <th class="px-4 py-3 font-semibold whitespace-nowrap text-left">Complainant</th>
+                                <SortableHeader column="category" label="Category" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
+                                <th class="px-4 py-3 font-semibold whitespace-nowrap text-left">Subject</th>
+                                <SortableHeader column="created_at" label="Date Submitted" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
+                                <SortableHeader column="status" label="Status" :currentSort="sortBy" :currentDir="sortDir" @sort="handleSort" />
+                                <th class="px-6 py-3 font-semibold whitespace-nowrap text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">

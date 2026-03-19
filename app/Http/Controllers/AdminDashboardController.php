@@ -11,10 +11,13 @@ use App\Models\Event;
 use App\Models\EnrolledStudent;
 use App\Models\GuidanceAppointment;
 use App\Models\GuidanceCase;
+use App\Models\RiskPrediction;
+use App\Models\Student;
 use App\Models\SportsBorrowing;
 use App\Models\StudentOrganization;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -64,11 +67,15 @@ class AdminDashboardController extends Controller
             : 0;
         $pendingComplaints = Complaint::where('status', 'pending')->count();
 
-        // Guidance: cases this term (enrollment), pending appointments (all)
+        // Guidance: cases this term (enrollment), pending appointments (term-aware via student enrollment)
         $guidanceCasesTerm = $calendarId
             ? GuidanceCase::whereHas('enrollment', fn($q) => $q->where('acad_id', $calendarId))->count()
             : 0;
-        $pendingAppointments = GuidanceAppointment::where('status', 'pending')->count();
+        $pendingAppointments = $calendarId
+            ? GuidanceAppointment::where('status', 'pending')
+                ->whereHas('enrollments', fn($q) => $q->where('acad_id', $calendarId))
+                ->count()
+            : GuidanceAppointment::where('status', 'pending')->count();
 
         // Events: this term (by event_date in range), this month, upcoming count
         $eventsThisTerm = ($termStart && $termEnd)
@@ -356,6 +363,70 @@ class AdminDashboardController extends Controller
             $chartViolationsPerMonth['values'] = array_map(fn($ym) => ($counts->get($ym))->count ?? 0, $monthKeys);
         }
 
+        // ── Predictive Analytics ──────────────────────────────────────────
+        $totalStudents       = Student::count();
+        $riskHighCount       = RiskPrediction::where('risk_level', 'High')->count();
+        $riskModerateCount   = RiskPrediction::where('risk_level', 'Moderate')->count();
+        $riskLowCount        = RiskPrediction::where('risk_level', 'Low')->count();
+        $riskComputedCount   = RiskPrediction::count();
+        $riskNotComputed     = max(0, $totalStudents - $riskComputedCount);
+
+        $riskSummary = [
+            'high'         => $riskHighCount,
+            'moderate'     => $riskModerateCount,
+            'low'          => $riskLowCount,
+            'not_computed' => $riskNotComputed,
+            'total'        => $totalStudents,
+        ];
+
+        // Doughnut: risk level distribution
+        $chartRiskLevelDistribution = [
+            'labels' => ['High', 'Moderate', 'Low'],
+            'values' => [$riskHighCount, $riskModerateCount, $riskLowCount],
+        ];
+
+        // Bar: High-risk student count by course
+        $riskByCourseRows = DB::table('risk_prediction')
+            ->join('students', 'risk_prediction.student_number', '=', 'students.student_number')
+            ->where('risk_prediction.risk_level', 'High')
+            ->select('students.course', DB::raw('COUNT(*) as count'))
+            ->whereNotNull('students.course')
+            ->groupBy('students.course')
+            ->orderByDesc('count')
+            ->limit(10)
+            ->get();
+
+        $chartRiskByCourse = [
+            'labels' => $riskByCourseRows->pluck('course')->toArray(),
+            'values' => $riskByCourseRows->pluck('count')->toArray(),
+        ];
+
+        // Top 5 highest-risk students
+        $topAtRiskStudents = DB::table('risk_prediction')
+            ->join('students', 'risk_prediction.student_number', '=', 'students.student_number')
+            ->where('risk_prediction.risk_level', 'High')
+            ->select(
+                'students.student_number',
+                'students.first_name',
+                'students.last_name',
+                'students.course',
+                'students.year_level',
+                'risk_prediction.risk_score',
+                'risk_prediction.risk_level',
+            )
+            ->orderByDesc('risk_prediction.risk_score')
+            ->limit(5)
+            ->get()
+            ->map(fn($s) => [
+                'student_number' => $s->student_number,
+                'student_name'   => "{$s->last_name}, {$s->first_name}",
+                'course'         => $s->course,
+                'year_level'     => $s->year_level,
+                'risk_score'     => $s->risk_score,
+                'risk_level'     => $s->risk_level,
+            ])
+            ->toArray();
+
         return [
             'upcomingEvents' => $upcomingEvents,
             'stats' => $stats,
@@ -373,6 +444,10 @@ class AdminDashboardController extends Controller
             'chartEnrollmentPerSemester' => $chartEnrollmentPerSemester,
             'chartEventsByOrganization' => $chartEventsByOrganization,
             'chartViolationsPerMonth' => $chartViolationsPerMonth,
+            'riskSummary'                  => $riskSummary,
+            'chartRiskLevelDistribution'   => $chartRiskLevelDistribution,
+            'chartRiskByCourse'            => $chartRiskByCourse,
+            'topAtRiskStudents'            => $topAtRiskStudents,
         ];
     }
 

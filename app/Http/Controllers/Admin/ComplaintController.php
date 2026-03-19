@@ -54,7 +54,11 @@ class ComplaintController extends Controller
             $query->where('status', $request->status);
         }
 
-        $complaints = $query->orderBy('created_at', 'desc')
+        $allowedSorts = ['complaint_id', 'created_at', 'category', 'status'];
+        $sortBy  = in_array($request->input('sort_by'), $allowedSorts) ? $request->input('sort_by') : 'created_at';
+        $sortDir = $request->input('sort_dir') === 'asc' ? 'asc' : 'desc';
+
+        $complaints = $query->orderBy($sortBy, $sortDir)
             ->paginate($request->input('perPage', 20))
             ->withQueryString();
 
@@ -90,7 +94,7 @@ class ComplaintController extends Controller
 
         return Inertia::render('Admin/Complaint/Index', [
             'complaints' => $complaints,
-            'filters' => $request->only(['search', 'category', 'status']),
+            'filters' => $request->only(['search', 'category', 'status', 'sort_by', 'sort_dir']),
             'categories' => $categories,
             'statusOptions' => $statusOptions,
         ]);

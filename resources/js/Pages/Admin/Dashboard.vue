@@ -79,7 +79,26 @@ const props = defineProps({
         type: Object,
         default: () => ({ labels: [], values: [] }),
     },
+    riskSummary: {
+        type: Object,
+        default: () => ({ high: 0, moderate: 0, low: 0, not_computed: 0, total: 0 }),
+    },
+    chartRiskLevelDistribution: {
+        type: Object,
+        default: () => ({ labels: [], values: [] }),
+    },
+    chartRiskByCourse: {
+        type: Object,
+        default: () => ({ labels: [], values: [] }),
+    },
+    topAtRiskStudents: {
+        type: Array,
+        default: () => [],
+    },
 });
+
+const hasRiskData = () => (props.riskSummary?.high ?? 0) + (props.riskSummary?.moderate ?? 0) + (props.riskSummary?.low ?? 0) > 0;
+const hasRiskByCourseData = () => props.chartRiskByCourse?.values?.length > 0;
 
 const hasTermSummaryData = () =>
     props.chartTermSummary?.values?.some((v) => v > 0) ?? false;
@@ -324,6 +343,137 @@ const hasEnrollmentPerSemesterData = () =>
                     <div v-else-if="!hasGuidanceByCourseData()" class="py-12 text-center text-gray-400 dark:text-gray-500 dark:text-gray-400 text-sm">No guidance cases for this term.</div>
                     <div v-else class="h-[280px]">
                         <DashboardRadarChart :labels="chartGuidanceByCourse?.labels ?? []" :values="chartGuidanceByCourse?.values ?? []" label="Cases" border-color="#8b5cf6" background-color="rgba(139, 92, 246, 0.2)" :max-height="280" />
+                    </div>
+                </div>
+            </section>
+
+            <!-- ─── PREDICTIVE ANALYTICS ─── -->
+            <section v-if="canAccessDiscipline">
+                <h3 class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4 border-l-2 border-orange-400 pl-3">
+                    Predictive Analytics
+                </h3>
+
+                <div v-if="!hasRiskData()" class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-8 text-center text-sm text-gray-400 dark:text-gray-500">
+                    No risk scores computed yet.
+                    <Link :href="route('admin.discipline.index', { tab: 'risk' })" class="ml-1 text-indigo-600 dark:text-indigo-400 hover:underline">
+                        Go to Risk Assessment to compute scores.
+                    </Link>
+                </div>
+
+                <div v-else class="space-y-5">
+                    <!-- Summary numbers -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl p-4">
+                            <p class="text-xs font-medium text-red-600 dark:text-red-400 opacity-80">High Risk</p>
+                            <p class="text-3xl font-bold text-red-700 dark:text-red-300 mt-1">{{ riskSummary.high }}</p>
+                            <p class="text-xs text-red-500 dark:text-red-400 mt-1">
+                                {{ riskSummary.total > 0 ? Math.round(riskSummary.high / riskSummary.total * 100) : 0 }}% of students
+                            </p>
+                        </div>
+                        <div class="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4">
+                            <p class="text-xs font-medium text-yellow-600 dark:text-yellow-400 opacity-80">Moderate Risk</p>
+                            <p class="text-3xl font-bold text-yellow-700 dark:text-yellow-300 mt-1">{{ riskSummary.moderate }}</p>
+                            <p class="text-xs text-yellow-500 dark:text-yellow-400 mt-1">
+                                {{ riskSummary.total > 0 ? Math.round(riskSummary.moderate / riskSummary.total * 100) : 0 }}% of students
+                            </p>
+                        </div>
+                        <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-xl p-4">
+                            <p class="text-xs font-medium text-green-600 dark:text-green-400 opacity-80">Low Risk</p>
+                            <p class="text-3xl font-bold text-green-700 dark:text-green-300 mt-1">{{ riskSummary.low }}</p>
+                            <p class="text-xs text-green-500 dark:text-green-400 mt-1">
+                                {{ riskSummary.total > 0 ? Math.round(riskSummary.low / riskSummary.total * 100) : 0 }}% of students
+                            </p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl p-4">
+                            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 opacity-80">Not Computed</p>
+                            <p class="text-3xl font-bold text-gray-600 dark:text-gray-300 mt-1">{{ riskSummary.not_computed }}</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">of {{ riskSummary.total }} total students</p>
+                        </div>
+                    </div>
+
+                    <!-- Charts -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                        <!-- Doughnut: distribution -->
+                        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-5">
+                            <h4 class="text-base font-semibold text-gray-800 dark:text-gray-100 mb-4">Risk level distribution</h4>
+                            <div class="h-[260px]">
+                                <DashboardDoughnutChart
+                                    :labels="chartRiskLevelDistribution.labels"
+                                    :values="chartRiskLevelDistribution.values"
+                                    :colors="['#ef4444', '#f59e0b', '#22c55e']"
+                                    :max-height="260"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Bar: high-risk by course -->
+                        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-5">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="text-base font-semibold text-gray-800 dark:text-gray-100">High-risk students by course</h4>
+                                <Link :href="route('admin.discipline.index', { tab: 'risk', risk_level: 'High' })"
+                                    class="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
+                                    View all
+                                </Link>
+                            </div>
+                            <div v-if="!hasRiskByCourseData()" class="py-12 text-center text-gray-400 dark:text-gray-500 text-sm">
+                                No high-risk students recorded.
+                            </div>
+                            <div v-else class="h-[260px]">
+                                <DashboardBarChart
+                                    :labels="chartRiskByCourse.labels"
+                                    :values="chartRiskByCourse.values"
+                                    label="High-risk students"
+                                    :horizontal="true"
+                                    :colors="['#ef4444', '#f97316', '#f59e0b', '#eab308', '#dc2626', '#b91c1c', '#ea580c', '#d97706', '#ca8a04', '#c2410c']"
+                                    :max-height="260"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top at-risk students -->
+                    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                        <div class="flex items-center justify-between px-5 pt-5 pb-3">
+                            <h4 class="text-base font-semibold text-gray-800 dark:text-gray-100">Top at-risk students</h4>
+                            <Link :href="route('admin.discipline.index', { tab: 'risk', risk_level: 'High' })"
+                                class="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
+                                View all
+                            </Link>
+                        </div>
+                        <div v-if="topAtRiskStudents.length === 0" class="px-5 py-8 text-center text-sm text-gray-400 dark:text-gray-500">
+                            No high-risk students yet.
+                        </div>
+                        <div v-else class="divide-y divide-gray-100 dark:divide-gray-700">
+                            <div v-for="student in topAtRiskStudents" :key="student.student_number"
+                                class="px-5 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors">
+                                <div class="flex-1 min-w-0">
+                                    <Link
+                                        :href="route('admin.students.profile', { student: student.student_number })"
+                                        class="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 truncate block"
+                                    >
+                                        {{ student.student_name }}
+                                    </Link>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                        {{ student.course || '—' }}
+                                        <span v-if="student.year_level"> · {{ student.year_level }}</span>
+                                    </p>
+                                </div>
+                                <div class="ml-4 flex items-center gap-3">
+                                    <!-- Score bar -->
+                                    <div class="hidden sm:flex items-center gap-2 w-28">
+                                        <div class="flex-1 h-1.5 rounded-full bg-gray-200 dark:bg-gray-600 overflow-hidden">
+                                            <div class="h-1.5 rounded-full bg-red-500" :style="{ width: Math.min(100, student.risk_score) + '%' }" />
+                                        </div>
+                                        <span class="text-xs font-mono text-gray-600 dark:text-gray-400 w-8 text-right">
+                                            {{ parseFloat(student.risk_score).toFixed(1) }}
+                                        </span>
+                                    </div>
+                                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300">
+                                        High
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>

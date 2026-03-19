@@ -176,6 +176,8 @@ Route::middleware('auth')->group(function () {
                 Route::put('/complaints/{complaint}', [AdminComplaintController::class, 'update'])->name('complaints.update');
 
                 Route::get('/export/pdf', [DisciplineController::class, 'exportPdf'])->name('export.pdf');
+                Route::post('/risk/compute-all', [DisciplineController::class, 'computeRiskAll'])->name('risk.compute-all');
+                Route::post('/risk/compute/{student}', [DisciplineController::class, 'computeRiskOne'])->name('risk.compute-one');
                 Route::get('/', [DisciplineController::class, 'index'])->name('index');
                 Route::post('/', [DisciplineController::class, 'store'])->name('store');
                 Route::post('/{discipline}/meetings', [DisciplineController::class, 'storeMeeting'])->name('meetings.store');

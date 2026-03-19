@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class GuidanceAppointment extends Model
 {
@@ -44,6 +45,15 @@ class GuidanceAppointment extends Model
     public function student()
     {
         return $this->belongsTo(Student::class, 'student_number', 'student_number');
+    }
+
+    /**
+     * Get all enrollments for the student who made this appointment.
+     * Enables term-based filtering: whereHas('enrollments', fn($q) => $q->where('acad_id', $id))
+     */
+    public function enrollments(): HasMany
+    {
+        return $this->hasMany(EnrolledStudent::class, 'student_number', 'student_number');
     }
 
     /**

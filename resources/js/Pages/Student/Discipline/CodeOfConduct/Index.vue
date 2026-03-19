@@ -15,13 +15,13 @@ const props = defineProps({
 
     <StudentLayout>
         <template #header>
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                     Student Code of Conduct
                 </h2>
                 <Link
                     :href="route('student.discipline.index')"
-                    class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-sm"
+                    class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-sm self-start sm:self-auto"
                 >
                     ← Discipline Unit
                 </Link>

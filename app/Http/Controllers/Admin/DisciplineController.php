@@ -15,8 +15,11 @@ use App\Models\DisciplineViolationType;
 use App\Models\DisciplineWorkflowStep;
 use App\Models\EnrolledStudent;
 use App\Models\Notification;
+use App\Models\RiskPrediction;
+use App\Models\Student;
 use App\Models\SystemSetting;
 use App\Services\DisciplineService;
+use App\Services\RiskScoringService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -105,6 +108,81 @@ class DisciplineController extends Controller
 
         $workflowSteps = DisciplineWorkflowStep::getStepsForProgressBar();
 
+        // --- Risk Assessment tab data ---
+        $activeTab = $request->input('tab', 'violations');
+        $riskStudents = null;
+        $riskStats = null;
+        $riskFilters = null;
+
+        if ($activeTab === 'risk') {
+            $riskSearch   = $request->input('risk_search', '');
+            $riskLevel    = $request->input('risk_level', '');
+
+            $riskQuery = Student::query()
+                ->leftJoin('risk_prediction', 'students.student_number', '=', 'risk_prediction.student_number')
+                ->select(
+                    'students.student_number',
+                    'students.first_name',
+                    'students.last_name',
+                    'students.middle_name',
+                    'students.course',
+                    'students.year_level',
+                    'students.status',
+                    'risk_prediction.risk_score',
+                    'risk_prediction.risk_level',
+                    'risk_prediction.factors',
+                    'risk_prediction.prediction_date',
+                    'risk_prediction.updated_at as last_computed_at',
+                );
+
+            if ($riskLevel) {
+                $riskQuery->where('risk_prediction.risk_level', $riskLevel);
+            }
+            if ($riskSearch) {
+                $riskQuery->where(function ($q) use ($riskSearch) {
+                    $q->where('students.first_name', 'like', "%{$riskSearch}%")
+                        ->orWhere('students.last_name', 'like', "%{$riskSearch}%")
+                        ->orWhere('students.student_number', 'like', "%{$riskSearch}%");
+                });
+            }
+
+            $riskQuery->orderByRaw('CASE WHEN risk_prediction.risk_score IS NULL THEN 1 ELSE 0 END')
+                ->orderBy('risk_prediction.risk_score', 'desc');
+
+            $riskStudentsPaginated = $riskQuery
+                ->paginate($request->input('perPage', 20))
+                ->withQueryString();
+
+            $riskStudentsPaginated->getCollection()->transform(function ($s) {
+                $factors = $s->factors
+                    ? (is_array($s->factors) ? $s->factors : json_decode($s->factors, true))
+                    : null;
+                return [
+                    'student_number'   => $s->student_number,
+                    'student_name'     => "{$s->last_name}, {$s->first_name}" . ($s->middle_name ? " {$s->middle_name}" : ''),
+                    'course'           => $s->course,
+                    'year_level'       => $s->year_level,
+                    'risk_score'       => $s->risk_score,
+                    'risk_level'       => $s->risk_level,
+                    'factors'          => $factors,
+                    'prediction_date'  => $s->prediction_date,
+                    'last_computed_at' => $s->last_computed_at,
+                ];
+            });
+
+            $totalStudents = Student::count();
+            $computed      = RiskPrediction::count();
+            $riskStats = [
+                ['title' => 'Total Students',   'value' => $totalStudents,                      'color' => 'blue'],
+                ['title' => 'High Risk',         'value' => RiskPrediction::where('risk_level', 'High')->count(),     'color' => 'red'],
+                ['title' => 'Moderate Risk',     'value' => RiskPrediction::where('risk_level', 'Moderate')->count(), 'color' => 'yellow'],
+                ['title' => 'Low Risk',          'value' => RiskPrediction::where('risk_level', 'Low')->count(),      'color' => 'green'],
+                ['title' => 'Not Yet Computed',  'value' => max(0, $totalStudents - $computed),  'color' => 'gray'],
+            ];
+            $riskStudents  = $riskStudentsPaginated;
+            $riskFilters   = ['risk_search' => $riskSearch, 'risk_level' => $riskLevel];
+        }
+
         return Inertia::render('Admin/Discipline/Index', [
             'violations' => $violations,
             'filters' => $request->only(['search', 'severity', 'status', 'acad_id', 'sort_by', 'sort_dir', 'show_voided']),
@@ -120,7 +198,30 @@ class DisciplineController extends Controller
                 ['title' => 'Resolved Cases', 'value' => $resolvedCases, 'color' => 'green'],
                 ['title' => 'Major Cases', 'value' => $majorCases, 'color' => 'red'],
             ],
+            'activeTab'    => $activeTab,
+            'riskStudents' => $riskStudents,
+            'riskStats'    => $riskStats,
+            'riskFilters'  => $riskFilters,
         ]);
+    }
+
+    /**
+     * Compute risk scores for all students.
+     */
+    public function computeRiskAll(RiskScoringService $service): RedirectResponse
+    {
+        $count = $service->computeAll();
+        return redirect()->route('admin.discipline.index', ['tab' => 'risk'])
+            ->with('success', "Risk scores computed for {$count} students.");
+    }
+
+    /**
+     * Recompute risk score for a single student.
+     */
+    public function computeRiskOne(Student $student, RiskScoringService $service): RedirectResponse
+    {
+        $service->computeAndSave($student);
+        return back()->with('success', "Risk score updated for {$student->full_name}.");
     }
 
     /**

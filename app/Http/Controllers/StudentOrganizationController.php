@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AcademicCalendar;
+use App\Models\EnrolledStudent;
 use App\Models\Event;
 use App\Models\Notification;
 use App\Models\OrgMeeting;
@@ -103,6 +105,31 @@ class StudentOrganizationController extends Controller
             }
         }
 
+        $isPresident = $isOfficer && $officerRole === 'President';
+
+        // For the Add Officer dropdown: currently enrolled students (matching admin behaviour)
+        $activeOfficerNumbers = $organization->officers->pluck('student_number')->toArray();
+
+        $enrolledStudents = collect();
+        if ($isPresident) {
+            $activeCalendar = AcademicCalendar::active()->first();
+            $enrolledStudents = EnrolledStudent::with(['student', 'course'])
+                ->where('enrollment_status', 'enrolled')
+                ->when($activeCalendar, fn($q) => $q->where('acad_id', $activeCalendar->calendar_id))
+                ->whereNotIn('student_number', $activeOfficerNumbers)
+                ->get()
+                ->unique('student_number')
+                ->map(fn($e) => [
+                    'student_number'  => $e->student_number,
+                    'student_name'    => $e->student?->full_name ?? $e->student_number,
+                    'student_display' => ($e->student?->full_name ?? $e->student_number) . ' ' . $e->student_number,
+                    'course_code'     => $e->course?->course_code ?? '',
+                    'year_level'      => $e->year_level,
+                ])
+                ->sortBy('student_name')
+                ->values();
+        }
+
         return Inertia::render('Student/Organizations/Show', [
             'organization' => [
                 'org_id' => $organization->org_id,
@@ -180,6 +207,8 @@ class StudentOrganizationController extends Controller
             ],
             'isOfficer' => $isOfficer,
             'officerRole' => $officerRole,
+            'isPresident' => $isPresident,
+            'enrolledStudents' => $enrolledStudents,
         ]);
     }
 
@@ -377,6 +406,73 @@ class StudentOrganizationController extends Controller
     }
 
     /**
+     * Add an officer to the organization (president only).
+     */
+    public function storeOfficer(Request $request, StudentOrganization $organization): RedirectResponse
+    {
+        $user = Auth::user();
+        if (!$this->isPresident($user->student_number, $organization->org_id)) {
+            abort(403, 'Only the organization president can add officers.');
+        }
+
+        $validated = $request->validate([
+            'student_number' => 'required|exists:students,student_number',
+            'position'       => 'required|string|max:100',
+            'start_date'     => 'required|date',
+            'end_date'       => 'nullable|date|after:start_date',
+        ]);
+
+        $alreadyOfficer = OrgOfficer::where('org_id', $organization->org_id)
+            ->where('student_number', $validated['student_number'])
+            ->where('status', 'active')
+            ->exists();
+
+        if ($alreadyOfficer) {
+            return redirect()->back()->withErrors([
+                'student_number' => 'This student is already an active officer of this organization.',
+            ]);
+        }
+
+        OrgOfficer::create([
+            'org_id'         => $organization->org_id,
+            'student_number' => $validated['student_number'],
+            'position'       => $validated['position'],
+            'start_date'     => $validated['start_date'],
+            'end_date'       => $validated['end_date'] ?? null,
+            'status'         => 'active',
+        ]);
+
+        return redirect()->route('student.organizations.show', $organization)
+            ->with('success', 'Officer added successfully.');
+    }
+
+    /**
+     * Remove an officer from the organization (president only).
+     */
+    public function destroyOfficer(StudentOrganization $organization, OrgOfficer $officer): RedirectResponse
+    {
+        $user = Auth::user();
+        if (!$this->isPresident($user->student_number, $organization->org_id)) {
+            abort(403, 'Only the organization president can remove officers.');
+        }
+
+        if ($officer->org_id !== $organization->org_id) {
+            abort(404);
+        }
+
+        if ($officer->student_number === $user->student_number) {
+            return redirect()->back()->withErrors([
+                'officer' => 'You cannot remove yourself as president.',
+            ]);
+        }
+
+        $officer->update(['status' => 'inactive']);
+
+        return redirect()->route('student.organizations.show', $organization)
+            ->with('success', 'Officer removed successfully.');
+    }
+
+    /**
      * Check if a student is an officer of an organization.
      */
     private function isOfficer(?string $studentNumber, int $orgId): bool
@@ -387,6 +483,22 @@ class StudentOrganizationController extends Controller
 
         return OrgOfficer::where('org_id', $orgId)
             ->where('student_number', $studentNumber)
+            ->where('status', 'active')
+            ->exists();
+    }
+
+    /**
+     * Check if a student is the president of an organization.
+     */
+    private function isPresident(?string $studentNumber, int $orgId): bool
+    {
+        if (!$studentNumber) {
+            return false;
+        }
+
+        return OrgOfficer::where('org_id', $orgId)
+            ->where('student_number', $studentNumber)
+            ->where('position', 'President')
             ->where('status', 'active')
             ->exists();
     }

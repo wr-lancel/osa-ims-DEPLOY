@@ -14,7 +14,7 @@ class UpdateSportsBorrowingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'student_id' => ['nullable', 'exists:students,student_id'],
+            'student_number' => ['nullable', 'exists:students,student_number'],
             'employee_id' => ['nullable', 'exists:employees,employee_id'],
             'item_name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],

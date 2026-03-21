@@ -1,7 +1,7 @@
 <script setup>
 import StudentLayout from '@/Layouts/StudentLayout.vue';
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
@@ -9,6 +9,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import InputError from '@/Components/InputError.vue';
 import Modal from '@/Components/Modal.vue';
 import HybridTextFileInput from '@/Components/HybridTextFileInput.vue';
+import SearchableSelect from '@/Components/SearchableSelect.vue';
 import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 
 const props = defineProps({
@@ -23,6 +24,14 @@ const props = defineProps({
     officerRole: {
         type: String,
         default: null,
+    },
+    isPresident: {
+        type: Boolean,
+        default: false,
+    },
+    enrolledStudents: {
+        type: Array,
+        default: () => [],
     },
 });
 
@@ -271,6 +280,50 @@ const getAudienceLabel = (audience) => {
         default: return audience;
     }
 };
+
+// Add Officer Modal (president only)
+const showAddOfficerModal = ref(false);
+const officerForm = useForm({
+    student_number: '',
+    position: '',
+    start_date: new Date().toISOString().split('T')[0],
+    end_date: '',
+});
+
+const eligibleMembers = computed(() => props.enrolledStudents);
+
+const openAddOfficerModal = () => {
+    officerForm.reset();
+    officerForm.start_date = new Date().toISOString().split('T')[0];
+    showAddOfficerModal.value = true;
+};
+
+const closeAddOfficerModal = () => {
+    showAddOfficerModal.value = false;
+    officerForm.reset();
+};
+
+const submitAddOfficer = () => {
+    officerForm.post(route('student.organizations.officers.store', props.organization.org_id), {
+        preserveScroll: true,
+        onSuccess: () => closeAddOfficerModal(),
+    });
+};
+
+// Remove Officer
+const removingOfficerId = ref(null);
+
+const removeOfficer = (officerId) => {
+    if (!confirm('Remove this officer from the organization?')) return;
+    removingOfficerId.value = officerId;
+    router.delete(route('student.organizations.officers.destroy', {
+        organization: props.organization.org_id,
+        officer: officerId,
+    }), {
+        preserveScroll: true,
+        onFinish: () => { removingOfficerId.value = null; },
+    });
+};
 </script>
 
 <template>
@@ -316,6 +369,9 @@ const getAudienceLabel = (audience) => {
                     <div class="flex flex-wrap gap-2">
                         <SecondaryButton @click="openEditModal">
                             Edit Details
+                        </SecondaryButton>
+                        <SecondaryButton v-if="isPresident" @click="openAddOfficerModal">
+                            Manage Officers
                         </SecondaryButton>
                         <SecondaryButton @click="openMeetingModal">
                             📢 Call Meeting
@@ -483,15 +539,20 @@ const getAudienceLabel = (audience) => {
 
             <!-- Officers Section -->
             <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6 transition-colors">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 transition-colors">Officers</h3>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 transition-colors">Officers</h3>
+                    <SecondaryButton v-if="isPresident" @click="openAddOfficerModal">
+                        + Add Officer
+                    </SecondaryButton>
+                </div>
                 <div v-if="organization.officers && organization.officers.length > 0" class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 transition-colors">
                         <thead class="bg-gray-50 dark:bg-gray-700/50 transition-colors">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase transition-colors">Name</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase transition-colors">Position
-                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase transition-colors">Position</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase transition-colors">Since</th>
+                                <th v-if="isPresident" class="px-6 py-3"></th>
                             </tr>
                         </thead>
                         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 transition-colors">
@@ -502,13 +563,22 @@ const getAudienceLabel = (audience) => {
                                     <div class="text-xs text-gray-500 dark:text-gray-400 transition-colors">{{ officer.student_number }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span
-                                        class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-300 transition-colors">
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-300 transition-colors">
                                         {{ officer.position }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 transition-colors">
                                     {{ officer.start_date }}
+                                </td>
+                                <td v-if="isPresident" class="px-6 py-4 whitespace-nowrap text-right">
+                                    <button
+                                        v-if="officer.position !== 'President'"
+                                        @click="removeOfficer(officer.officer_id)"
+                                        :disabled="removingOfficerId === officer.officer_id"
+                                        class="text-xs text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium disabled:opacity-50 transition-colors"
+                                    >
+                                        Remove
+                                    </button>
                                 </td>
                             </tr>
                         </tbody>
@@ -972,6 +1042,84 @@ const getAudienceLabel = (audience) => {
             </div>
         </Modal>
 
-        <LoadingOverlay :show="editProcessing || eventForm.processing || meetingForm.processing" message="Processing... Please wait." />
+        <!-- Add Officer Modal -->
+        <Modal :show="showAddOfficerModal" @close="closeAddOfficerModal">
+            <div class="p-6">
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-5 transition-colors">Add Officer</h2>
+
+                <form @submit.prevent="submitAddOfficer" class="space-y-4">
+                    <div>
+                        <InputLabel value="Student" />
+                        <SearchableSelect
+                            v-model="officerForm.student_number"
+                            :options="eligibleMembers"
+                            label-key="student_display"
+                            value-key="student_number"
+                            placeholder="Search by name or student number..."
+                            :error="officerForm.errors.student_number"
+                            class="mt-1"
+                        >
+                            <template #option="{ option }">
+                                <span class="font-medium">{{ option.student_name }}</span>
+                                <span class="ml-2 text-xs text-gray-400 dark:text-gray-500">{{ option.student_number }}</span>
+                                <span v-if="option.course_code" class="ml-1 text-xs text-gray-400 dark:text-gray-500">· {{ option.course_code }} {{ option.year_level ? option.year_level + 'Y' : '' }}</span>
+                            </template>
+                        </SearchableSelect>
+                        <p v-if="eligibleMembers.length === 0" class="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                            No enrolled students available to add as officers.
+                        </p>
+                    </div>
+
+                    <div>
+                        <InputLabel for="officer_position" value="Position / Role" />
+                        <TextInput
+                            id="officer_position"
+                            v-model="officerForm.position"
+                            type="text"
+                            class="mt-1 block w-full"
+                            :class="{ 'border-red-300': officerForm.errors.position }"
+                            placeholder="e.g. Vice President, Secretary, Treasurer"
+                            required
+                        />
+                        <InputError :message="officerForm.errors.position" />
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <InputLabel for="officer_start_date" value="Start Date" />
+                            <TextInput
+                                id="officer_start_date"
+                                v-model="officerForm.start_date"
+                                type="date"
+                                class="mt-1 block w-full"
+                                :class="{ 'border-red-300': officerForm.errors.start_date }"
+                                required
+                            />
+                            <InputError :message="officerForm.errors.start_date" />
+                        </div>
+                        <div>
+                            <InputLabel for="officer_end_date" value="End Date (optional)" />
+                            <TextInput
+                                id="officer_end_date"
+                                v-model="officerForm.end_date"
+                                type="date"
+                                class="mt-1 block w-full"
+                                :class="{ 'border-red-300': officerForm.errors.end_date }"
+                            />
+                            <InputError :message="officerForm.errors.end_date" />
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-3 pt-2">
+                        <SecondaryButton type="button" @click="closeAddOfficerModal">Cancel</SecondaryButton>
+                        <PrimaryButton type="submit" :disabled="officerForm.processing || eligibleMembers.length === 0">
+                            {{ officerForm.processing ? 'Adding...' : 'Add Officer' }}
+                        </PrimaryButton>
+                    </div>
+                </form>
+            </div>
+        </Modal>
+
+        <LoadingOverlay :show="editProcessing || eventForm.processing || meetingForm.processing || officerForm.processing" message="Processing... Please wait." />
     </StudentLayout>
 </template>

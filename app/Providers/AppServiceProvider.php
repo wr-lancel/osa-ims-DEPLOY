@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Discipline;
 use App\Models\Notification as AppNotification;
+use App\Observers\DisciplineObserver;
 use App\Observers\NotificationObserver;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
@@ -30,5 +32,6 @@ class AppServiceProvider extends ServiceProvider
         Vite::prefetch(concurrency: 3);
 
         AppNotification::observe(NotificationObserver::class);
+        Discipline::observe(DisciplineObserver::class);
     }
 }

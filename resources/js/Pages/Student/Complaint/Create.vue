@@ -14,6 +14,10 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    employees: {
+        type: Array,
+        default: () => [],
+    },
 });
 
 const form = useForm({
@@ -22,7 +26,10 @@ const form = useForm({
     description: '',
     incident_date: new Date().toISOString().split('T')[0],
     location: '',
+    respondent_type: '',
     respondent_student_number: '',
+    respondent_employee_id: '',
+    respondent_name: '',
     anonymous: false,
 });
 
@@ -130,15 +137,57 @@ const submit = () => {
                     </div>
 
                     <div>
-                        <InputLabel for="respondent_student_number" value="Respondent Student Number (optional)" />
+                        <InputLabel for="respondent_type" value="Respondent (optional)" />
+                        <select
+                            id="respondent_type"
+                            v-model="form.respondent_type"
+                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
+                        >
+                            <option value="">— No respondent specified —</option>
+                            <option value="student">Student (in the system)</option>
+                            <option value="employee">Employee / Staff</option>
+                            <option value="other">Other (free text)</option>
+                        </select>
+                        <InputError :message="form.errors.respondent_type" class="mt-1" />
+                    </div>
+
+                    <div v-if="form.respondent_type === 'student'">
+                        <InputLabel for="respondent_student_number" value="Respondent Student Number *" />
                         <TextInput
                             id="respondent_student_number"
                             v-model="form.respondent_student_number"
                             type="text"
                             class="mt-1 block w-full"
-                            placeholder="Leave blank if unknown"
+                            placeholder="e.g. 2021-00001"
                         />
                         <InputError :message="form.errors.respondent_student_number" class="mt-1" />
+                    </div>
+
+                    <div v-if="form.respondent_type === 'employee'">
+                        <InputLabel for="respondent_employee_id" value="Respondent Employee *" />
+                        <select
+                            id="respondent_employee_id"
+                            v-model="form.respondent_employee_id"
+                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
+                        >
+                            <option value="">Select employee</option>
+                            <option v-for="emp in employees" :key="emp.value" :value="emp.value">
+                                {{ emp.label }}
+                            </option>
+                        </select>
+                        <InputError :message="form.errors.respondent_employee_id" class="mt-1" />
+                    </div>
+
+                    <div v-if="form.respondent_type === 'other'">
+                        <InputLabel for="respondent_name" value="Respondent Name *" />
+                        <TextInput
+                            id="respondent_name"
+                            v-model="form.respondent_name"
+                            type="text"
+                            class="mt-1 block w-full"
+                            placeholder="Full name of the person"
+                        />
+                        <InputError :message="form.errors.respondent_name" class="mt-1" />
                     </div>
 
                     <div class="flex items-center">

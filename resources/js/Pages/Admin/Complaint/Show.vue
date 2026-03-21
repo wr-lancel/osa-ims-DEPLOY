@@ -98,8 +98,16 @@ const formatStatus = (s) => s ? s.replace(/_/g, ' ') : '';
                         <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ complaint.location }}</dd>
                     </div>
                     <div class="md:col-span-2" v-if="complaint.respondent">
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Respondent</dt>
-                        <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ complaint.respondent.full_name }} ({{ complaint.respondent.student_number }})</dd>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Respondent</dt>
+                        <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                            {{ complaint.respondent.display_name }}
+                            <span v-if="complaint.respondent.student_number" class="text-gray-500 dark:text-gray-400">
+                                ({{ complaint.respondent.student_number }})
+                            </span>
+                            <span class="ml-1 inline-block text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded px-1.5 py-0.5 capitalize">
+                                {{ complaint.respondent.type }}
+                            </span>
+                        </dd>
                     </div>
                     <div class="md:col-span-4">
                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Description</dt>

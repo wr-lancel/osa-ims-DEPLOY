@@ -138,20 +138,21 @@ class StudentOrganization extends Model
     }
 
     /**
-     * Get adviser name - uses the adviser_name field first, falls back to employee relationship.
+     * Get adviser name - checks the employee relationship first, falls back to adviser_name string.
      */
     public function getAdviserDisplayNameAttribute(): ?string
     {
-        // First check the direct adviser_name field
-        if (!empty($this->attributes['adviser_name'])) {
-            return $this->attributes['adviser_name'];
-        }
-
-        // Fall back to employee-based adviser
+        // Prefer the linked employee record if one exists
         $adviser = $this->currentAdviser;
         if ($adviser && $adviser->employee) {
             return $adviser->employee->full_name;
         }
+
+        // Fall back to the free-text adviser_name field
+        if (!empty($this->attributes['adviser_name'])) {
+            return $this->attributes['adviser_name'];
+        }
+
         return null;
     }
 

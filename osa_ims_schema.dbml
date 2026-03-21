@@ -1,0 +1,647 @@
+// OSA IMS — Database Schema (DBML)
+// Generated 2026-03-21
+// Paste this into https://dbdiagram.io to render the ERD
+
+// ─────────────────────────────────────────────
+// AUTH
+// ─────────────────────────────────────────────
+
+Table roles {
+  role_id       bigint [pk, increment]
+  role_name     varchar [not null, unique]
+  created_at    timestamp
+  updated_at    timestamp
+}
+
+Table users {
+  user_id               bigint [pk, increment]
+  email                 varchar [not null, unique]
+  password              varchar [not null]
+  status                varchar [null]
+  must_change_password  boolean [default: false]
+  student_number        varchar [null, ref: > students.student_number]
+  employee_id           bigint  [null, ref: > employees.employee_id]
+  remember_token        varchar [null]
+  created_at            timestamp
+  updated_at            timestamp
+
+  Note: 'Exactly one of student_number or employee_id must be set (CHECK constraint)'
+}
+
+Table user_roles {
+  user_id     bigint [ref: > users.user_id]
+  role_id     bigint [ref: > roles.role_id]
+  created_at  timestamp
+  updated_at  timestamp
+
+  indexes {
+    (user_id, role_id) [pk]
+  }
+}
+
+// ─────────────────────────────────────────────
+// CORE ENTITIES
+// ─────────────────────────────────────────────
+
+Table employees {
+  employee_id     bigint  [pk, increment]
+  employee_number varchar [not null, unique]
+  first_name      varchar [not null]
+  last_name       varchar [not null]
+  email           varchar [null]
+  phone           varchar [null]
+  department      varchar [null]
+  position        varchar [null]
+  created_at      timestamp
+  updated_at      timestamp
+}
+
+Table students {
+  student_number    varchar [pk, note: 'Natural PK — replaces auto-increment student_id']
+  first_name        varchar [not null]
+  last_name         varchar [not null]
+  middle_name       varchar [null]
+  email             varchar [null]
+  phone             varchar [null]
+  birth_date        date    [null]
+  address           varchar [null]
+  course            varchar [null]
+  year_level        varchar [null]
+  status            varchar [default: 'active']
+  profile_completed boolean [default: false]
+  created_at        timestamp
+  updated_at        timestamp
+}
+
+Table courses {
+  course_id    bigint  [pk, increment]
+  course_code  varchar [not null, unique]
+  course_name  varchar [not null]
+  description  text    [null]
+  units        int     [default: 0]
+  created_at   timestamp
+  updated_at   timestamp
+}
+
+Table academic_calendar {
+  calendar_id   bigint  [pk, increment]
+  academic_year varchar [not null]
+  semester      varchar [null]
+  start_date    date    [not null]
+  end_date      date    [not null]
+  status        varchar [default: 'upcoming', note: 'active | upcoming | completed']
+  created_at    timestamp
+  updated_at    timestamp
+}
+
+Table sections {
+  section_id    bigint [pk, increment]
+  course_id     bigint [not null, ref: > courses.course_id]
+  calendar_id   bigint [null, ref: > academic_calendar.calendar_id]
+  section_code  varchar [not null]
+  section_name  varchar [null]
+  schedule      varchar [null]
+  room          varchar [null]
+  instructor_id bigint  [null, note: 'No FK constraint — references employees conceptually']
+  max_students  int     [null]
+  year_level    varchar [null]
+  created_at    timestamp
+  updated_at    timestamp
+}
+
+Table enrolled_students {
+  enrollment_id     bigint  [pk, increment]
+  student_number    varchar [not null, ref: > students.student_number]
+  section_id        bigint  [null, ref: > sections.section_id]
+  acad_id           bigint  [null, ref: > academic_calendar.calendar_id]
+  course_id         bigint  [null, ref: > courses.course_id]
+  academic_year     varchar [null, note: 'Legacy — prefer acad_id']
+  semester          varchar [null, note: 'Legacy — prefer acad_id']
+  grade             varchar [null]
+  enrollment_status varchar [default: 'enrolled']
+  enrollment_date   date    [not null]
+  year_level        varchar [null]
+  created_at        timestamp
+  updated_at        timestamp
+}
+
+// ─────────────────────────────────────────────
+// STUDENT PROFILE DETAILS (1-to-1 with students)
+// ─────────────────────────────────────────────
+
+Table student_profiles {
+  profile_id         bigint  [pk, increment]
+  student_number     varchar [not null, unique, ref: - students.student_number]
+  birth_place        varchar [null]
+  gender             varchar [null, note: 'male | female | other']
+  citizenship        varchar [null]
+  civil_status       varchar [default: 'single', note: 'single | married | widowed']
+  spouse_name        varchar [null]
+  is_single_parent   boolean [default: false]
+  has_disability     boolean [default: false]
+  disability_details varchar [null]
+  is_employed        boolean [default: false]
+  company_name       varchar [null]
+  profile_status     varchar [default: 'pending', note: 'pending | approved | rejected']
+  submitted_at       timestamp [null]
+  reviewed_at        timestamp [null]
+  reviewed_by        bigint    [null, ref: > users.user_id]
+  created_at         timestamp
+  updated_at         timestamp
+}
+
+Table student_educational_backgrounds {
+  id                    bigint  [pk, increment]
+  student_number        varchar [not null, unique, ref: - students.student_number]
+  elementary_school     varchar [null]
+  elementary_address    varchar [null]
+  elementary_graduated  date    [null]
+  senior_high_school    varchar [null]
+  senior_high_strand    varchar [null]
+  senior_high_address   varchar [null]
+  senior_high_graduated date    [null]
+  honors_received       text    [null]
+  created_at            timestamp
+  updated_at            timestamp
+}
+
+Table student_family_info {
+  id                      bigint  [pk, increment]
+  student_number          varchar [not null, unique, ref: - students.student_number]
+  father_last_name        varchar [null]
+  father_first_name       varchar [null]
+  father_middle_initial   varchar [null]
+  father_occupation       varchar [null]
+  mother_maiden_last_name varchar [null]
+  mother_first_name       varchar [null]
+  mother_middle_initial   varchar [null]
+  mother_occupation       varchar [null]
+  created_at              timestamp
+  updated_at              timestamp
+}
+
+Table student_emergency_contacts {
+  id              bigint  [pk, increment]
+  student_number  varchar [not null, unique, ref: - students.student_number]
+  contact_name    varchar [null]
+  relationship    varchar [null]
+  contact_number  varchar [null]
+  contact_address varchar [null]
+  created_at      timestamp
+  updated_at      timestamp
+}
+
+// ─────────────────────────────────────────────
+// ORGANIZATIONS
+// ─────────────────────────────────────────────
+
+Table student_org {
+  org_id              bigint  [pk, increment]
+  org_name            varchar [not null]
+  org_code            varchar [not null, unique]
+  description         text    [null]
+  type                varchar [null]
+  status              varchar [default: 'active']
+  adviser_name        varchar [null, note: 'Legacy fallback — prefer org_advisers']
+  candidacy_open      boolean [default: false]
+  logo_path           varchar [null]
+  is_mvg              boolean [default: false]
+  is_publication_org  boolean [default: false]
+  created_at          timestamp
+  updated_at          timestamp
+}
+
+Table org_advisers {
+  adviser_id  bigint [pk, increment]
+  org_id      bigint [not null, ref: > student_org.org_id]
+  employee_id bigint [not null, ref: > employees.employee_id]
+  start_date  date   [not null]
+  end_date    date   [null]
+  status      varchar [default: 'active']
+  created_at  timestamp
+  updated_at  timestamp
+}
+
+Table org_members {
+  member_id      bigint  [pk, increment]
+  org_id         bigint  [not null, ref: > student_org.org_id]
+  student_number varchar [not null, ref: > students.student_number]
+  join_date      date    [not null]
+  status         varchar [default: 'active']
+  created_at     timestamp
+  updated_at     timestamp
+}
+
+Table org_officers {
+  officer_id     bigint  [pk, increment]
+  org_id         bigint  [not null, ref: > student_org.org_id]
+  student_number varchar [not null, ref: > students.student_number]
+  position       varchar [not null]
+  start_date     date    [not null]
+  end_date       date    [null]
+  status         varchar [default: 'active']
+  created_at     timestamp
+  updated_at     timestamp
+}
+
+Table org_positions {
+  position_id   bigint  [pk, increment]
+  org_id        bigint  [not null, ref: > student_org.org_id]
+  position_name varchar [not null]
+  description   text    [null]
+  is_active     boolean [default: true]
+  created_at    timestamp
+  updated_at    timestamp
+
+  indexes {
+    (org_id, position_name) [unique]
+  }
+}
+
+Table org_meetings {
+  meeting_id      bigint  [pk, increment]
+  org_id          bigint  [not null, ref: > student_org.org_id]
+  title           varchar [not null]
+  description     text    [null]
+  meeting_date    date    [not null]
+  start_time      time    [not null]
+  end_time        time    [null]
+  venue           varchar [null]
+  target_audience varchar [default: 'all', note: 'officers | members | all']
+  called_by       bigint  [not null, ref: > users.user_id]
+  status          varchar [default: 'scheduled']
+  created_at      timestamp
+  updated_at      timestamp
+}
+
+Table events {
+  event_id    bigint  [pk, increment]
+  org_id      bigint  [null, ref: > student_org.org_id]
+  event_name  varchar [not null]
+  description text    [null]
+  event_date  date    [not null]
+  start_time  time    [null]
+  end_time    time    [null]
+  venue       varchar [null]
+  status      varchar [default: 'pending']
+  created_by  bigint  [null, note: 'No FK constraint — references users conceptually']
+  created_at  timestamp
+  updated_at  timestamp
+}
+
+Table candidacy_applications {
+  application_id     bigint  [pk, increment]
+  org_id             bigint  [not null, ref: > student_org.org_id]
+  enrollment_id      bigint  [not null, ref: > enrolled_students.enrollment_id]
+  position_id        bigint  [not null, ref: > org_positions.position_id]
+  acad_id            bigint  [not null, ref: > academic_calendar.calendar_id]
+  party_affiliation  varchar [null]
+  unit_load          tinyint [null]
+  platform_statement text    [null]
+  motivation         text    [null]
+  status             varchar [default: 'submitted', note: 'submitted | under_review | approved | rejected | withdrawn']
+  submitted_at       timestamp [null]
+  reviewed_at        timestamp [null]
+  review_remarks     text    [null]
+  created_at         timestamp
+  updated_at         timestamp
+
+  indexes {
+    (org_id, enrollment_id, position_id, acad_id) [unique]
+  }
+}
+
+Table candidacy_application_attachments {
+  attachment_id  bigint  [pk, increment]
+  application_id bigint  [not null, ref: > candidacy_applications.application_id]
+  file_name      varchar [not null]
+  file_path      varchar [not null]
+  mime_type      varchar [null]
+  uploaded_at    timestamp [null]
+  created_at     timestamp
+  updated_at     timestamp
+}
+
+// ─────────────────────────────────────────────
+// DISCIPLINE
+// ─────────────────────────────────────────────
+
+Table discipline {
+  discipline_id  bigint  [pk, increment]
+  student_number varchar [not null, ref: > students.student_number]
+  enrollment_id  bigint  [null, ref: > enrolled_students.enrollment_id]
+  violation_date date    [not null]
+  violation_type varchar [not null, ref: > discipline_violation_types.name, note: 'Stores name string — FK to be enforced in future migration']
+  description    text    [not null]
+  severity       varchar [null, note: 'Minor | Moderate | Major']
+  status         varchar [default: 'Violation Reported', ref: > discipline_workflow_steps.name, note: 'Stores step name string — FK to be enforced in future migration']
+  reported_by    bigint  [null, ref: > employees.employee_id]
+  sanction       text    [null]
+  date_resolved  date    [null]
+  remarks        text    [null]
+  narrative      text    [null]
+  voided_at      timestamp [null]
+  voided_by      bigint    [null, ref: > users.user_id]
+  void_reason    text      [null]
+  created_at     timestamp
+  updated_at     timestamp
+}
+
+Table discipline_history {
+  history_id          bigint  [pk, increment]
+  case_id             bigint  [not null, ref: > discipline.discipline_id]
+  changed_by_user_id  bigint  [null, ref: > users.user_id]
+  old_status          varchar [null]
+  new_status          varchar [null]
+  note                text    [null]
+  created_at          timestamp
+}
+
+Table discipline_meetings {
+  meeting_id          bigint  [pk, increment]
+  case_id             bigint  [not null, ref: > discipline.discipline_id]
+  meeting_date        date    [not null]
+  meeting_time        time    [null]
+  location            varchar [default: 'Discipline Office']
+  purpose_notes       text    [null]
+  status              varchar [default: 'scheduled', note: 'scheduled | rescheduled | completed | cancelled']
+  created_by_user_id  bigint  [null, ref: > users.user_id]
+  created_at          timestamp
+  updated_at          timestamp
+}
+
+Table discipline_workflow_steps {
+  id          bigint  [pk, increment]
+  name        varchar [not null, unique]
+  description varchar [null]
+  sort_order  int     [default: 0]
+  is_terminal boolean [default: false]
+  created_at  timestamp
+  updated_at  timestamp
+}
+
+Table discipline_violation_types {
+  id               bigint  [pk, increment]
+  name             varchar [not null]
+  severity         varchar [not null, note: 'Minor | Moderate | Major']
+  description      text    [null]
+  default_sanction text    [null]
+  sort_order       int     [default: 0]
+  created_at       timestamp
+  updated_at       timestamp
+
+  indexes {
+    (name, severity) [unique]
+  }
+}
+
+Table violation_summary {
+  summary_id       bigint  [pk, increment]
+  student_number   varchar [not null, ref: > students.student_number]
+  academic_year    varchar [not null]
+  total_violations int     [default: 0]
+  minor_violations int     [default: 0]
+  major_violations int     [default: 0]
+  status           varchar [null, note: 'minor | flagged | at_risk']
+  created_at       timestamp
+  updated_at       timestamp
+}
+
+Table risk_prediction {
+  prediction_id   bigint  [pk, increment]
+  student_number  varchar [not null, ref: > students.student_number]
+  risk_score      decimal [null, note: '0.00 – 100.00']
+  risk_level      varchar [null, note: 'low | medium | high']
+  factors         text    [null, note: 'JSON blob of factor scores']
+  prediction_date date    [not null]
+  created_at      timestamp
+  updated_at      timestamp
+}
+
+// ─────────────────────────────────────────────
+// COMPLAINTS
+// ─────────────────────────────────────────────
+
+Table complaints {
+  complaint_id          bigint  [pk, increment]
+  complainant_enrolled_id bigint [not null, ref: > enrolled_students.enrollment_id]
+  respondent_type         varchar [null, note: 'student | employee | other']
+  respondent_enrolled_id  bigint  [null, ref: > enrolled_students.enrollment_id]
+  respondent_employee_id  bigint  [null, ref: > employees.employee_id]
+  respondent_name         varchar [null, note: 'Free text when respondent_type = other']
+  category       varchar [not null]
+  subject        varchar [not null]
+  description    text    [not null]
+  incident_date  date    [not null]
+  location       varchar [null]
+  status         varchar [default: 'submitted', note: 'submitted | under_review | escalated | dismissed | resolved']
+  anonymous      boolean [default: false]
+  created_at     timestamp
+  updated_at     timestamp
+}
+
+Table complaint_history {
+  history_id          bigint  [pk, increment]
+  complaint_id        bigint  [not null, ref: > complaints.complaint_id]
+  changed_by_user_id  bigint  [null, ref: > users.user_id]
+  old_status          varchar [null]
+  new_status          varchar [not null]
+  remarks             text    [null]
+  created_at          timestamp
+}
+
+// ─────────────────────────────────────────────
+// GUIDANCE
+// ─────────────────────────────────────────────
+
+Table guidance_cases {
+  guidance_case_id  bigint  [pk, increment]
+  enrollment_id     bigint  [not null, ref: > enrolled_students.enrollment_id]
+  case_no           varchar [not null, unique]
+  case_type         varchar [not null, note: 'counseling | consultation | referral']
+  concern           text    [null]
+  status            varchar [default: 'pending', note: 'pending | ongoing | resolved | closed']
+  assigned_staff_id bigint  [null, ref: > employees.employee_id]
+  requested_at      datetime [null]
+  created_at        timestamp
+  updated_at        timestamp
+}
+
+Table guidance_case_actions {
+  action_id         bigint  [pk, increment]
+  guidance_case_id  bigint  [not null, ref: > guidance_cases.guidance_case_id]
+  action_by_user_id bigint  [not null, ref: > users.user_id]
+  note              text    [null]
+  action_status     varchar [null, note: 'pending | ongoing | resolved | closed']
+  action_at         datetime [null]
+  created_at        timestamp
+}
+
+Table guidance_appointments {
+  appointment_id    bigint  [pk, increment]
+  student_number    varchar [null, ref: > students.student_number]
+  employee_id       bigint  [null, ref: > employees.employee_id]
+  appointment_date  date    [not null]
+  appointment_time  time    [not null]
+  concern           text    [not null]
+  appointment_type  varchar [default: 'consultation', note: 'counseling | consultation | referral | other']
+  status            varchar [default: 'pending', note: 'pending | approved | rejected | completed | cancelled']
+  notes             text    [null]
+  admin_remarks     text    [null]
+  narrative         text    [null]
+  approved_by       bigint  [null, ref: > users.user_id]
+  approved_at       timestamp [null]
+  rejected_by       bigint  [null, ref: > users.user_id]
+  rejected_at       timestamp [null]
+  created_at        timestamp
+  updated_at        timestamp
+}
+
+// ─────────────────────────────────────────────
+// SPORTS
+// ─────────────────────────────────────────────
+
+Table sports {
+  sport_id    bigint  [pk, increment]
+  name        varchar [not null, unique]
+  description text    [null]
+  status      varchar [default: 'active', note: 'active | inactive']
+  created_at  timestamp
+  updated_at  timestamp
+}
+
+Table sport_athletes {
+  id             bigint  [pk, increment]
+  sport_id       bigint  [not null, ref: > sports.sport_id]
+  student_number varchar [not null, ref: > students.student_number]
+  created_at     timestamp
+  updated_at     timestamp
+
+  indexes {
+    (sport_id, student_number) [unique]
+  }
+}
+
+Table sports_borrowing {
+  borrowing_id         bigint  [pk, increment]
+  student_number       varchar [null, ref: > students.student_number]
+  employee_id          bigint  [null, ref: > employees.employee_id]
+  item_name            varchar [not null]
+  description          text    [null]
+  borrow_date          date    [not null]
+  return_date          date    [null]
+  expected_return_date date    [not null]
+  status               varchar [default: 'pending', note: 'pending | approved | rejected | borrowed | returned']
+  notes                text    [null]
+  admin_remarks        text    [null]
+  approved_by          bigint  [null, ref: > users.user_id]
+  approved_at          timestamp [null]
+  rejected_by          bigint  [null, ref: > users.user_id]
+  rejected_at          timestamp [null]
+  created_at           timestamp
+  updated_at           timestamp
+}
+
+// ─────────────────────────────────────────────
+// PUBLICATIONS
+// ─────────────────────────────────────────────
+
+Table publication_articles {
+  article_id        bigint  [pk, increment]
+  title             varchar [not null]
+  slug              varchar [not null, unique]
+  body              text    [not null]
+  excerpt           text    [null]
+  cover_image       varchar [null]
+  status            varchar [default: 'draft', note: 'draft | pending_review | published | rejected']
+  rejection_reason  text    [null]
+  author_id         bigint  [not null, ref: > users.user_id]
+  reviewed_by       bigint  [null, ref: > users.user_id]
+  published_at      timestamp [null]
+  reviewed_at       timestamp [null]
+  created_at        timestamp
+  updated_at        timestamp
+}
+
+Table publication_newspapers {
+  newspaper_id      bigint  [pk, increment]
+  title             varchar [not null]
+  slug              varchar [not null, unique]
+  body              text    [not null]
+  excerpt           text    [null]
+  cover_image       varchar [null]
+  issue_number      varchar [null]
+  status            varchar [default: 'draft']
+  rejection_reason  text    [null]
+  author_id         bigint  [not null, ref: > users.user_id]
+  reviewed_by       bigint  [null, ref: > users.user_id]
+  published_at      timestamp [null]
+  reviewed_at       timestamp [null]
+  created_at        timestamp
+  updated_at        timestamp
+}
+
+Table publication_galleries {
+  gallery_id        bigint  [pk, increment]
+  title             varchar [not null]
+  slug              varchar [not null, unique]
+  description       text    [null]
+  cover_image       varchar [null]
+  status            varchar [default: 'draft']
+  rejection_reason  text    [null]
+  author_id         bigint  [not null, ref: > users.user_id]
+  reviewed_by       bigint  [null, ref: > users.user_id]
+  published_at      timestamp [null]
+  reviewed_at       timestamp [null]
+  created_at        timestamp
+  updated_at        timestamp
+}
+
+Table publication_gallery_photos {
+  photo_id    bigint  [pk, increment]
+  gallery_id  bigint  [not null, ref: > publication_galleries.gallery_id]
+  image_path  varchar [not null]
+  caption     varchar [null]
+  sort_order  int     [default: 0]
+  created_at  timestamp
+  updated_at  timestamp
+}
+
+// ─────────────────────────────────────────────
+// MISC / SUPPORT
+// ─────────────────────────────────────────────
+
+Table notifications {
+  notification_id      bigint  [pk, increment]
+  user_id              bigint  [not null, ref: > users.user_id]
+  type                 varchar [default: 'discipline', note: 'discipline | complaint']
+  title                varchar [not null]
+  message              text    [not null]
+  related_case_id      bigint  [null, ref: > discipline.discipline_id]
+  related_meeting_id   bigint  [null, ref: > discipline_meetings.meeting_id]
+  related_complaint_id bigint  [null, ref: > complaints.complaint_id]
+  is_read              boolean [default: false]
+  created_at           timestamp
+}
+
+Table good_moral_requests {
+  id             bigint  [pk, increment]
+  full_name      varchar [not null]
+  student_number varchar [not null, ref: > students.student_number, note: 'FK to be enforced in future migration']
+  course         varchar [not null]
+  year_graduated varchar [not null]
+  contact_number varchar [not null]
+  email          varchar [not null]
+  purpose        text    [not null]
+  status         varchar [default: 'pending', note: 'pending | payment_verified | ready_for_pickup | released']
+  admin_notes    text    [null]
+  created_at     timestamp
+  updated_at     timestamp
+}
+
+Table system_settings {
+  key        varchar [pk]
+  value      text    [null]
+  created_at timestamp
+  updated_at timestamp
+}

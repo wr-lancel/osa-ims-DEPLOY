@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreOrganizationRequest;
 use App\Http\Requests\Admin\UpdateOrganizationRequest;
 use App\Models\AcademicCalendar;
+use App\Models\Employee;
 use App\Models\EnrolledStudent;
 use App\Models\Notification;
+use App\Models\OrgAdviser;
 use App\Models\OrgMeeting;
 use App\Models\OrgOfficer;
 use App\Models\StudentOrganization;
@@ -150,9 +152,20 @@ class OrganizationController extends Controller
             'officers.student',
             'members.student',
             'advisers.employee',
+            'currentAdviser.employee',
             'events.creator',
             'meetings.caller',
         ]);
+
+        // Get all employees for the adviser assignment dropdown
+        $employees = Employee::orderBy('last_name')->orderBy('first_name')
+            ->get(['employee_id', 'first_name', 'last_name', 'department', 'position'])
+            ->map(fn($e) => [
+                'employee_id' => $e->employee_id,
+                'full_name'   => $e->full_name,
+                'department'  => $e->department,
+                'position'    => $e->position,
+            ]);
 
         // Get enrolled students for officer assignment dropdown (from active academic calendar)
         $activeCalendar = AcademicCalendar::active()->first();
@@ -182,6 +195,16 @@ class OrganizationController extends Controller
                 'type' => $organization->type,
                 'status' => $organization->status,
                 'adviser_name' => $organization->adviser_name,
+                'adviser_display_name' => $organization->adviser_display_name,
+                'advisers' => $organization->advisers->map(fn($a) => [
+                    'adviser_id'    => $a->adviser_id,
+                    'employee_id'   => $a->employee_id,
+                    'employee_name' => $a->employee->full_name ?? '',
+                    'department'    => $a->employee->department ?? '',
+                    'start_date'    => $a->start_date->format('Y-m-d'),
+                    'end_date'      => $a->end_date?->format('Y-m-d'),
+                    'status'        => $a->status,
+                ]),
                 'mission' => $organization->mission,
                 'mission_file' => $organization->mission_file,
                 'mission_file_url' => $organization->mission_file ? asset('storage/' . $organization->mission_file) : null,
@@ -246,6 +269,7 @@ class OrganizationController extends Controller
         }),
             ],
             'enrolledStudents' => $enrolledStudents,
+            'employees' => $employees,
             'organizationTypes' => SystemSetting::getList('organization_types'),
         ]);
     }
@@ -361,7 +385,7 @@ class OrganizationController extends Controller
     }
 
     /**
-     * Update the adviser name for the organization.
+     * Update the adviser name string for the organization.
      */
     public function updateAdviser(Request $request, StudentOrganization $organization): RedirectResponse
     {
@@ -375,6 +399,45 @@ class OrganizationController extends Controller
 
         return redirect()->route('admin.organizations.show', $organization)
             ->with('success', 'Adviser updated successfully.');
+    }
+
+    /**
+     * Assign an employee as adviser for the organization.
+     */
+    public function addAdviser(Request $request, StudentOrganization $organization): RedirectResponse
+    {
+        $validated = $request->validate([
+            'employee_id' => 'required|exists:employees,employee_id',
+            'start_date'  => 'required|date',
+        ]);
+
+        // Deactivate any currently active adviser records first
+        $organization->advisers()->update(['status' => 'inactive', 'end_date' => now()->toDateString()]);
+
+        OrgAdviser::create([
+            'org_id'      => $organization->org_id,
+            'employee_id' => $validated['employee_id'],
+            'start_date'  => $validated['start_date'],
+            'status'      => 'active',
+        ]);
+
+        return redirect()->route('admin.organizations.show', $organization)
+            ->with('success', 'Adviser assigned successfully.');
+    }
+
+    /**
+     * Remove (deactivate) an employee adviser from the organization.
+     */
+    public function removeAdviser(StudentOrganization $organization, OrgAdviser $adviser): RedirectResponse
+    {
+        if ($adviser->org_id !== $organization->org_id) {
+            return redirect()->back()->with('error', 'Adviser not found in this organization.');
+        }
+
+        $adviser->update(['status' => 'inactive', 'end_date' => now()->toDateString()]);
+
+        return redirect()->route('admin.organizations.show', $organization)
+            ->with('success', 'Adviser removed successfully.');
     }
 
     /**

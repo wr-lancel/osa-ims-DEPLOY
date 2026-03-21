@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Student\StoreComplaintRequest;
 use App\Models\Complaint;
+use App\Models\Employee;
 use App\Models\Notification;
 use App\Models\Student;
 use App\Services\ComplaintService;
@@ -41,8 +42,17 @@ class ComplaintController extends Controller
             ['value' => 'Other', 'label' => 'Other'],
         ];
 
+        $employees = Employee::select('employee_id', 'first_name', 'last_name')
+            ->orderBy('last_name')
+            ->get()
+            ->map(fn($e) => [
+                'value' => $e->employee_id,
+                'label' => $e->last_name . ', ' . $e->first_name,
+            ]);
+
         return Inertia::render('Student/Complaint/Create', [
             'categories' => $categories,
+            'employees' => $employees,
         ]);
     }
 
@@ -61,24 +71,31 @@ class ComplaintController extends Controller
                 ->withInput();
         }
 
+        $data = $request->validated();
+
         $respondentEnrolledId = null;
-        if ($request->filled('respondent_student_number')) {
-            $respondent = Student::where('student_number', $request->respondent_student_number)->first();
-            if ($respondent) {
-                $respondentEnrollment = $this->disciplineService->currentEnrollmentForStudent($respondent->student_number);
-                if ($respondentEnrollment) {
-                    $respondentEnrolledId = $respondentEnrollment->enrollment_id;
-                }
+        $respondentEmployeeId = null;
+        $respondentName = null;
+        $respondentType = $data['respondent_type'] ?? null;
+
+        if ($respondentType === 'student' && !empty($data['respondent_student_number'])) {
+            $respondentEnrollment = $this->disciplineService->currentEnrollmentForStudent($data['respondent_student_number']);
+            if ($respondentEnrollment) {
+                $respondentEnrolledId = $respondentEnrollment->enrollment_id;
             }
+        } elseif ($respondentType === 'employee') {
+            $respondentEmployeeId = $data['respondent_employee_id'] ?? null;
+        } elseif ($respondentType === 'other') {
+            $respondentName = $data['respondent_name'] ?? null;
         }
 
-        $data = $request->validated();
-        unset($data['respondent_student_number']);
-
-        DB::transaction(function () use ($data, $enrollment, $respondentEnrolledId) {
+        DB::transaction(function () use ($data, $enrollment, $respondentType, $respondentEnrolledId, $respondentEmployeeId, $respondentName) {
             $complaint = Complaint::create([
                 'complainant_enrolled_id' => $enrollment->enrollment_id,
+                'respondent_type' => $respondentType,
                 'respondent_enrolled_id' => $respondentEnrolledId,
+                'respondent_employee_id' => $respondentEmployeeId,
+                'respondent_name' => $respondentName,
                 'category' => $data['category'],
                 'subject' => $data['subject'],
                 'description' => $data['description'],

@@ -30,7 +30,10 @@ class StoreComplaintRequest extends FormRequest
             'description' => ['required', 'string', 'max:10000'],
             'incident_date' => ['required', 'date'],
             'location' => ['nullable', 'string', 'max:255'],
-            'respondent_student_number' => ['nullable', 'string', 'max:50'],
+            'respondent_type' => ['nullable', 'in:student,employee,other'],
+            'respondent_student_number' => ['nullable', 'required_if:respondent_type,student', 'exists:students,student_number'],
+            'respondent_employee_id' => ['nullable', 'required_if:respondent_type,employee', 'exists:employees,employee_id'],
+            'respondent_name' => ['nullable', 'required_if:respondent_type,other', 'string', 'max:255'],
             'anonymous' => ['nullable', 'boolean'],
         ];
     }

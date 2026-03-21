@@ -26,6 +26,10 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    employees: {
+        type: Array,
+        default: () => [],
+    },
     organizationTypes: {
         type: Array,
         default: () => ['Academic', 'Cultural', 'Governance', 'Special Interest'],
@@ -91,7 +95,7 @@ const removeOfficer = (officer) => {
     );
 };
 
-// Adviser form
+// Adviser form (legacy free-text)
 const adviserForm = useForm({
     adviser_name: props.organization.adviser_name || '',
 });
@@ -100,6 +104,53 @@ const saveAdviser = () => {
     adviserForm.put(route('admin.organizations.adviser.update', props.organization.org_id), {
         preserveScroll: true,
     });
+};
+
+// Assign employee as adviser
+const showAdviserModal = ref(false);
+const adviserAssignForm = useForm({
+    employee_id: '',
+    start_date: new Date().toISOString().split('T')[0],
+});
+
+const employeeOptions = computed(() =>
+    props.employees.map(e => ({
+        value: e.employee_id,
+        label: e.full_name + (e.department ? ` — ${e.department}` : ''),
+    }))
+);
+
+const openAdviserModal = () => {
+    adviserAssignForm.reset();
+    adviserAssignForm.start_date = new Date().toISOString().split('T')[0];
+    showAdviserModal.value = true;
+};
+
+const closeAdviserModal = () => {
+    showAdviserModal.value = false;
+    adviserAssignForm.reset();
+};
+
+const submitAssignAdviser = () => {
+    adviserAssignForm.post(route('admin.organizations.advisers.add', props.organization.org_id), {
+        preserveScroll: true,
+        onSuccess: () => closeAdviserModal(),
+    });
+};
+
+const removeAdviser = (adviser) => {
+    confirmAction(
+        `Are you sure you want to remove ${adviser.employee_name} as adviser?`,
+        'Remove Adviser',
+        () => {
+            isProcessing.value = true;
+            router.delete(route('admin.organizations.advisers.remove', [props.organization.org_id, adviser.adviser_id]), {
+                preserveScroll: true,
+                onFinish: () => { isProcessing.value = false; },
+            });
+        },
+        { confirmLabel: 'Remove', cancelLabel: 'Cancel' }
+    );
 };
 
 // Common officer positions for suggestions
@@ -336,14 +387,14 @@ const hasAboutContent = computed(() => {
     <Head :title="`${organization.org_name} - Organization Details`" />
 
     <AdminLayout>
-        <LoadingOverlay :show="isProcessing || editFormProcessing || officerForm.processing || adviserForm.processing || meetingForm.processing" message="Processing... Please wait." />
+        <LoadingOverlay :show="isProcessing || editFormProcessing || officerForm.processing || adviserForm.processing || adviserAssignForm.processing || meetingForm.processing" message="Processing... Please wait." />
         <template #header>
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-4">
                     <div class="h-16 w-16 flex-shrink-0">
                         <img v-if="organization.logo_url" :src="organization.logo_url" class="h-16 w-16 rounded-xl object-contain bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 transition-colors" alt="Organization Logo" />
-                        <div v-else class="h-16 w-16 rounded-xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center border border-indigo-200 dark:border-indigo-800/50 shadow-sm transition-colors">
-                            <span class="text-indigo-700 dark:text-indigo-300 font-bold text-xl transition-colors">{{ organization.org_code.substring(0, 2).toUpperCase() }}</span>
+                        <div v-else class="h-16 w-16 rounded-xl bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center border border-blue-200 dark:border-blue-800/50 shadow-sm transition-colors">
+                            <span class="text-blue-700 dark:text-blue-300 font-bold text-xl transition-colors">{{ organization.org_code.substring(0, 2).toUpperCase() }}</span>
                         </div>
                     </div>
                     <div>
@@ -364,7 +415,7 @@ const hasAboutContent = computed(() => {
                         Edit Organization
                     </SecondaryButton>
                     <Link :href="route('admin.organizations.index')"
-                        class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-sm transition-colors">
+                        class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 text-sm transition-colors">
                         ← Back to Organizations
                     </Link>
                 </div>
@@ -391,7 +442,7 @@ const hasAboutContent = computed(() => {
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 transition-colors">Adviser</label>
-                        <p class="mt-1 text-sm text-gray-900 dark:text-gray-200 transition-colors">{{ organization.adviser_name || '-' }}</p>
+                        <p class="mt-1 text-sm text-gray-900 dark:text-gray-200 transition-colors">{{ organization.adviser_display_name || '-' }}</p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 transition-colors">Total Officers</label>
@@ -413,10 +464,10 @@ const hasAboutContent = computed(() => {
                         <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1 transition-colors">Mission</h4>
                         <p v-if="organization.mission" class="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap transition-colors">{{ organization.mission }}</p>
                         <div v-if="organization.mission_file_url" class="flex items-center gap-2 mt-1 text-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500 dark:text-indigo-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500 dark:text-blue-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                             </svg>
-                            <a :href="organization.mission_file_url" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 underline transition-colors">
+                            <a :href="organization.mission_file_url" target="_blank" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 underline transition-colors">
                                 {{ organization.mission_file_name || 'Download' }}
                             </a>
                         </div>
@@ -427,10 +478,10 @@ const hasAboutContent = computed(() => {
                         <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1 transition-colors">Vision</h4>
                         <p v-if="organization.vision" class="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap transition-colors">{{ organization.vision }}</p>
                         <div v-if="organization.vision_file_url" class="flex items-center gap-2 mt-1 text-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500 dark:text-indigo-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500 dark:text-blue-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                             </svg>
-                            <a :href="organization.vision_file_url" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 underline transition-colors">
+                            <a :href="organization.vision_file_url" target="_blank" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 underline transition-colors">
                                 {{ organization.vision_file_name || 'Download' }}
                             </a>
                         </div>
@@ -441,10 +492,10 @@ const hasAboutContent = computed(() => {
                         <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1 transition-colors">Goals</h4>
                         <p v-if="organization.goals" class="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap transition-colors">{{ organization.goals }}</p>
                         <div v-if="organization.goals_file_url" class="flex items-center gap-2 mt-1 text-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500 dark:text-indigo-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500 dark:text-blue-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                             </svg>
-                            <a :href="organization.goals_file_url" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 underline transition-colors">
+                            <a :href="organization.goals_file_url" target="_blank" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 underline transition-colors">
                                 {{ organization.goals_file_name || 'Download' }}
                             </a>
                         </div>
@@ -455,10 +506,10 @@ const hasAboutContent = computed(() => {
                         <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1 transition-colors">Constitution & By-Laws</h4>
                         <p v-if="organization.constitution_bylaws" class="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap transition-colors">{{ organization.constitution_bylaws }}</p>
                         <div v-if="organization.constitution_bylaws_file_url" class="flex items-center gap-2 mt-1 text-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500 dark:text-indigo-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500 dark:text-blue-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                             </svg>
-                            <a :href="organization.constitution_bylaws_file_url" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 underline transition-colors">
+                            <a :href="organization.constitution_bylaws_file_url" target="_blank" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 underline transition-colors">
                                 {{ organization.constitution_bylaws_file_name || 'Download' }}
                             </a>
                         </div>
@@ -501,7 +552,7 @@ const hasAboutContent = computed(() => {
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span
-                                        class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-400 transition-colors">
+                                        class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 transition-colors">
                                         {{ officer.position }}
                                     </span>
                                 </td>
@@ -518,6 +569,67 @@ const hasAboutContent = computed(() => {
                     </table>
                 </div>
                 <p v-else class="text-sm text-gray-500 dark:text-gray-400 transition-colors">No officers assigned yet.</p>
+            </div>
+
+            <!-- Advisers Section -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6 transition-colors">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 transition-colors">Advisers</h3>
+                    <PrimaryButton @click="openAdviserModal">
+                        Assign Adviser
+                    </PrimaryButton>
+                </div>
+
+                <div v-if="organization.advisers && organization.advisers.length > 0" class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 transition-colors">
+                        <thead class="bg-gray-50 dark:bg-gray-700/50 transition-colors">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase transition-colors">Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase transition-colors">Department</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase transition-colors">Start Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase transition-colors">Status</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase transition-colors">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 transition-colors">
+                            <tr v-for="adviser in organization.advisers" :key="adviser.adviser_id"
+                                class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200 transition-colors">
+                                    {{ adviser.employee_name }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 transition-colors">
+                                    {{ adviser.department || '-' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 transition-colors">
+                                    {{ adviser.start_date }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full transition-colors"
+                                        :class="adviser.status === 'active'
+                                            ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400'
+                                            : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'">
+                                        {{ adviser.status }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <button v-if="adviser.status === 'active'" @click="removeAdviser(adviser)"
+                                        class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 transition-colors">
+                                        Remove
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Legacy text-only adviser fallback notice -->
+                <div v-else>
+                    <p v-if="organization.adviser_name" class="text-sm text-gray-600 dark:text-gray-400 transition-colors">
+                        Current adviser (text only): <span class="font-medium text-gray-900 dark:text-gray-200">{{ organization.adviser_name }}</span>
+                        <span class="ml-2 text-xs text-gray-400 dark:text-gray-500">— Use "Assign Adviser" to link to an employee record.</span>
+                    </p>
+                    <p v-else class="text-sm text-gray-500 dark:text-gray-400 transition-colors">No adviser assigned yet.</p>
+                </div>
             </div>
 
             <!-- Members Section -->
@@ -732,6 +844,39 @@ const hasAboutContent = computed(() => {
             </div>
         </Modal>
 
+        <!-- Assign Adviser Modal -->
+        <Modal :show="showAdviserModal" @close="closeAdviserModal">
+            <div class="p-6">
+                <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6 transition-colors">Assign Adviser</h2>
+
+                <form @submit.prevent="submitAssignAdviser">
+                    <div class="mb-4">
+                        <InputLabel for="adviser_employee" value="Select Employee" />
+                        <SearchableSelect v-model="adviserAssignForm.employee_id" :options="employeeOptions"
+                            placeholder="Search by name or department..."
+                            :error="adviserAssignForm.errors.employee_id" />
+                        <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">Assigning a new adviser will deactivate the current one.</p>
+                    </div>
+
+                    <div class="mb-6">
+                        <InputLabel for="adviser_start_date" value="Start Date" />
+                        <TextInput id="adviser_start_date" v-model="adviserAssignForm.start_date" type="date"
+                            class="mt-1 block w-full"
+                            :class="{ 'border-red-300': adviserAssignForm.errors.start_date }"
+                            required />
+                        <InputError :message="adviserAssignForm.errors.start_date" />
+                    </div>
+
+                    <div class="flex justify-end space-x-3">
+                        <SecondaryButton type="button" @click="closeAdviserModal">Cancel</SecondaryButton>
+                        <PrimaryButton type="submit" :disabled="adviserAssignForm.processing">
+                            {{ adviserAssignForm.processing ? 'Assigning...' : 'Assign Adviser' }}
+                        </PrimaryButton>
+                    </div>
+                </form>
+            </div>
+        </Modal>
+
         <!-- Edit Organization Modal -->
         <Modal :show="showEditModal" @close="closeEditModal" max-width="3xl">
             <div class="p-6">
@@ -761,7 +906,7 @@ const hasAboutContent = computed(() => {
                         <div>
                             <InputLabel for="edit_type" value="Type" />
                             <select id="edit_type" v-model="editForm.type"
-                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors dark:bg-gray-700 dark:text-gray-100">
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors dark:bg-gray-700 dark:text-gray-100">
                                 <option v-for="option in typeOptions" :key="option.value" :value="option.value">
                                     {{ option.label }}
                                 </option>
@@ -773,7 +918,7 @@ const hasAboutContent = computed(() => {
                         <div>
                             <InputLabel for="edit_status" value="Status" />
                             <select id="edit_status" v-model="editForm.status"
-                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors dark:bg-gray-700 dark:text-gray-100"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors dark:bg-gray-700 dark:text-gray-100"
                                 required>
                                 <option v-for="option in statusOptions" :key="option.value" :value="option.value">
                                     {{ option.label }}
@@ -794,7 +939,7 @@ const hasAboutContent = computed(() => {
                         <div class="md:col-span-2">
                             <InputLabel for="edit_description" value="Description" />
                             <textarea id="edit_description" v-model="editForm.description" rows="4"
-                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors dark:bg-gray-700 dark:text-gray-100" />
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors dark:bg-gray-700 dark:text-gray-100" />
                             <InputError :message="editFormErrors.description" />
                         </div>
                     </div>
@@ -918,7 +1063,7 @@ const hasAboutContent = computed(() => {
                         <div>
                             <InputLabel for="meeting_start_time" value="Start Time" />
                             <select id="meeting_start_time" v-model="meetingForm.start_time"
-                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                                 :class="{ 'border-red-300': meetingForm.errors.start_time }"
                                 required>
                                 <option value="">— Select Time —</option>
@@ -931,7 +1076,7 @@ const hasAboutContent = computed(() => {
                         <div>
                             <InputLabel for="meeting_end_time" value="End Time (Optional)" />
                             <select id="meeting_end_time" v-model="meetingForm.end_time"
-                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100">
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100">
                                 <option value="">— Select Time —</option>
                                 <option v-for="h in officeHours" :key="h.value" :value="h.value">{{ h.label }}</option>
                             </select>
@@ -942,7 +1087,7 @@ const hasAboutContent = computed(() => {
                         <div class="md:col-span-2">
                             <InputLabel for="target_audience" value="Who should attend?" />
                             <select id="target_audience" v-model="meetingForm.target_audience"
-                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors dark:bg-gray-700 dark:text-gray-100"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors dark:bg-gray-700 dark:text-gray-100"
                                 required>
                                 <option value="all">All (Officers & Members)</option>
                                 <option value="officers">Officers Only</option>
@@ -955,7 +1100,7 @@ const hasAboutContent = computed(() => {
                         <div class="md:col-span-2">
                             <InputLabel for="meeting_description" value="Agenda / Description (Optional)" />
                             <textarea id="meeting_description" v-model="meetingForm.description" rows="3"
-                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors dark:bg-gray-700 dark:text-gray-100"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors dark:bg-gray-700 dark:text-gray-100"
                                 placeholder="Describe the purpose and agenda of the meeting..." />
                             <InputError :message="meetingForm.errors.description" />
                         </div>

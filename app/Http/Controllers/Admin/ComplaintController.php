@@ -111,11 +111,30 @@ class ComplaintController extends Controller
             'complainantEnrollment.student',
             'complainantEnrollment.academicCalendar',
             'respondentEnrollment.student',
+            'respondentEmployee',
             'complaintHistories.changedBy',
         ]);
 
         $complainant = $complaint->complainantEnrollment?->student;
-        $respondent = $complaint->respondentEnrollment?->student;
+        $respondentStudent = $complaint->respondentEnrollment?->student;
+        $respondentEmployee = $complaint->respondentEmployee;
+
+        $respondentData = match ($complaint->respondent_type) {
+            'student' => $respondentStudent ? [
+                'type' => 'student',
+                'display_name' => $respondentStudent->full_name ?? ($respondentStudent->first_name . ' ' . $respondentStudent->last_name),
+                'student_number' => $respondentStudent->student_number,
+            ] : null,
+            'employee' => $respondentEmployee ? [
+                'type' => 'employee',
+                'display_name' => $respondentEmployee->full_name ?? ($respondentEmployee->first_name . ' ' . $respondentEmployee->last_name),
+            ] : null,
+            'other' => $complaint->respondent_name ? [
+                'type' => 'other',
+                'display_name' => $complaint->respondent_name,
+            ] : null,
+            default => null,
+        };
 
         $data = [
             'complaint_id' => $complaint->complaint_id,
@@ -123,10 +142,7 @@ class ComplaintController extends Controller
                 'student_number' => $complainant->student_number,
                 'full_name' => $complainant->full_name ?? ($complainant->first_name . ' ' . $complainant->last_name),
             ] : null,
-            'respondent' => $respondent ? [
-                'student_number' => $respondent->student_number,
-                'full_name' => $respondent->full_name ?? ($respondent->first_name . ' ' . $respondent->last_name),
-            ] : null,
+            'respondent' => $respondentData,
             'subject' => $complaint->subject,
             'category' => $complaint->category,
             'description' => $complaint->description,

@@ -221,6 +221,8 @@ Route::middleware('auth')->group(function () {
 
                 // Adviser Management
                 Route::put('/{organization}/adviser', [OrganizationController::class, 'updateAdviser'])->name('adviser.update');
+                Route::post('/{organization}/advisers', [OrganizationController::class, 'addAdviser'])->name('advisers.add');
+                Route::delete('/{organization}/advisers/{adviser}', [OrganizationController::class, 'removeAdviser'])->name('advisers.remove');
 
                 // Meeting Management
                 Route::post('/{organization}/meetings', [OrganizationController::class, 'storeMeeting'])->name('meetings.store');
@@ -398,6 +400,8 @@ Route::middleware('auth')->group(function () {
             Route::put('/{organization}', [StudentOrganizationController::class, 'update'])->name('update');
             Route::post('/{organization}/events', [StudentOrganizationController::class, 'storeEvent'])->name('events.store');
             Route::post('/{organization}/meetings', [StudentOrganizationController::class, 'storeMeeting'])->name('meetings.store');
+            Route::post('/{organization}/officers', [StudentOrganizationController::class, 'storeOfficer'])->name('officers.store');
+            Route::delete('/{organization}/officers/{officer}', [StudentOrganizationController::class, 'destroyOfficer'])->name('officers.destroy');
         });
     });
 });

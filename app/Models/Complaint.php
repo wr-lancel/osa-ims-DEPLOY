@@ -16,6 +16,9 @@ class Complaint extends Model
     protected $fillable = [
         'complainant_enrolled_id',
         'respondent_enrolled_id',
+        'respondent_type',
+        'respondent_employee_id',
+        'respondent_name',
         'category',
         'subject',
         'description',
@@ -39,11 +42,32 @@ class Complaint extends Model
     }
 
     /**
-     * Get the respondent's enrollment (if any).
+     * Get the respondent's enrollment (if any) — used when respondent_type = 'student'.
      */
     public function respondentEnrollment()
     {
         return $this->belongsTo(EnrolledStudent::class, 'respondent_enrolled_id', 'enrollment_id');
+    }
+
+    /**
+     * Get the respondent employee — used when respondent_type = 'employee'.
+     */
+    public function respondentEmployee()
+    {
+        return $this->belongsTo(Employee::class, 'respondent_employee_id', 'employee_id');
+    }
+
+    /**
+     * Get a display name for the respondent regardless of type.
+     */
+    public function getRespondentDisplayNameAttribute(): ?string
+    {
+        return match ($this->respondent_type) {
+            'student'  => $this->respondentEnrollment?->student?->full_name,
+            'employee' => $this->respondentEmployee?->full_name,
+            'other'    => $this->respondent_name,
+            default    => null,
+        };
     }
 
     /**

@@ -5,14 +5,18 @@ echo "Starting deployment script..."
 # DO NOT copy .env.example — Railway injects env vars directly into the container.
 # Creating a .env file would OVERRIDE Railway's variables with wrong defaults.
 
-# Ensure storage directories exist
+# Ensure storage directories exist (including public uploads dir for mounted volume)
+mkdir -p storage/app/public
 mkdir -p storage/framework/{sessions,views,cache}
 mkdir -p storage/logs
 chmod -R 775 storage bootstrap/cache
 
-# Create the storage symlink (needed for serving uploaded files)
+# Create the storage symlink using a relative path so it works inside any container
+# regardless of absolute path. Remove any stale symlink/dir from the build image first.
 echo "Creating storage link..."
-php artisan storage:link --force 2>/dev/null || true
+rm -rf public/storage
+ln -sfn ../storage/app/public public/storage
+chown -h www-data:www-data public/storage
 
 # Cache configuration and optimize
 echo "Optimizing application..."

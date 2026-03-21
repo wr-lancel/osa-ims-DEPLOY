@@ -25,6 +25,8 @@ class StoreCandidacyRequest extends FormRequest
             'org_id' => ['required', 'exists:student_org,org_id'],
             'position_id' => ['required', 'exists:org_positions,position_id'],
             'acad_id' => ['required', 'exists:academic_calendar,calendar_id'],
+            'party_affiliation' => ['nullable', 'string', 'max:255'],
+            'unit_load' => ['nullable', 'integer', 'min:1', 'max:99'],
             'platform_statement' => ['nullable', 'string', 'max:5000'],
             'motivation' => ['nullable', 'string', 'max:5000'],
         ];

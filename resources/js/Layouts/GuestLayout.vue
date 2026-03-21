@@ -6,6 +6,8 @@ import { Link } from '@inertiajs/vue3';
 
 <template>
     <div class="flex min-h-screen flex-col items-center bg-gray-100 dark:bg-gray-900 pt-6 sm:justify-center sm:pt-0 transition-colors duration-200 relative">
+        <!-- Brand top bar -->
+        <div class="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-700 via-blue-500 to-amber-400 z-50"></div>
         <!-- Theme Toggle Absolute Top Right -->
         <div class="absolute top-4 right-4 sm:top-6 sm:right-6">
             <ThemeToggle />

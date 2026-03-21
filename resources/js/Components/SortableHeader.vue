@@ -29,7 +29,7 @@ const toggle = () => {
                 <!-- Up arrow -->
                 <svg
                     class="w-2.5 h-2.5 transition-colors"
-                    :class="isActive && currentDir === 'asc' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-300 dark:text-gray-600 group-hover:text-gray-400'"
+                    :class="isActive && currentDir === 'asc' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-300 dark:text-gray-600 group-hover:text-gray-400'"
                     fill="currentColor" viewBox="0 0 24 24"
                 >
                     <path d="M12 4l8 8H4z" />
@@ -37,7 +37,7 @@ const toggle = () => {
                 <!-- Down arrow -->
                 <svg
                     class="w-2.5 h-2.5 transition-colors"
-                    :class="isActive && currentDir === 'desc' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-300 dark:text-gray-600 group-hover:text-gray-400'"
+                    :class="isActive && currentDir === 'desc' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-300 dark:text-gray-600 group-hover:text-gray-400'"
                     fill="currentColor" viewBox="0 0 24 24"
                 >
                     <path d="M12 20l-8-8h16z" />

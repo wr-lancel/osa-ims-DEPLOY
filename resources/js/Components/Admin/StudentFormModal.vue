@@ -244,7 +244,7 @@ const close = () => {
                         <div>
                             <InputLabel for="course_id" value="Course *" />
                             <select id="course_id" v-model="form.course_id"
-                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                                 :class="{ 'border-red-500': form.errors.course_id }" required>
                                 <option value="">Select Course</option>
                                 <option v-for="course in courses" :key="course.course_id" :value="course.course_id">
@@ -257,7 +257,7 @@ const close = () => {
                         <div>
                             <InputLabel for="year_level" value="Year Level *" />
                             <select id="year_level" v-model="form.year_level"
-                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                                 :class="{ 'border-red-500': form.errors.year_level }" required>
                                 <option value="">Select Year Level</option>
                                 <option v-for="level in yearLevels" :key="level" :value="level">

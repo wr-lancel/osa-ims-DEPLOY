@@ -211,7 +211,7 @@ const close = () => {
                         <div>
                             <InputLabel for="role_id" value="Role *" />
                             <select id="role_id" v-model="formData.role_id"
-                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                                 :class="{ 'border-red-500': errors.role_id }" required>
                                 <option value="">Select a role</option>
                                 <option v-for="role in roles" :key="role.role_id" :value="role.role_id">

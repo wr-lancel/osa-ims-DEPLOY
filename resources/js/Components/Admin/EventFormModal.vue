@@ -159,7 +159,7 @@ const close = () => {
                     <select
                         id="org_id"
                         v-model="form.org_id"
-                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                         :class="{ 'border-red-300': formErrors.org_id }"
                     >
                         <option value="">Select Organization (Optional)</option>
@@ -195,7 +195,7 @@ const close = () => {
                         id="description"
                         v-model="form.description"
                         rows="4"
-                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                         :class="{ 'border-red-300': formErrors.description }"
                     />
                     <InputError :message="formErrors.description" />
@@ -224,7 +224,7 @@ const close = () => {
                     <select
                         id="start_time"
                         v-model="form.start_time"
-                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                         :class="{ 'border-red-300': formErrors.start_time }"
                     >
                         <option value="">— Select Time —</option>
@@ -239,7 +239,7 @@ const close = () => {
                     <select
                         id="end_time"
                         v-model="form.end_time"
-                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                         :class="{ 'border-red-300': formErrors.end_time }"
                     >
                         <option value="">— Select Time —</option>
@@ -267,7 +267,7 @@ const close = () => {
                     <select
                         id="status"
                         v-model="form.status"
-                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                         :class="{ 'border-red-300': formErrors.status }"
                         required
                     >

@@ -18,6 +18,8 @@ class CandidacyApplication extends Model
         'enrollment_id',
         'position_id',
         'acad_id',
+        'party_affiliation',
+        'unit_load',
         'platform_statement',
         'motivation',
         'status',

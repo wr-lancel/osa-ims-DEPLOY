@@ -158,7 +158,7 @@ const downloadErrorReport = () => {
                         <button
                             type="button"
                             @click="downloadErrorReport"
-                            class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 underline"
+                            class="text-xs text-blue-700 dark:text-blue-400 hover:text-blue-900 underline"
                         >
                             Download Error Report
                         </button>

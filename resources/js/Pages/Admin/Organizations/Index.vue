@@ -353,7 +353,7 @@ const exportPdf = async () => {
         </div>
 
         <!-- Modal -->
-        <OrganizationFormModal :show="showModal" :organization="selectedOrganization" @close="closeModal"
+        <OrganizationFormModal :show="showModal" :organization="selectedOrganization" :organizationTypes="organizationTypes" @close="closeModal"
             @saved="handleSaved" />
     </AdminLayout>
 </template>

@@ -23,8 +23,8 @@ const emit = defineEmits(['confirm', 'cancel']);
             <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 w-full max-w-sm mx-4 p-6">
                 <!-- Icon -->
                 <div class="flex items-center gap-3 mb-4">
-                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
-                        <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>
                     </div>
@@ -44,7 +44,7 @@ const emit = defineEmits(['confirm', 'cancel']);
                     <button
                         type="button"
                         @click="emit('confirm')"
-                        class="inline-flex items-center px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-sm font-medium text-white transition-colors"
+                        class="inline-flex items-center px-4 py-2 rounded-md bg-blue-700 hover:bg-blue-800 text-sm font-medium text-white transition-colors"
                     >
                         Export
                     </button>

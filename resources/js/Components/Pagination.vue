@@ -174,7 +174,7 @@ const shouldShow = () => {
                 <select
                     v-model.number="currentPage"
                     @change="onPageChange"
-                    class="h-8 rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 pl-2 pr-7 py-0 focus:border-indigo-500 focus:ring-indigo-500 cursor-pointer"
+                    class="h-8 rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 pl-2 pr-7 py-0 focus:border-blue-500 focus:ring-blue-500 cursor-pointer"
                 >
                     <option v-for="p in pageOptions" :key="p" :value="p">
                         {{ p }}
@@ -213,7 +213,7 @@ const shouldShow = () => {
                 <select
                     v-model.number="currentPerPage"
                     @change="onPerPageChange"
-                    class="h-8 rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 pl-2 pr-7 py-0 focus:border-indigo-500 focus:ring-indigo-500 cursor-pointer ml-1"
+                    class="h-8 rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 pl-2 pr-7 py-0 focus:border-blue-500 focus:ring-blue-500 cursor-pointer ml-1"
                 >
                     <option v-for="opt in perPageOptions" :key="opt" :value="opt">
                         {{ opt }}

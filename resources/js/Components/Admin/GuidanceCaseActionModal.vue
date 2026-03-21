@@ -158,7 +158,7 @@ const close = () => {
                         id="note"
                         v-model="formData.note"
                         rows="4"
-                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                         :class="{ 'border-red-300': errors.note }"
                         placeholder="Enter action note..."
                     ></textarea>
@@ -171,7 +171,7 @@ const close = () => {
                     <select
                         id="action_status"
                         v-model="formData.action_status"
-                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                         :class="{ 'border-red-300': errors.action_status }"
                     >
                         <option v-for="status in statuses" :key="status.value" :value="status.value">
@@ -188,7 +188,7 @@ const close = () => {
                         id="action_at"
                         v-model="formData.action_at"
                         type="date"
-                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                         :class="{ 'border-red-300': errors.action_at }"
                         :min="new Date().toISOString().split('T')[0]"
                         @change="onDateChange"

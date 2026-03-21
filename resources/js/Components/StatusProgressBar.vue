@@ -125,14 +125,14 @@ const cancelChange = () => {
                         :class="[
                             sizeClasses.dot,
                             getStepState(index) === 'completed'
-                                ? 'bg-indigo-500 ring-2 ring-indigo-100'
+                                ? 'bg-blue-600 ring-2 ring-blue-100'
                                 : getStepState(index) === 'current'
                                     ? isTerminal && index === effectiveSteps.length - 1
                                         ? 'bg-red-500 ring-2 ring-red-100 scale-110'
-                                        : 'bg-indigo-500 ring-2 ring-indigo-200 scale-110'
+                                        : 'bg-blue-600 ring-2 ring-blue-200 scale-110'
                                     : 'bg-gray-200',
                             editable && canClick(index)
-                                ? 'cursor-pointer hover:scale-125 hover:ring-4 hover:ring-indigo-200'
+                                ? 'cursor-pointer hover:scale-125 hover:ring-4 hover:ring-blue-200'
                                 : '',
                         ]" @click="handleStepClick(index)">
                         <svg v-if="getStepState(index) === 'completed' && !(isTerminal && index === effectiveSteps.length - 1)"
@@ -153,7 +153,7 @@ const cancelChange = () => {
                             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-3 text-center">
                                 <p class="text-sm text-gray-700 dark:text-gray-200 mb-2">
                                     Change status to
-                                    <span class="font-semibold text-indigo-600 dark:text-indigo-400">{{ step.label || step.value }}</span>?
+                                    <span class="font-semibold text-blue-600 dark:text-blue-400">{{ step.label || step.value }}</span>?
                                 </p>
                                 <div class="flex items-center justify-center gap-2">
                                     <button type="button"
@@ -162,7 +162,7 @@ const cancelChange = () => {
                                         Cancel
                                     </button>
                                     <button type="button"
-                                        class="px-3 py-1 text-xs font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition"
+                                        class="px-3 py-1 text-xs font-medium text-white bg-blue-700 rounded-md hover:bg-blue-800 transition"
                                         @click.stop="confirmChange">
                                         Confirm
                                     </button>
@@ -174,7 +174,7 @@ const cancelChange = () => {
 
                 <!-- Connector after step (except last) -->
                 <div v-if="index < effectiveSteps.length - 1" class="flex-1 rounded-full mx-0.5 min-w-[12px]"
-                    :class="[sizeClasses.track, getStepState(index) === 'completed' ? 'bg-indigo-500' : 'bg-gray-200']" />
+                    :class="[sizeClasses.track, getStepState(index) === 'completed' ? 'bg-blue-600' : 'bg-gray-200']" />
             </template>
         </div>
         <!-- Labels row -->
@@ -191,7 +191,7 @@ const cancelChange = () => {
                             : getStepState(index) === 'completed'
                                 ? 'text-gray-600 dark:text-gray-300'
                                 : 'text-gray-400 dark:text-gray-500 dark:text-gray-400',
-                        editable && canClick(index) ? 'hover:text-indigo-600 dark:text-indigo-400 hover:font-medium' : '',
+                        editable && canClick(index) ? 'hover:text-blue-600 dark:text-blue-400 hover:font-medium' : '',
                     ]" :title="step.label || step.value">
                         {{ step.label || step.value }}
                     </span>

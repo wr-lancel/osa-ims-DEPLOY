@@ -8,6 +8,7 @@ use App\Models\CandidacyApplication;
 use App\Models\EnrolledStudent;
 use App\Models\OrgMember;
 use App\Models\OrgPosition;
+use App\Models\Student;
 use App\Models\StudentOrganization;
 use App\Models\SystemSetting;
 use Illuminate\Http\RedirectResponse;
@@ -53,6 +54,28 @@ class StudentCandidacyController extends Controller
             $preSelectedOrgId = null;
         }
 
+        $student = Student::with(['enrollments.course'])
+            ->where('student_number', $studentNumber)
+            ->first();
+
+        $activeEnrollment = $student?->enrollments
+            ->where('acad_id', $defaultAcadId)
+            ->first();
+
+        $studentInfo = [
+            'name' => $student?->full_name,
+            'first_name' => $student?->first_name,
+            'last_name' => $student?->last_name,
+            'middle_name' => $student?->middle_name,
+            'student_number' => $studentNumber,
+            'age' => $student?->birth_date ? $student->birth_date->age : null,
+            'course' => $activeEnrollment?->course?->course_name,
+            'course_code' => $activeEnrollment?->course?->course_code,
+            'year_level' => $activeEnrollment?->year_level,
+            'address' => $student?->address,
+            'phone' => $student?->phone,
+        ];
+
         return Inertia::render('Student/Organizations/CandidacyCreate', [
             'organizations' => $organizations,
             'positionsByOrg' => $positions->toArray(),
@@ -60,6 +83,7 @@ class StudentCandidacyController extends Controller
             'defaultAcadId' => $defaultAcadId,
             'preSelectedOrgId' => $preSelectedOrgId ? (int) $preSelectedOrgId : null,
             'candidacyOpen' => SystemSetting::isCandidacyOpen(),
+            'studentInfo' => $studentInfo,
         ]);
     }
 
@@ -124,6 +148,8 @@ class StudentCandidacyController extends Controller
                 'enrollment_id' => $enrollment->enrollment_id,
                 'position_id' => $request->position_id,
                 'acad_id' => $request->acad_id,
+                'party_affiliation' => $request->party_affiliation,
+                'unit_load' => $request->unit_load,
                 'platform_statement' => $request->platform_statement,
                 'motivation' => $request->motivation,
                 'status' => 'submitted',

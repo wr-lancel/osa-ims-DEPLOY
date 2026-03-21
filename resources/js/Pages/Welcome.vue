@@ -93,12 +93,12 @@ const services = [
 
                         <template v-if="canLogin">
                             <Link v-if="$page.props.auth.user" :href="route('dashboard')"
-                                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-900 dark:bg-indigo-600 text-white text-sm font-medium hover:bg-slate-800 dark:hover:bg-indigo-500 transition-colors">
+                                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-700 dark:bg-blue-600 text-white text-sm font-medium hover:bg-blue-800 dark:hover:bg-blue-500 transition-colors">
                                 Dashboard
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                             </Link>
                             <Link v-else :href="route('login')"
-                                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-900 dark:bg-indigo-600 text-white text-sm font-medium hover:bg-slate-800 dark:hover:bg-indigo-500 transition-colors">
+                                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-700 dark:bg-blue-600 text-white text-sm font-medium hover:bg-blue-800 dark:hover:bg-blue-500 transition-colors">
                                 Sign In
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                             </Link>
@@ -110,38 +110,40 @@ const services = [
 
         <!-- Hero Section -->
         <section class="relative overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900/20 transition-colors duration-200"></div>
-            <div class="absolute top-20 right-0 w-96 h-96 bg-indigo-100/30 dark:bg-indigo-500/10 rounded-full blur-3xl transition-colors duration-200"></div>
-            <div class="absolute bottom-0 left-0 w-80 h-80 bg-slate-100/50 dark:bg-slate-800/50 rounded-full blur-3xl transition-colors duration-200"></div>
+            <!-- Blue-to-yellow gradient backdrop -->
+            <div class="absolute inset-0 bg-gradient-to-br from-blue-900 via-blue-700 to-amber-500 dark:from-blue-950 dark:via-blue-900 dark:to-amber-600"></div>
+            <!-- Decorative glows -->
+            <div class="absolute top-10 right-10 w-96 h-96 bg-yellow-400/25 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-0 left-0 w-80 h-80 bg-blue-300/20 rounded-full blur-3xl"></div>
+            <div class="absolute top-1/2 left-1/3 w-64 h-64 bg-amber-300/15 rounded-full blur-3xl"></div>
 
             <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-24 lg:pt-28 lg:pb-32">
                 <div class="max-w-3xl">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800/50 mb-6 transition-colors">
-                        <span class="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
-                        <span class="text-xs font-medium text-indigo-700 dark:text-indigo-300">Concepcion Holy Cross College, Inc.</span>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-400/20 border border-yellow-300/30 mb-6">
+                        <span class="h-1.5 w-1.5 rounded-full bg-yellow-400 animate-pulse"></span>
+                        <span class="text-xs font-medium text-yellow-200">Concepcion Holy Cross College, Inc.</span>
                     </div>
 
-                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 dark:text-white tracking-tight leading-tight transition-colors">
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-tight">
                         Office of Student
-                        <span class="block text-indigo-600 dark:text-indigo-400">Affairs & Services</span>
+                        <span class="block text-yellow-400">Affairs & Services</span>
                     </h1>
 
-                    <p class="mt-6 text-lg text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed transition-colors">
+                    <p class="mt-6 text-lg text-blue-100 max-w-2xl leading-relaxed">
                         Serving students of CHCC through discipline, guidance, organizations, sports, and publications — all in one integrated platform.
                     </p>
 
                     <div class="mt-10 flex flex-wrap items-center gap-4 min-w-0">
                         <Link v-if="canLogin && !$page.props.auth.user" :href="route('login')"
-                            class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-900 dark:bg-indigo-600 text-white text-sm font-semibold hover:bg-slate-800 dark:hover:bg-indigo-500 shadow-lg shadow-slate-900/10 dark:shadow-indigo-900/20 transition-all hover:shadow-xl">
+                            class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-yellow-400 text-blue-900 text-sm font-semibold hover:bg-yellow-300 shadow-lg shadow-black/20 transition-all hover:shadow-xl">
                             Student Login
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
                         </Link>
                         <Link v-if="canLogin && $page.props.auth.user" :href="route('dashboard')"
-                            class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-900 dark:bg-indigo-600 text-white text-sm font-semibold hover:bg-slate-800 dark:hover:bg-indigo-500 shadow-lg transition-all hover:shadow-xl">
+                            class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-yellow-400 text-blue-900 text-sm font-semibold hover:bg-yellow-300 shadow-lg transition-all hover:shadow-xl">
                             Go to Dashboard
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
                         </Link>
-                        
                     </div>
                 </div>
             </div>
@@ -155,7 +157,7 @@ const services = [
                         <h2 class="text-3xl font-bold text-slate-900 dark:text-white">Latest Publications</h2>
                         <p class="mt-2 text-slate-500 dark:text-slate-400 text-sm">News and stories from our campus publication.</p>
                     </div>
-                    <Link :href="route('publications.index')" class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline hidden sm:block">
+                    <Link :href="route('publications.index')" class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline hidden sm:block">
                         View All →
                     </Link>
                 </div>
@@ -235,8 +237,12 @@ const services = [
         </section>
 
         <!-- Our Services Section -->
-        <section id="services" class="py-20 lg:py-28 bg-white dark:bg-slate-900 border-b border-slate-200/70 dark:border-slate-800/70 transition-colors duration-200 scroll-mt-16">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section id="services" class="relative py-20 lg:py-28 border-b border-slate-200/70 dark:border-slate-800/70 transition-colors duration-200 scroll-mt-16 overflow-hidden">
+            <!-- Subtle yellow-to-blue gradient background -->
+            <div class="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-yellow-50 dark:from-blue-950/40 dark:via-slate-900 dark:to-amber-950/20"></div>
+            <div class="absolute top-0 right-0 w-72 h-72 bg-yellow-200/30 dark:bg-yellow-400/5 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-0 left-0 w-72 h-72 bg-blue-200/30 dark:bg-blue-400/5 rounded-full blur-3xl"></div>
+            <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center mb-16">
                     <h2 class="text-3xl font-bold text-slate-900 dark:text-white">Our Services</h2>
                     <p class="mt-3 text-base text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
@@ -246,10 +252,10 @@ const services = [
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
                     <div v-for="(service, index) in services" :key="index"
-                        class="group relative bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-lg hover:shadow-slate-100 dark:hover:shadow-slate-900/50 transition-all duration-300">
+                        class="group relative bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-lg hover:shadow-blue-100 dark:hover:shadow-blue-900/20 transition-all duration-300">
                         <div class="flex items-center gap-3 mb-4">
-                            <div class="h-10 w-10 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 flex items-center justify-center group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 group-hover:border-indigo-200 dark:group-hover:border-indigo-800 transition-colors">
-                                <svg class="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <div class="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50 flex items-center justify-center group-hover:bg-yellow-50 dark:group-hover:bg-yellow-900/20 group-hover:border-yellow-200 dark:group-hover:border-yellow-700/50 transition-colors">
+                                <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" :d="service.icon" />
                                 </svg>
                             </div>
@@ -266,16 +272,16 @@ const services = [
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                     <div>
-                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800/50 mb-6 transition-colors">
-                            <span class="h-1.5 w-1.5 rounded-full bg-indigo-500"></span>
-                            <span class="text-xs font-medium text-indigo-700 dark:text-indigo-300">For Alumni & Former Students</span>
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800/50 mb-6 transition-colors">
+                            <span class="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
+                            <span class="text-xs font-medium text-blue-700 dark:text-blue-300">For Alumni & Former Students</span>
                         </div>
                         <h2 class="text-3xl font-bold text-slate-900 dark:text-white transition-colors">Certificate of Good Moral Character</h2>
                         <p class="mt-4 text-base text-slate-500 dark:text-slate-400 leading-relaxed transition-colors">
                             Alumni and former students of CHCC can now request a Certificate of Good Moral Character online — no need to visit the office first. Fill out the form, pay at the Cashier, and pick up your certificate at the Office of the Student Affairs and Services.
                         </p>
                         <Link :href="route('good-moral.create')"
-                            class="mt-8 inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-900 dark:bg-indigo-600 text-white text-sm font-semibold hover:bg-slate-800 dark:hover:bg-indigo-500 shadow-lg shadow-slate-900/10 dark:shadow-indigo-900/20 transition-all hover:shadow-xl">
+                            class="mt-8 inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-700 to-blue-600 text-white text-sm font-semibold hover:from-blue-800 hover:to-blue-700 shadow-lg shadow-blue-900/20 transition-all hover:shadow-xl">
                             Request a Certificate
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
                         </Link>
@@ -284,14 +290,14 @@ const services = [
                     <!-- 3-Step Process -->
                     <div class="space-y-5">
                         <div class="flex items-start gap-5 p-5 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm transition-colors">
-                            <div class="h-12 w-12 rounded-xl bg-indigo-600 text-white font-bold text-lg flex items-center justify-center flex-shrink-0">1</div>
+                            <div class="h-12 w-12 rounded-xl bg-yellow-400 text-blue-900 font-bold text-lg flex items-center justify-center flex-shrink-0">1</div>
                             <div>
                                 <h4 class="font-semibold text-slate-900 dark:text-white">Submit Your Request Online</h4>
                                 <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Fill out the online form with your personal and student details, along with the purpose of your request.</p>
                             </div>
                         </div>
                         <div class="flex items-start gap-5 p-5 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm transition-colors">
-                            <div class="h-12 w-12 rounded-xl bg-slate-900 dark:bg-slate-700 text-white font-bold text-lg flex items-center justify-center flex-shrink-0">2</div>
+                            <div class="h-12 w-12 rounded-xl bg-blue-700 dark:bg-blue-600 text-white font-bold text-lg flex items-center justify-center flex-shrink-0">2</div>
                             <div>
                                 <h4 class="font-semibold text-slate-900 dark:text-white">Pay at the Cashier</h4>
                                 <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Once your request is received, visit the CHCC Cashier to settle the processing fee for the certificate.</p>
@@ -319,37 +325,38 @@ const services = [
                         </div>
                         <h2 class="text-3xl font-bold text-slate-900 dark:text-white transition-colors">Office of Student Affairs and Services</h2>
                         <p class="mt-4 text-base text-slate-500 dark:text-slate-400 leading-relaxed transition-colors">
-                            The Office of Student Affairs and Services (OSAS) of Concepcion Holy Cross College, Inc. is the central unit that oversees and coordinates all non-academic student programs and services. We are committed to fostering holistic student development — supporting academic success, character formation, and active campus life.
+                            The Office of Student Affairs and Services (OSAS) at Concepcion Holy Cross College, Inc. aims to mold globally competent and value-laden citizens by striving to enrich students through a holistic approach in providing Student Welfare and Development Programs and Services in consonance with the vision, mission, goals and objectives of Concepcion Holy Cross College, Inc. and the mandates of the Commission on Higher Education (CHED). These basic services and programs ensure and promote student well-being and are designed to explore, enhance and develop the student's full potential in leadership and social responsibility through various institutional and student-initiated activities that uphold the core values of the college.
                         </p>
                         <div class="mt-6 space-y-3">
                             <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 transition-colors">
-                                <p class="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-1">Our Mission</p>
-                                <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">To provide quality student services that promote the holistic development of every student at CHCC.</p>
+                                <p class="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1">Our Mission</p>
+                                <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed"> The Office of Student Affairs and Services commits to providing excellent, learner-centered services and programs that align with the mission of Concepcion Holy Cross College, Inc. Guided by Christian principles and values, OSAS promotes academic and leadership excellence, social responsibility, and personal and professional growth among students, ensuring that they become competent individuals of character in the service of God and the community.</p>
                             </div>
                             <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 transition-colors">
-                                <p class="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-1">Our Vision</p>
-                                <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">A center of excellence in student affairs, empowering students to become responsible, well-rounded individuals ready to serve the community.</p>
+                                <p class="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1">Our Vision</p>
+                                <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed"> The Office of Student Affairs and Services envisions itself as a God-centered, student-focused arm of Concepcion Holy Cross College, Inc., committed to academic excellence, personal growth, career development, and holistic formation. It seeks to be a dynamic office that prioritizes student welfare, equity, and leadership, forming students into responsible and service-oriented members of a just and humane society.
+</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Live Stats -->
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="rounded-2xl bg-slate-900 dark:bg-slate-800 p-6 text-white transition-colors">
+                        <div class="rounded-2xl bg-gradient-to-br from-blue-800 to-blue-900 dark:from-blue-900 dark:to-blue-950 p-6 text-white transition-colors shadow-lg">
                             <div class="text-3xl font-bold">{{ totalEnrolled.toLocaleString() }}</div>
-                            <div class="text-sm text-slate-400 mt-1">Enrolled Students</div>
+                            <div class="text-sm text-blue-200 mt-1">Enrolled Students</div>
                         </div>
-                        <div class="rounded-2xl bg-indigo-600 dark:bg-indigo-500 p-6 text-white transition-colors">
+                        <div class="rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-500 p-6 text-blue-900 transition-colors shadow-lg">
                             <div class="text-3xl font-bold">{{ coursesOffered }}</div>
-                            <div class="text-sm text-indigo-200 mt-1">Courses Offered</div>
+                            <div class="text-sm text-blue-800 mt-1">Courses Offered</div>
                         </div>
-                        <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 transition-colors">
-                            <div class="text-3xl font-bold text-slate-900 dark:text-white">{{ totalOrganizations }}</div>
-                            <div class="text-sm text-slate-500 dark:text-slate-400 mt-1">Student Organizations</div>
+                        <div class="rounded-2xl border-2 border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 p-6 transition-colors">
+                            <div class="text-3xl font-bold text-blue-800 dark:text-blue-300">{{ totalOrganizations }}</div>
+                            <div class="text-sm text-blue-600 dark:text-blue-400 mt-1">Student Organizations</div>
                         </div>
-                        <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 transition-colors">
-                            <div class="text-3xl font-bold text-slate-900 dark:text-white">{{ yearsServing }}+</div>
-                            <div class="text-sm text-slate-500 dark:text-slate-400 mt-1">Years Serving</div>
+                        <div class="rounded-2xl border-2 border-yellow-300 dark:border-yellow-700/50 bg-yellow-50 dark:bg-yellow-900/10 p-6 transition-colors">
+                            <div class="text-3xl font-bold text-yellow-700 dark:text-yellow-400">{{ yearsServing }}+</div>
+                            <div class="text-sm text-yellow-600 dark:text-yellow-500 mt-1">Years Serving</div>
                         </div>
                     </div>
                 </div>
@@ -357,18 +364,18 @@ const services = [
         </section>
 
         <!-- Footer -->
-        <footer class="bg-white dark:bg-slate-900 border-t border-slate-200/70 dark:border-slate-800/70 py-10 transition-colors duration-200">
+        <footer class="relative bg-gradient-to-r from-blue-900 via-blue-800 to-amber-600 dark:from-blue-950 dark:via-blue-900 dark:to-amber-800 py-10 transition-colors duration-200">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex flex-col md:flex-row items-center justify-between gap-4">
                     <div class="flex items-center gap-3">
-                        <img src="/images/OSA-NEW-LOGO.png" alt="OSA Logo" class="h-8 w-8 rounded-xl object-contain border border-slate-200 dark:border-slate-700" />
-                        <span class="text-sm font-semibold text-slate-900 dark:text-white transition-colors">OSAS-IMS</span>
+                        <img src="/images/OSA-NEW-LOGO.png" alt="OSA Logo" class="h-8 w-8 rounded-xl object-contain border border-white/30" />
+                        <span class="text-sm font-semibold text-white">OSAS-IMS</span>
                     </div>
-                    <p class="text-sm text-slate-500 text-center">
+                    <p class="text-sm text-blue-100 text-center">
                         Office of Student Affairs and Services — Concepcion Holy Cross College, Inc.
                     </p>
                     <a href="https://www.facebook.com/example-osa-page" target="_blank" rel="noopener noreferrer"
-                        class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                        class="flex items-center gap-2 text-sm text-yellow-200 hover:text-yellow-400 transition-colors">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/>
                         </svg>

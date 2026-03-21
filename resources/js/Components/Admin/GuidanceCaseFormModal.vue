@@ -206,7 +206,7 @@ const getEnrollmentLabel = (enrollment) => {
                     <select
                         id="enrollment_id"
                         v-model="formData.enrollment_id"
-                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                         :class="{ 'border-red-300': errors.enrollment_id }"
                     >
                         <option value="">Select enrollment...</option>
@@ -237,7 +237,7 @@ const getEnrollmentLabel = (enrollment) => {
                     <select
                         id="case_type"
                         v-model="formData.case_type"
-                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                         :class="{ 'border-red-300': errors.case_type }"
                         required
                     >
@@ -255,7 +255,7 @@ const getEnrollmentLabel = (enrollment) => {
                         id="concern"
                         v-model="formData.concern"
                         rows="4"
-                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                         :class="{ 'border-red-300': errors.concern }"
                     ></textarea>
                     <InputError :message="errors.concern?.[0]" />
@@ -267,7 +267,7 @@ const getEnrollmentLabel = (enrollment) => {
                     <select
                         id="status"
                         v-model="formData.status"
-                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                         :class="{ 'border-red-300': errors.status }"
                         required
                     >
@@ -284,7 +284,7 @@ const getEnrollmentLabel = (enrollment) => {
                     <select
                         id="assigned_staff_id"
                         v-model="formData.assigned_staff_id"
-                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                         :class="{ 'border-red-300': errors.assigned_staff_id }"
                     >
                         <option value="">Unassigned</option>

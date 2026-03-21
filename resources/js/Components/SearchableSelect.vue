@@ -156,7 +156,7 @@ watch(searchText, () => {
         <!-- Input -->
         <div class="relative">
             <input ref="inputRef" v-model="searchText" type="text" :placeholder="placeholder" :disabled="disabled"
-                class="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 pr-8"
+                class="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-8"
                 :class="{
                     'border-red-300 focus:border-red-500 focus:ring-red-500': error,
                     'bg-gray-100 dark:bg-gray-600 cursor-not-allowed': disabled,
@@ -187,9 +187,9 @@ watch(searchText, () => {
             </div>
             <button v-for="(option, idx) in filteredOptions" :key="option[valueKey]" :data-index="idx" type="button"
                 class="block w-full text-left px-4 py-2.5 text-sm transition-colors" :class="{
-                    'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300': highlightedIndex === idx,
+                    'bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300': highlightedIndex === idx,
                     'text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-600': highlightedIndex !== idx,
-                    'font-medium bg-indigo-50/50 dark:bg-indigo-900/20': String(option[valueKey]) === String(modelValue),
+                    'font-medium bg-blue-50/50 dark:bg-blue-900/20': String(option[valueKey]) === String(modelValue),
                 }" @mousedown.prevent="selectOption(option)" @mouseenter="highlightedIndex = idx">
                 <slot name="option" :option="option">
                     {{ option[labelKey] }}

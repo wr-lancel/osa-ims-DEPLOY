@@ -162,7 +162,7 @@ const close = () => {
                     <select
                         id="borrower_type"
                         v-model="borrowerType"
-                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                     >
                         <option value="student">Student</option>
                         <option value="employee">Employee</option>
@@ -175,7 +175,7 @@ const close = () => {
                     <select
                         id="student_number"
                         v-model="form.student_number"
-                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                         :class="{ 'border-red-300': formErrors.student_number }"
                     >
                         <option value="">Select Student</option>
@@ -196,7 +196,7 @@ const close = () => {
                     <select
                         id="employee_id"
                         v-model="form.employee_id"
-                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                         :class="{ 'border-red-300': formErrors.employee_id }"
                     >
                         <option value="">Select Employee</option>
@@ -232,7 +232,7 @@ const close = () => {
                         id="description"
                         v-model="form.description"
                         rows="3"
-                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                         :class="{ 'border-red-300': formErrors.description }"
                     />
                     <InputError :message="formErrors.description" />
@@ -278,7 +278,7 @@ const close = () => {
                     <select
                         id="status"
                         v-model="form.status"
-                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                         :class="{ 'border-red-300': formErrors.status }"
                         required
                     >
@@ -300,7 +300,7 @@ const close = () => {
                         id="notes"
                         v-model="form.notes"
                         rows="3"
-                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                         :class="{ 'border-red-300': formErrors.notes }"
                     />
                     <InputError :message="formErrors.notes" />

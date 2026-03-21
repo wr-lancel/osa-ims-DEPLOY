@@ -116,10 +116,10 @@ watch(() => page.url, () => {
         <div class="space-y-1">
           <Link v-for="item in navItems" :key="item.routeName" :href="item.href"
             class="group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition" :class="isActive(item.routeName)
-              ? 'bg-slate-900 dark:bg-indigo-600 text-white shadow-sm'
+              ? 'bg-blue-700 dark:bg-blue-600 text-white shadow-sm'
               : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'">
             <span class="h-8 w-8 rounded-lg flex items-center justify-center border transition" :class="isActive(item.routeName)
-              ? 'border-white/10 bg-white/10 dark:border-indigo-500/30'
+              ? 'border-white/10 bg-white/10 dark:border-blue-400/30'
               : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 group-hover:border-slate-300 dark:group-hover:border-slate-600'" aria-hidden="true">
               <span class="h-2 w-2 rounded-full transition"
                 :class="isActive(item.routeName) ? 'bg-white' : 'bg-slate-400 dark:bg-slate-500 group-hover:bg-slate-700 dark:group-hover:bg-slate-300'" />
@@ -130,7 +130,7 @@ watch(() => page.url, () => {
             </span>
 
             <!-- Active indicator -->
-            <span v-if="isActive(item.routeName)" class="absolute right-3 h-1.5 w-1.5 rounded-full bg-white/80"
+            <span v-if="isActive(item.routeName)" class="absolute right-3 h-1.5 w-1.5 rounded-full bg-yellow-400"
               aria-hidden="true" />
           </Link>
         </div>
@@ -176,16 +176,16 @@ watch(() => page.url, () => {
             <div class="space-y-1">
               <Link v-for="item in navItems" :key="item.routeName" :href="item.href"
                 class="group relative flex items-center gap-3 rounded-xl px-3 py-3 text-sm transition" :class="isActive(item.routeName)
-                  ? 'bg-slate-900 dark:bg-indigo-600 text-white shadow-sm'
+                  ? 'bg-blue-700 dark:bg-blue-600 text-white shadow-sm'
                   : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'">
                 <span class="h-8 w-8 rounded-lg flex items-center justify-center border transition" :class="isActive(item.routeName)
-                  ? 'border-white/10 bg-white/10 dark:border-indigo-500/30'
+                  ? 'border-white/10 bg-white/10 dark:border-blue-400/30'
                   : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 group-hover:border-slate-300 dark:group-hover:border-slate-600'" aria-hidden="true">
                   <span class="h-2 w-2 rounded-full transition"
                     :class="isActive(item.routeName) ? 'bg-white' : 'bg-slate-400 dark:bg-slate-500 group-hover:bg-slate-700 dark:group-hover:bg-slate-300'" />
                 </span>
                 <span class="font-medium">{{ item.label }}</span>
-                <span v-if="isActive(item.routeName)" class="absolute right-3 h-1.5 w-1.5 rounded-full bg-white/80"
+                <span v-if="isActive(item.routeName)" class="absolute right-3 h-1.5 w-1.5 rounded-full bg-yellow-400"
                   aria-hidden="true" />
               </Link>
             </div>

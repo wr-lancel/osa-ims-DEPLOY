@@ -28,7 +28,9 @@ watch(flash, (f) => {
 
 <template>
     <div class="bg-gray-100 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100 transition-colors duration-200">
-        <div class="flex flex-col md:flex-row">
+        <!-- Brand accent bar -->
+        <div class="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-700 via-blue-500 to-amber-400 z-50"></div>
+        <div class="flex flex-col md:flex-row pt-1">
             <!-- Sidebar -->
             <AdminSidebar :mobile-open="mobileMenuOpen" @close="mobileMenuOpen = false" />
 

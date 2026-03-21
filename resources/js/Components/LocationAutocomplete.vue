@@ -132,7 +132,7 @@ const onKeydown = (e) => {
                 :value="inputText"
                 :placeholder="placeholder"
                 autocomplete="off"
-                class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100 pr-8"
+                class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100 pr-8"
                 :class="{ 'border-red-300 focus:border-red-500 focus:ring-red-500': error }"
                 @input="onInput"
                 @blur="onBlur"
@@ -141,7 +141,7 @@ const onKeydown = (e) => {
 
             <!-- Loading spinner -->
             <div v-if="isLoading" class="absolute inset-y-0 right-2 flex items-center pointer-events-none">
-                <svg class="h-4 w-4 animate-spin text-indigo-500" fill="none" viewBox="0 0 24 24">
+                <svg class="h-4 w-4 animate-spin text-blue-500" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                 </svg>
@@ -170,7 +170,7 @@ const onKeydown = (e) => {
                 :key="idx"
                 class="px-4 py-2.5 text-sm cursor-pointer transition-colors"
                 :class="highlighted === idx
-                    ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300'
+                    ? 'bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
                     : 'text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-600'"
                 @mousedown.prevent="select(location)"
                 @mouseenter="highlighted = idx"

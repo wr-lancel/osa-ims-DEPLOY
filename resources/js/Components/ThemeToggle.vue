@@ -23,8 +23,8 @@ const toggleTheme = () => {
 <template>
     <button
         @click="toggleTheme"
-        class="relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-        :class="isDark ? 'bg-indigo-600' : 'bg-gray-200'"
+        class="relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        :class="isDark ? 'bg-blue-600' : 'bg-gray-200'"
         role="switch"
         :aria-checked="isDark"
         aria-label="Toggle Dark Mode"
@@ -33,7 +33,7 @@ const toggleTheme = () => {
             class="inline-block h-6 w-6 transform rounded-full bg-white transition-transform duration-200 ease-in-out flex items-center justify-center shadow"
             :class="isDark ? 'translate-x-7' : 'translate-x-1'"
         >
-            <svg v-if="isDark" class="w-4 h-4 text-indigo-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <svg v-if="isDark" class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                 <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
             </svg>
             <svg v-else class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">

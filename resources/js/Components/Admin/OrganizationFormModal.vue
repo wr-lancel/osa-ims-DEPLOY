@@ -162,7 +162,7 @@ const close = () => {
                             </button>
                         </div>
                         <div class="flex-1">
-                            <input type="file" id="logo" @change="handleLogoChange" accept="image/*" class="block w-full text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" />
+                            <input type="file" id="logo" @change="handleLogoChange" accept="image/*" class="block w-full text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-800 hover:file:bg-blue-100" />
                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">PNG, JPG, GIF up to 5MB (Square ratio recommended)</p>
                             <InputError :message="formErrors.logo" class="mt-1" />
                         </div>
@@ -204,7 +204,7 @@ const close = () => {
                         id="description"
                         v-model="form.description"
                         rows="4"
-                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                         :class="{ 'border-red-300': formErrors.description }"
                     />
                     <InputError :message="formErrors.description" />
@@ -216,7 +216,7 @@ const close = () => {
                     <select
                         id="type"
                         v-model="form.type"
-                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                         :class="{ 'border-red-300': formErrors.type }"
                     >
                         <option
@@ -236,7 +236,7 @@ const close = () => {
                     <select
                         id="status"
                         v-model="form.status"
-                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                         :class="{ 'border-red-300': formErrors.status }"
                         required
                     >

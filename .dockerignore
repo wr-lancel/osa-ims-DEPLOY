@@ -2,3 +2,7 @@
 node_modules
 .env
 storage/logs/*
+# Exclude the local absolute symlink — start.sh recreates it correctly inside the container
+public/storage
+# Exclude uploaded files from the build image — they should come from a mounted volume
+storage/app/public

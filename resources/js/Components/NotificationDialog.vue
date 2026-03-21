@@ -77,7 +77,7 @@ const confirmButtonClass = computed(() => {
     if (props.type === 'error' || props.confirmLabel?.toLowerCase().includes('delete') || props.confirmLabel?.toLowerCase().includes('remove')) {
         return 'bg-red-600 hover:bg-red-700 focus:ring-red-500';
     }
-    return 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500';
+    return 'bg-blue-700 hover:bg-blue-800 focus:ring-blue-500';
 });
 </script>
 
@@ -151,7 +151,7 @@ const confirmButtonClass = computed(() => {
                                         v-if="type !== 'confirm'"
                                         type="button"
                                         @click="$emit('close')"
-                                        class="flex-shrink-0 rounded-md p-1.5 text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                                        class="flex-shrink-0 rounded-md p-1.5 text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                                     >
                                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -168,7 +168,7 @@ const confirmButtonClass = computed(() => {
                                 <button
                                     type="button"
                                     @click="$emit('close')"
-                                    class="inline-flex items-center rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors"
+                                    class="inline-flex items-center rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
                                 >
                                     {{ cancelLabel }}
                                 </button>

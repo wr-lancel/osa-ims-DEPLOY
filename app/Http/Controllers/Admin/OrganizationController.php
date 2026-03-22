@@ -12,6 +12,7 @@ use App\Models\Notification;
 use App\Models\OrgAdviser;
 use App\Models\OrgMeeting;
 use App\Models\OrgOfficer;
+use App\Models\OrgPosition;
 use App\Models\StudentOrganization;
 use App\Models\SystemSetting;
 use App\Models\Event;
@@ -137,7 +138,25 @@ class OrganizationController extends Controller
         // Remove the file object from data - only logo_path should be saved to DB
         unset($data['logo']);
 
-        StudentOrganization::create($data);
+        $org = StudentOrganization::create($data);
+
+        $defaultPositions = [
+            'President',
+            'Vice President',
+            'Secretary',
+            'Treasurer',
+            'Auditor',
+            'PIO',
+            'Business Manager',
+            'Sergeant-at-Arms',
+        ];
+
+        foreach ($defaultPositions as $positionName) {
+            OrgPosition::firstOrCreate(
+                ['org_id' => $org->org_id, 'position_name' => $positionName],
+                ['is_active' => true]
+            );
+        }
 
         return redirect()->route('admin.organizations.index')
             ->with('success', 'Organization created successfully.');

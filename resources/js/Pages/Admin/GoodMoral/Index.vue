@@ -240,6 +240,10 @@ const formatDate = (date) => date ? new Date(date).toLocaleDateString('en-US', {
                                     <p class="font-medium text-slate-800 dark:text-slate-200">{{ selectedRequest?.contact_number }}</p>
                                 </div>
                                 <div class="col-span-2">
+                                    <p class="text-xs text-slate-400 mb-0.5">Email</p>
+                                    <p class="font-medium text-slate-800 dark:text-slate-200">{{ selectedRequest?.email || '—' }}</p>
+                                </div>
+                                <div class="col-span-2">
                                     <p class="text-xs text-slate-400 mb-0.5">Purpose</p>
                                     <p class="font-medium text-slate-800 dark:text-slate-200">{{ selectedRequest?.purpose }}</p>
                                 </div>

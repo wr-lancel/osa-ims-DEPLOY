@@ -108,7 +108,7 @@ watch(() => props.show, (isShowing) => {
             form.status = props.violation.status || defaultStatus.value;
             form.sanction = props.violation.sanction || '';
             form.remarks = props.violation.remarks || '';
-            form.date_resolved = props.violation.date_resolved || '';
+            form.date_resolved = props.violation.date_resolved || new Date().toISOString().split('T')[0];
             form.reported_by = props.violation.reported_by || null;
         } else {
             form.reset();

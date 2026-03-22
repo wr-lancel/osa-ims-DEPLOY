@@ -162,7 +162,7 @@ const close = () => {
                     />
                     <InputError :message="form.errors.purpose_notes" />
                 </div>
-                <div class="mb-6">
+                <div v-if="meeting" class="mb-6">
                     <InputLabel for="status" value="Status" />
                     <select
                         id="status"

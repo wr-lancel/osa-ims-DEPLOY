@@ -31,6 +31,14 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    violationTypes: {
+        type: Array,
+        default: () => [],
+    },
+    violationSeverities: {
+        type: Array,
+        default: () => ['Minor', 'Moderate', 'Major'],
+    },
     isRepeatOffender: {
         type: Boolean,
         default: false,
@@ -394,6 +402,9 @@ const saveNarrative = () => {
         </div>
 
         <DisciplineFormModal :show="showEditModal" :violation="editViolation" :enrollments="[]"
+            :status-options="workflowSteps"
+            :violation-types="violationTypes"
+            :violation-severities="violationSeverities"
             @close="showEditModal = false" @saved="handleSaved" />
         <DisciplineMeetingModal :show="showMeetingModal" :discipline-id="violation.discipline_id"
             :meeting="selectedMeeting" @close="showMeetingModal = false; selectedMeeting = null"

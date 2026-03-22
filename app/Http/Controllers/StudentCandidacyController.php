@@ -185,7 +185,7 @@ class StudentCandidacyController extends Controller
                 'submitted_at' => $app->submitted_at?->format('Y-m-d H:i'),
             ]);
 
-        $candidacyOpen = SystemSetting::getValue('candidacy_open', false);
+        $candidacyOpen = SystemSetting::isCandidacyOpen();
 
         return Inertia::render('Student/Organizations/CandidaciesIndex', [
             'candidacies' => $candidacies,

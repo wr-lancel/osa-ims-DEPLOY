@@ -184,7 +184,7 @@ const cancelChange = () => {
                     index === 0 ? 'items-start' : index === effectiveSteps.length - 1 ? 'items-end' : 'items-center',
                     editable && canClick(index) ? 'cursor-pointer' : '',
                 ]" @click="handleStepClick(index)">
-                    <span class="truncate max-w-full" :class="[
+                    <span class="truncate max-w-full capitalize" :class="[
                         sizeClasses.label,
                         getStepState(index) === 'current'
                             ? 'font-medium text-gray-900 dark:text-white'

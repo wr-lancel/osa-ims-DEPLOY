@@ -12,6 +12,10 @@ defineProps({
     status: {
         type: String,
     },
+    profileName: {
+        type: String,
+        default: null,
+    },
 });
 </script>
 
@@ -31,6 +35,7 @@ defineProps({
                     <UpdateProfileInformationForm
                         :must-verify-email="mustVerifyEmail"
                         :status="status"
+                        :profile-name="profileName"
                         class="max-w-2xl"
                     />
                 </div>

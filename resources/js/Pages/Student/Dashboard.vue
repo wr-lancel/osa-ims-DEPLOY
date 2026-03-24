@@ -62,7 +62,7 @@ const quickActions = [
     <StudentLayout>
         <template #header>
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <h2 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
+                <h2 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-blue-700 dark:from-blue-400 dark:to-blue-400">
                     Welcome back, {{ firstName }} 👋
                 </h2>
                 <div class="text-sm font-semibold text-gray-500 dark:text-gray-400 bg-white/50 dark:bg-gray-800/50 backdrop-blur px-4 py-2 rounded-xl border border-gray-100 dark:border-gray-700/50">

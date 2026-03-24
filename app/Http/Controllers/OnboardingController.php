@@ -65,6 +65,10 @@ class OnboardingController extends Controller
     {
         $user = Auth::user();
 
+        if ($user->must_change_password) {
+            return redirect()->route('onboarding.change-password');
+        }
+
         if (!$user->student_number) {
             return redirect()->route('admin.dashboard');
         }
@@ -151,6 +155,11 @@ class OnboardingController extends Controller
     public function completeProfile(Request $request): RedirectResponse
     {
         $user = Auth::user();
+
+        if ($user->must_change_password) {
+            return redirect()->route('onboarding.change-password');
+        }
+
         $studentNumber = $user->student_number;
 
         if (!$studentNumber) {

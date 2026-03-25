@@ -11,13 +11,10 @@ class RiskScoringService
     /**
      * Compute risk score for a single student.
      *
-     * Formula (current — income & crime rate pending data):
+     * Formula:
      *   violation_sub_score = min(100, minor*10 + moderate*25 + major*40)
      *   guidance_sub_score  = min(100, referral*15 + other*5)
      *   risk_score = violation_sub_score * 0.70 + guidance_sub_score * 0.30
-     *
-     * When income / crime rate data become available:
-     *   risk_score = violation*0.45 + guidance*0.20 + income*0.20 + crime*0.15
      */
     public function computeScore(Student $student): array
     {
@@ -76,8 +73,6 @@ class RiskScoringService
                 'sub_score' => $guidanceSubScore,
                 'weight'    => 0.30,
             ],
-            'income_bracket' => null,
-            'crime_rate'     => null,
         ];
 
         return [

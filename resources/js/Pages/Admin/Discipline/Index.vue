@@ -646,17 +646,7 @@ const exportPdf = async () => {
             </div>
 
             <!-- Formula notes -->
-            <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-4">
-                <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Scoring Formula (current)</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">
-                    Risk Score = Violation History (70%) + Guidance Incidents (30%) &nbsp;·&nbsp;
-                    Violation sub-score: Minor ×10 + Moderate ×25 + Major ×40 (max 100) &nbsp;·&nbsp;
-                    Guidance sub-score: Referral ×15 + Other ×5 (max 100)
-                </p>
-                <p class="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                    Income bracket and crime rate factors are pending data integration. Weights will be adjusted to 45/20/20/15 once available.
-                </p>
-            </div>
+            
         </div><!-- end risk tab -->
 
         <!-- Modal -->

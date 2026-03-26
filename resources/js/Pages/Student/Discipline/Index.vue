@@ -253,11 +253,19 @@ const goToDetail = (v) => {
 
             <!-- Student Code of Conduct -->
             <div class="space-y-4">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Student Code of Conduct</h3>
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Student Code of Conduct</h3>
+                    <Link
+                        :href="route('student.discipline.code-of-conduct.index')"
+                        class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-sm"
+                    >
+                        View All &rarr;
+                    </Link>
+                </div>
                 <p class="text-sm text-gray-600 dark:text-gray-300">
-                    Review the categories and topics below. Each item links to more detail.
+                    Review the student code of conduct below. Click on any topic to learn more.
                 </p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     <div
                         v-for="section in codeOfConductSections"
                         :key="section.id"
@@ -268,12 +276,12 @@ const goToDetail = (v) => {
                             <li
                                 v-for="item in section.items"
                                 :key="item.slug"
-                                class="flex items-center"
+                                class="flex items-start"
                             >
-                                <span class="text-gray-400 dark:text-gray-500 dark:text-gray-400 mr-2">•</span>
+                                <span class="text-gray-400 dark:text-gray-500 mr-2 mt-0.5">•</span>
                                 <Link
                                     :href="route('student.discipline.code-of-conduct.show', item.slug)"
-                                    class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-sm"
+                                    class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-sm hover:underline"
                                 >
                                     {{ item.title }}
                                 </Link>

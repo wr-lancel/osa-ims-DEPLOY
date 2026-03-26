@@ -99,7 +99,7 @@ class DisciplineController extends Controller
             'remarks' => $discipline->remarks,
             'narrative_report' => $discipline->narrative_report,
             'narrative_report_file_url' => $discipline->narrative_report_file
-                ? Storage::url($discipline->narrative_report_file)
+                ? Storage::disk('public')->url($discipline->narrative_report_file)
                 : null,
             'narrative_report_file_name' => $discipline->narrative_report_file
                 ? basename($discipline->narrative_report_file)

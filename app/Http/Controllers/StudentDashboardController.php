@@ -213,7 +213,7 @@ class StudentDashboardController extends Controller
             'latestPublication' => $latestPublication ? [
                 'title' => $latestPublication->title,
                 'slug' => $latestPublication->slug,
-                'cover_image' => $latestPublication->cover_image ? Storage::url($latestPublication->cover_image) : null,
+                'cover_image' => $latestPublication->cover_image ? Storage::disk('public')->url($latestPublication->cover_image) : null,
                 'published_at' => $latestPublication->published_at?->format('M d, Y'),
             ] : null,
             'latestNewspaper' => $latestNewspaper ? [

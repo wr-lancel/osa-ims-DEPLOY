@@ -25,7 +25,7 @@ class WelcomeController extends Controller
                 'title' => $a->title,
                 'slug' => $a->slug,
                 'excerpt' => $a->excerpt,
-                'cover_image' => $a->cover_image ? Storage::url($a->cover_image) : null,
+                'cover_image' => $a->cover_image ? Storage::disk('public')->url($a->cover_image) : null,
                 'author_name' => $a->author?->display_name ?? 'OSA Publication',
                 'published_at' => $a->published_at?->format('M d, Y'),
             ]);
@@ -38,7 +38,7 @@ class WelcomeController extends Controller
                 'newspaper_id' => $n->newspaper_id,
                 'title' => $n->title,
                 'slug' => $n->slug,
-                'cover_image' => $n->cover_image ? Storage::url($n->cover_image) : null,
+                'cover_image' => $n->cover_image ? Storage::disk('public')->url($n->cover_image) : null,
                 'issue_number' => $n->issue_number,
                 'published_at' => $n->published_at?->format('M d, Y'),
             ]);
@@ -52,10 +52,10 @@ class WelcomeController extends Controller
                 'gallery_id' => $g->gallery_id,
                 'title' => $g->title,
                 'slug' => $g->slug,
-                'cover_image' => $g->cover_image ? Storage::url($g->cover_image) : null,
+                'cover_image' => $g->cover_image ? Storage::disk('public')->url($g->cover_image) : null,
                 'photos_count' => $g->photos->count(),
                 'published_at' => $g->published_at?->format('M d, Y'),
-                'preview_photos' => $g->photos->take(4)->map(fn($p) => Storage::url($p->image_path))->values(),
+                'preview_photos' => $g->photos->take(4)->map(fn($p) => Storage::disk('public')->url($p->image_path))->values(),
             ]);
 
         $totalEnrolled      = DB::table('enrolled_students')->where('enrollment_status', 'enrolled')->count();

@@ -205,7 +205,7 @@ class GuidanceController extends Controller
                 'rejector_name' => $rejectorName,
                 'narrative_report' => $appointment->narrative_report,
                 'narrative_report_file_url' => $appointment->narrative_report_file
-                    ? Storage::url($appointment->narrative_report_file)
+                    ? Storage::disk('public')->url($appointment->narrative_report_file)
                     : null,
                 'narrative_report_file_name' => $appointment->narrative_report_file
                     ? basename($appointment->narrative_report_file)
@@ -249,7 +249,7 @@ class GuidanceController extends Controller
             if ($request->hasFile('narrative_report_file')) {
                 // Delete old file if exists
                 if ($appointment->narrative_report_file) {
-                    Storage::delete($appointment->narrative_report_file);
+                    Storage::disk('public')->delete($appointment->narrative_report_file);
                 }
                 $data['narrative_report_file'] = $request->file('narrative_report_file')
                     ->store('guidance-narratives', 'public');
@@ -258,7 +258,7 @@ class GuidanceController extends Controller
             // Handle narrative file removal
             if ($request->input('remove_narrative_file')) {
                 if ($appointment->narrative_report_file) {
-                    Storage::delete($appointment->narrative_report_file);
+                    Storage::disk('public')->delete($appointment->narrative_report_file);
                 }
                 $data['narrative_report_file'] = null;
             }

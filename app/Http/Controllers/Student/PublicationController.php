@@ -63,6 +63,7 @@ class PublicationController extends Controller
 
         $coverPath = null;
         if ($request->hasFile('cover_image')) {
+            Storage::disk('public')->makeDirectory('publications/articles/covers');
             $coverPath = $request->file('cover_image')->store('publications/articles/covers', 'public');
         }
 
@@ -101,6 +102,7 @@ class PublicationController extends Controller
             if ($article->cover_image) {
                 Storage::disk('public')->delete($article->cover_image);
             }
+            Storage::disk('public')->makeDirectory('publications/articles/covers');
             $data['cover_image'] = $request->file('cover_image')->store('publications/articles/covers', 'public');
         } else {
             unset($data['cover_image']);
@@ -145,6 +147,7 @@ class PublicationController extends Controller
 
         $coverPath = null;
         if ($request->hasFile('cover_image')) {
+            Storage::disk('public')->makeDirectory('publications/newspapers/covers');
             $coverPath = $request->file('cover_image')->store('publications/newspapers/covers', 'public');
         }
 
@@ -184,6 +187,7 @@ class PublicationController extends Controller
             if ($newspaper->cover_image) {
                 Storage::disk('public')->delete($newspaper->cover_image);
             }
+            Storage::disk('public')->makeDirectory('publications/newspapers/covers');
             $data['cover_image'] = $request->file('cover_image')->store('publications/newspapers/covers', 'public');
         } else {
             unset($data['cover_image']);
@@ -226,6 +230,7 @@ class PublicationController extends Controller
 
         $coverPath = null;
         if ($request->hasFile('cover_image')) {
+            Storage::disk('public')->makeDirectory('publications/galleries/covers');
             $coverPath = $request->file('cover_image')->store('publications/galleries/covers', 'public');
         }
 
@@ -241,6 +246,7 @@ class PublicationController extends Controller
         ]);
 
         if ($request->hasFile('photos')) {
+            Storage::disk('public')->makeDirectory("publications/galleries/{$gallery->gallery_id}");
             foreach ($request->file('photos') as $index => $photo) {
                 $path = $photo->store("publications/galleries/{$gallery->gallery_id}", 'public');
                 PublicationGalleryPhoto::create([
@@ -275,6 +281,7 @@ class PublicationController extends Controller
             if ($gallery->cover_image) {
                 Storage::disk('public')->delete($gallery->cover_image);
             }
+            Storage::disk('public')->makeDirectory('publications/galleries/covers');
             $data['cover_image'] = $request->file('cover_image')->store('publications/galleries/covers', 'public');
         } else {
             unset($data['cover_image']);
@@ -318,6 +325,7 @@ class PublicationController extends Controller
 
         $maxOrder = $gallery->photos()->max('sort_order') ?? -1;
 
+        Storage::disk('public')->makeDirectory("publications/galleries/{$gallery->gallery_id}");
         foreach ($request->file('photos') as $index => $photo) {
             $path = $photo->store("publications/galleries/{$gallery->gallery_id}", 'public');
             PublicationGalleryPhoto::create([

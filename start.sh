@@ -7,6 +7,9 @@ echo "Starting deployment script..."
 
 # Ensure storage directories exist (including public uploads dir for mounted volume)
 mkdir -p storage/app/public
+mkdir -p storage/app/public/publications/articles/covers
+mkdir -p storage/app/public/publications/newspapers/covers
+mkdir -p storage/app/public/publications/galleries/covers
 mkdir -p storage/framework/{sessions,views,cache}
 mkdir -p storage/logs
 chmod -R 775 storage bootstrap/cache

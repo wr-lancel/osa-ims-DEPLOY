@@ -12,6 +12,7 @@ mkdir -p storage/app/public/publications/newspapers/covers
 mkdir -p storage/app/public/publications/galleries/covers
 mkdir -p storage/framework/{sessions,views,cache}
 mkdir -p storage/logs
+chown -R www-data:www-data storage bootstrap/cache
 chmod -R 775 storage bootstrap/cache
 
 # Create the storage symlink using a relative path so it works inside any container

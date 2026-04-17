@@ -33,7 +33,7 @@ const props = defineProps({
     },
     violationSeverities: {
         type: Array,
-        default: () => ['Minor', 'Moderate', 'Major'],
+        default: () => ['Minor', 'Major'],
     },
 });
 

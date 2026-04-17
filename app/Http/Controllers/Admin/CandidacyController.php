@@ -19,16 +19,13 @@ class CandidacyController extends Controller
      */
     public function index(Request $request): Response
     {
-        $query = CandidacyApplication::with(['enrollment.student', 'position', 'academicCalendar', 'organization']);
+        $query = CandidacyApplication::with(['enrollment.student', 'academicCalendar', 'organization']);
 
         if ($request->filled('org_id')) {
             $query->where('org_id', $request->org_id);
         }
         if ($request->filled('status')) {
             $query->where('status', $request->status);
-        }
-        if ($request->filled('position_id')) {
-            $query->where('position_id', $request->position_id);
         }
         if ($request->filled('acad_id')) {
             $query->where('acad_id', $request->acad_id);
@@ -66,7 +63,7 @@ class CandidacyController extends Controller
                 'student_number' => $app->enrollment?->student?->student_number ?? '—',
                 'org_name' => $app->organization?->org_name ?? '—',
                 'org_code' => $app->organization?->org_code ?? '—',
-                'position_name' => $app->position?->position_name,
+                'position_name' => $app->position_name,
                 'term_label' => $app->academicCalendar ? ($app->academicCalendar->academic_year . ($app->academicCalendar->semester ? ' - ' . $app->academicCalendar->semester : '')) : null,
                 'submitted_at' => $app->submitted_at?->format('Y-m-d H:i'),
                 'status' => $app->status,
@@ -89,22 +86,32 @@ class CandidacyController extends Controller
      */
     public function show(CandidacyApplication $application): Response
     {
-        $application->load(['enrollment.student', 'position', 'academicCalendar', 'organization']);
+        $application->load(['enrollment.student', 'enrollment.course', 'academicCalendar', 'organization']);
+
+        $student = $application->enrollment?->student;
+        $enrollment = $application->enrollment;
 
         $data = [
             'application_id' => $application->application_id,
-            'applicant_name' => $application->enrollment?->student?->full_name ?? '—',
-            'student_number' => $application->enrollment?->student?->student_number ?? '—',
+            'applicant_name' => $student?->full_name ?? '—',
+            'student_number' => $student?->student_number ?? '—',
             'org_name' => $application->organization?->org_name ?? '—',
             'org_code' => $application->organization?->org_code ?? '—',
-            'position_name' => $application->position?->position_name,
+            'position_name' => $application->position_name,
             'term_label' => $application->academicCalendar ? ($application->academicCalendar->academic_year . ($application->academicCalendar->semester ? ' - ' . $application->academicCalendar->semester : '')) : null,
             'platform_statement' => $application->platform_statement,
             'motivation' => $application->motivation,
+            'party_affiliation' => $application->party_affiliation,
+            'unit_load' => $application->unit_load,
             'status' => $application->status,
             'submitted_at' => $application->submitted_at?->format('Y-m-d H:i'),
             'reviewed_at' => $application->reviewed_at?->format('Y-m-d H:i'),
             'review_remarks' => $application->review_remarks,
+            'age' => $student?->birth_date ? $student->birth_date->age : null,
+            'course' => $enrollment?->course?->course_name,
+            'year_level' => $enrollment?->year_level,
+            'address' => $student?->address,
+            'phone' => $student?->phone,
         ];
 
         return Inertia::render('Admin/Organizations/CandidacyShow', [
@@ -143,7 +150,7 @@ class CandidacyController extends Controller
      */
     public function exportPdf(Request $request)
     {
-        $query = CandidacyApplication::with(['enrollment.student', 'position', 'academicCalendar', 'organization']);
+        $query = CandidacyApplication::with(['enrollment.student', 'academicCalendar', 'organization']);
 
         if ($request->filled('org_id')) {
             $query->where('org_id', $request->org_id);
@@ -165,7 +172,7 @@ class CandidacyController extends Controller
             $app->enrollment?->student?->full_name ?? '—',
             $app->enrollment?->student?->student_number ?? '—',
             $app->organization?->org_name ?? '—',
-            $app->position?->position_name ?? '—',
+            $app->position_name ?? '—',
             $app->academicCalendar ? ($app->academicCalendar->academic_year . ($app->academicCalendar->semester ? ' - ' . $app->academicCalendar->semester : '')) : '—',
             $app->submitted_at?->format('Y-m-d H:i') ?? '—',
             ucfirst(str_replace('_', ' ', $app->status)),

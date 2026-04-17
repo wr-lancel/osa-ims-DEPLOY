@@ -70,7 +70,6 @@ const getStatusColor = (status) => {
 
 const getSeverityColor = (severity) => {
     if (severity === 'Major') return 'bg-red-100 text-red-800';
-    if (severity === 'Moderate') return 'bg-yellow-100 text-yellow-800';
     if (severity === 'Minor') return 'bg-green-100 text-green-800';
     return 'bg-gray-100 text-gray-800';
 };

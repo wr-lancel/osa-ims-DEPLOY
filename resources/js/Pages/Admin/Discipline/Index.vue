@@ -161,7 +161,6 @@ const handleSort = ({ column, dir }) => {
 const severityOptions = [
     { value: '', label: 'All Severities' },
     { value: 'Minor', label: 'Minor' },
-    { value: 'Moderate', label: 'Moderate' },
     { value: 'Major', label: 'Major' },
 ];
 
@@ -448,7 +447,6 @@ const exportPdf = async () => {
                                     <span v-if="violation.severity"
                                         class="inline-flex px-2 py-1 text-xs font-semibold rounded-full" :class="{
                                             'bg-red-100 text-red-800': violation.severity === 'Major',
-                                            'bg-yellow-100 text-yellow-800': violation.severity === 'Moderate',
                                             'bg-green-100 text-green-800': violation.severity === 'Minor',
                                         }">
                                         {{ violation.severity }}

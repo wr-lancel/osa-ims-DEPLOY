@@ -275,10 +275,9 @@ const previewTerminal = computed(() =>
 const typeProcessing = ref(false);
 const typeErrors = ref({});
 
-const severities = computed(() => props.lookupValues?.violation_severities || ['Minor', 'Moderate', 'Major']);
+const severities = computed(() => props.lookupValues?.violation_severities || ['Minor', 'Major']);
 const severityColors = {
     Minor: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700', badge: 'bg-green-100 text-green-800' },
-    Moderate: { bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-700', badge: 'bg-yellow-100 text-yellow-800' },
     Major: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', badge: 'bg-red-100 text-red-800' },
 };
 

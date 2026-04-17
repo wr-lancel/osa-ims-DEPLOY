@@ -17,6 +17,7 @@ class CandidacyApplication extends Model
         'org_id',
         'enrollment_id',
         'position_id',
+        'position_name',
         'acad_id',
         'party_affiliation',
         'unit_load',

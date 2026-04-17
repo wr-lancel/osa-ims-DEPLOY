@@ -58,3 +58,57 @@
 .dark .dark\:scrollbar-thumb-gray-600::-webkit-scrollbar-thumb {
     @apply bg-gray-600 rounded-full;
 }
+
+/* ─── Print styles ─── */
+@media print {
+    /* Hide navigation, sidebar, buttons, and non-content elements */
+    nav,
+    aside,
+    .print\:hidden,
+    button,
+    a[class*="rounded-md"] {
+        display: none !important;
+    }
+
+    /* Force white background and black text */
+    body,
+    main,
+    [class*="bg-gray-"],
+    [class*="bg-white"],
+    [class*="dark:bg-"] {
+        background: white !important;
+        color: black !important;
+    }
+
+    /* Make main content full width */
+    main,
+    .flex-1 {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Clean up cards for print */
+    [class*="shadow-"],
+    [class*="rounded-lg"] {
+        box-shadow: none !important;
+        border: 1px solid #e5e7eb !important;
+    }
+
+    /* Ensure text is readable */
+    [class*="text-gray-"],
+    [class*="dark:text-"] {
+        color: black !important;
+    }
+
+    label,
+    [class*="text-gray-500"] {
+        color: #4b5563 !important;
+    }
+
+    /* Hide the brand accent bar */
+    [class*="bg-gradient"] {
+        display: none !important;
+    }
+}

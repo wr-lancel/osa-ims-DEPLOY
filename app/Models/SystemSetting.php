@@ -32,7 +32,7 @@ class SystemSetting extends Model
         'guidance_case_types' => ['counseling', 'consultation', 'referral'],
         'guidance_appointment_types' => ['counseling', 'consultation', 'referral', 'other'],
         'event_statuses' => ['Planning', 'Upcoming', 'Completed'],
-        'violation_severities' => ['Minor', 'Moderate', 'Major'],
+        'violation_severities' => ['Minor', 'Major'],
         'default_org_positions' => ['President', 'Vice President', 'Secretary', 'Treasurer', 'Auditor', 'PIO', 'Business Manager', 'Sergeant-at-Arms'],
         'sports_equipment' => ['Basketballs', 'Volleyballs', 'Badminton Sets', 'Table Tennis Paddles', 'Soccer Balls', 'Chess Sets', 'Tennis Rackets', 'Jump Ropes', 'Yoga Mats'],
     ];

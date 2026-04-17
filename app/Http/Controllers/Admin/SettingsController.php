@@ -233,7 +233,7 @@ class SettingsController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'severity' => 'required|in:Minor,Moderate,Major',
+            'severity' => 'required|in:Minor,Major',
             'description' => 'nullable|string|max:500',
             'default_sanction' => 'nullable|string|max:1000',
         ]);
@@ -267,7 +267,7 @@ class SettingsController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'severity' => 'required|in:Minor,Moderate,Major',
+            'severity' => 'required|in:Minor,Major',
             'description' => 'nullable|string|max:500',
             'default_sanction' => 'nullable|string|max:1000',
         ]);

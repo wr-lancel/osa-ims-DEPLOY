@@ -37,7 +37,7 @@ const props = defineProps({
     },
     violationSeverities: {
         type: Array,
-        default: () => ['Minor', 'Moderate', 'Major'],
+        default: () => ['Minor', 'Major'],
     },
     isRepeatOffender: {
         type: Boolean,
@@ -227,7 +227,7 @@ const saveNarrative = () => {
                     </template>
                     <span v-else class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
-                        Voided
+                        Archieve
                     </span>
                     <Link :href="route('admin.discipline.index')" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-sm">
                         ← Back to List

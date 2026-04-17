@@ -10,7 +10,7 @@ import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 
 const props = defineProps({
     organizations: { type: Array, default: () => [] },
-    positionsByOrg: { type: Object, default: () => ({}) },
+    positions: { type: Array, default: () => [] },
     academicTerms: { type: Array, default: () => [] },
     defaultAcadId: { type: Number, default: null },
     preSelectedOrgId: { type: Number, default: null },
@@ -20,7 +20,7 @@ const props = defineProps({
 
 const form = useForm({
     org_id: props.preSelectedOrgId || '',
-    position_id: '',
+    position_name: '',
     acad_id: props.defaultAcadId || '',
     party_affiliation: '',
     unit_load: '',
@@ -39,12 +39,7 @@ const declarationTexts = [
 
 const allDeclarationsChecked = computed(() => declarationChecks.value.every(d => d));
 
-const positionsForSelectedOrg = computed(() => {
-    if (!form.org_id) return [];
-    return props.positionsByOrg[String(form.org_id)] || [];
-});
-
-watch(() => form.org_id, () => { form.position_id = ''; });
+watch(() => form.org_id, () => { form.position_name = ''; });
 
 function submit() {
     if (!allDeclarationsChecked.value) return;
@@ -230,21 +225,20 @@ const ordinalYear = (level) => {
 
                             <!-- Position Applied -->
                             <div>
-                                <InputLabel for="position_id" value="Position Applied" />
+                                <InputLabel for="position_name" value="Position Applied" />
                                 <select
-                                    id="position_id"
-                                    v-model="form.position_id"
+                                    id="position_name"
+                                    v-model="form.position_name"
                                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
-                                    :class="{ 'border-red-300': form.errors.position_id }"
+                                    :class="{ 'border-red-300': form.errors.position_name }"
                                     required
-                                    :disabled="!form.org_id"
                                 >
                                     <option value="">Select position</option>
-                                    <option v-for="pos in positionsForSelectedOrg" :key="pos.position_id" :value="pos.position_id">
-                                        {{ pos.position_name }}
+                                    <option v-for="pos in positions" :key="pos" :value="pos">
+                                        {{ pos }}
                                     </option>
                                 </select>
-                                <InputError :message="form.errors.position_id" />
+                                <InputError :message="form.errors.position_name" />
                             </div>
 
                             <!-- Political Party Affiliation -->

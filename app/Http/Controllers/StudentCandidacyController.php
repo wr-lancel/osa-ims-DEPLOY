@@ -6,8 +6,6 @@ use App\Http\Requests\Student\StoreCandidacyRequest;
 use App\Models\AcademicCalendar;
 use App\Models\CandidacyApplication;
 use App\Models\EnrolledStudent;
-use App\Models\OrgMember;
-use App\Models\OrgPosition;
 use App\Models\Student;
 use App\Models\StudentOrganization;
 use App\Models\SystemSetting;
@@ -32,10 +30,7 @@ class StudentCandidacyController extends Controller
             ->orderBy('org_name')
             ->get(['org_id', 'org_name', 'org_code']);
 
-        $positions = OrgPosition::where('is_active', true)
-            ->orderBy('position_name')
-            ->get(['position_id', 'org_id', 'position_name'])
-            ->groupBy('org_id');
+        $positions = SystemSetting::getList('default_org_positions');
 
         $academicTerms = AcademicCalendar::orderBy('start_date', 'desc')
             ->get()
@@ -78,7 +73,7 @@ class StudentCandidacyController extends Controller
 
         return Inertia::render('Student/Organizations/CandidacyCreate', [
             'organizations' => $organizations,
-            'positionsByOrg' => $positions->toArray(),
+            'positions' => $positions,
             'academicTerms' => $academicTerms,
             'defaultAcadId' => $defaultAcadId,
             'preSelectedOrgId' => $preSelectedOrgId ? (int) $preSelectedOrgId : null,
@@ -112,33 +107,15 @@ class StudentCandidacyController extends Controller
             ])->withInput();
         }
 
-        $isMember = OrgMember::where('org_id', $request->org_id)
-            ->where('student_number', $studentNumber)
-            ->where('status', 'active')
-            ->exists();
-
-        if (!$isMember) {
-            return redirect()->back()->withErrors([
-                'org_id' => 'You must be a member of the selected organization to run for a position.',
-            ])->withInput();
-        }
-
         $exists = CandidacyApplication::where('org_id', $request->org_id)
             ->where('enrollment_id', $enrollment->enrollment_id)
-            ->where('position_id', $request->position_id)
+            ->where('position_name', $request->position_name)
             ->where('acad_id', $request->acad_id)
             ->exists();
 
         if ($exists) {
             return redirect()->back()->withErrors([
-                'position_id' => 'You have already submitted a candidacy for this position and term.',
-            ])->withInput();
-        }
-
-        $position = OrgPosition::find($request->position_id);
-        if (!$position || $position->org_id != $request->org_id) {
-            return redirect()->back()->withErrors([
-                'position_id' => 'The selected position does not belong to this organization.',
+                'position_name' => 'You have already submitted a candidacy for this position and term.',
             ])->withInput();
         }
 
@@ -146,7 +123,7 @@ class StudentCandidacyController extends Controller
             CandidacyApplication::create([
                 'org_id' => $request->org_id,
                 'enrollment_id' => $enrollment->enrollment_id,
-                'position_id' => $request->position_id,
+                'position_name' => $request->position_name,
                 'acad_id' => $request->acad_id,
                 'party_affiliation' => $request->party_affiliation,
                 'unit_load' => $request->unit_load,
@@ -171,7 +148,7 @@ class StudentCandidacyController extends Controller
 
         $enrollmentIds = EnrolledStudent::where('student_number', $studentNumber)->pluck('enrollment_id');
 
-        $candidacies = CandidacyApplication::with(['organization:id,org_id,org_name,org_code', 'position:id,position_id,position_name', 'academicCalendar:calendar_id,academic_year,semester'])
+        $candidacies = CandidacyApplication::with(['organization:org_id,org_name,org_code', 'academicCalendar:calendar_id,academic_year,semester'])
             ->whereIn('enrollment_id', $enrollmentIds)
             ->orderBy('submitted_at', 'desc')
             ->get()
@@ -179,7 +156,7 @@ class StudentCandidacyController extends Controller
                 'application_id' => $app->application_id,
                 'org_name' => $app->organization?->org_name,
                 'org_code' => $app->organization?->org_code,
-                'position_name' => $app->position?->position_name,
+                'position_name' => $app->position_name,
                 'term_label' => $app->academicCalendar ? ($app->academicCalendar->academic_year . ($app->academicCalendar->semester ? ' - ' . $app->academicCalendar->semester : '')) : null,
                 'status' => $app->status,
                 'submitted_at' => $app->submitted_at?->format('Y-m-d H:i'),
@@ -199,25 +176,37 @@ class StudentCandidacyController extends Controller
     public function show(CandidacyApplication $application): Response
     {
         $user = Auth::user();
-        $application->load(['organization:id,org_id,org_name,org_code', 'position:id,position_id,position_name', 'academicCalendar:calendar_id,academic_year,semester', 'enrollment.student']);
+        $application->load(['organization:org_id,org_name,org_code', 'academicCalendar:calendar_id,academic_year,semester', 'enrollment.student', 'enrollment.course']);
 
         if ($application->enrollment->student_number !== $user->student_number) {
             abort(403, 'You can only view your own candidacy applications.');
         }
+
+        $student = $application->enrollment?->student;
+        $enrollment = $application->enrollment;
 
         return Inertia::render('Student/Organizations/CandidacyShow', [
             'application' => [
                 'application_id' => $application->application_id,
                 'org_name' => $application->organization?->org_name,
                 'org_code' => $application->organization?->org_code,
-                'position_name' => $application->position?->position_name,
+                'position_name' => $application->position_name,
                 'term_label' => $application->academicCalendar ? ($application->academicCalendar->academic_year . ($application->academicCalendar->semester ? ' - ' . $application->academicCalendar->semester : '')) : null,
                 'platform_statement' => $application->platform_statement,
                 'motivation' => $application->motivation,
+                'party_affiliation' => $application->party_affiliation,
+                'unit_load' => $application->unit_load,
                 'status' => $application->status,
                 'submitted_at' => $application->submitted_at?->format('Y-m-d H:i'),
                 'reviewed_at' => $application->reviewed_at?->format('Y-m-d H:i'),
                 'review_remarks' => $application->review_remarks,
+                'applicant_name' => $student?->full_name ?? '—',
+                'student_number' => $student?->student_number ?? '—',
+                'age' => $student?->birth_date ? $student->birth_date->age : null,
+                'course' => $enrollment?->course?->course_name,
+                'year_level' => $enrollment?->year_level,
+                'address' => $student?->address,
+                'phone' => $student?->phone,
             ],
         ]);
     }

@@ -23,7 +23,7 @@ class StoreCandidacyRequest extends FormRequest
     {
         return [
             'org_id' => ['required', 'exists:student_org,org_id'],
-            'position_id' => ['required', 'exists:org_positions,position_id'],
+            'position_name' => ['required', 'string', 'max:255'],
             'acad_id' => ['required', 'exists:academic_calendar,calendar_id'],
             'party_affiliation' => ['nullable', 'string', 'max:255'],
             'unit_load' => ['nullable', 'integer', 'min:1', 'max:99'],
@@ -42,8 +42,7 @@ class StoreCandidacyRequest extends FormRequest
         return [
             'org_id.required' => 'Please select an organization.',
             'org_id.exists' => 'The selected organization is invalid.',
-            'position_id.required' => 'Please select a position.',
-            'position_id.exists' => 'The selected position is invalid.',
+            'position_name.required' => 'Please select a position.',
             'acad_id.required' => 'Please select a term/semester.',
             'acad_id.exists' => 'The selected term is invalid.',
         ];
